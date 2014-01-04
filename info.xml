@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<extension key="nz.co.fuzion.accountsync" type="module">
+  <file>accountsync</file>
+  <name>Account Sync</name>
+  <description>Base extension for account synchronisation - you need an advanced class on top</description>
+  <license>AGPL</license>
+  <maintainer>
+    <author>Eileen</author>
+    <email>eileen@fuzion.co.nz</email>
+  </maintainer>
+  <releaseDate>2013-12-16</releaseDate>
+  <version>1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>4.4</ver>
+  </compatibility>
+  <comments>This module does nothing without an extension (CiviXero)</comments>
+  <civix>
+    <namespace>CRM/Accountsync</namespace>
+  </civix>
+</extension>

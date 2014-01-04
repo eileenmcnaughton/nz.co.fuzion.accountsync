@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<table>
+  <base>CRM/Accountsync</base>
+  <class>AccountContact</class>
+  <name>civicrm_accountcontact</name>
+  <comment>Contacts Synced to Accounts package</comment>
+  <add>4.4</add>
+  <log>true</log>
+
+  <field>
+    <name>id</name>
+    <type>int unsigned</type>
+    <required>true</required>
+    <comment>Unique AccountContact ID</comment>
+    <add>4.4</add>
+  </field>
+  <primaryKey>
+    <name>id</name>
+    <autoincrement>true</autoincrement>
+  </primaryKey>
+
+  <field>
+    <name>contact_id</name>
+    <type>int unsigned</type>
+    <comment>FK to Contact</comment>
+    <add>4.4</add>
+  </field>
+  <foreignKey>
+    <name>contact_id</name>
+    <table>civicrm_contact</table>
+    <key>id</key>
+    <add>4.4</add>
+    <onDelete>CASCADE</onDelete>
+  </foreignKey>
+  <field>
+    <name>accounts_contact_id</name>
+    <type>varchar</type>
+    <length>128</length>
+    <comment>External Reference</comment>
+    <add>4.4</add>
+  </field>
+  <field>
+    <name>last_sync_date</name>
+    <type>timestamp</type>
+    <comment>When was the contact last synced.</comment>
+    <default>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</default>
+    <add>4.4</add>
+  </field>
+
+  <field>
+    <name>accounts_modified_date</name>
+    <type>timestamp</type>
+    <comment>When was the invoice last Altered in the accounts system.</comment>
+    <add>4.4</add>
+  </field>
+
+
+  <field>
+    <name>accounts_display_name</name>
+    <title>Display Name</title>
+    <type>varchar</type>
+    <length>128</length>
+    <comment>Name from Accounts Package</comment>
+    <add>4.4</add>
+  </field>
+  <field>
+    <name>accounts_data</name>
+    <title>Account System Data</title>
+    <type>text</type>
+    <comment>json array of data as returned from accounts system</comment>
+    <add>4.4</add>
+  </field>
+  <field>
+    <name>accounts_data</name>
+    <title>Account System Data</title>
+    <type>text</type>
+    <comment>json array of error data as returned from accounts system</comment>
+    <add>4.4</add>
+  </field>
+  <field>
+    <name>plugin</name>
+    <title>Account Plugin</title>
+    <type>varchar</type>
+    <length>32</length>
+    <comment>Name of plugin creating the account</comment>
+    <add>4.4</add>
+  </field>
+</table>
