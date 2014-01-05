@@ -110,6 +110,11 @@ function civicrm_api3_account_contact_getfields($params) {
         'title' => 'Error Data',
         'size' => 45
       ),
+      'accounts_needs_update' => array (
+        'name' => 'accounts_needs_update',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'title' => 'Update Accounts?',
+      ),
       'plugin' => array (
         'name' => 'plugin',
         'type' => 2,

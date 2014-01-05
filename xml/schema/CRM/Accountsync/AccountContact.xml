@@ -40,6 +40,16 @@
     <comment>External Reference</comment>
     <add>4.4</add>
   </field>
+
+  <field>
+    <name>accounts_display_name</name>
+    <title>Display Name</title>
+    <type>varchar</type>
+    <length>128</length>
+    <comment>Name from Accounts Package</comment>
+    <add>4.4</add>
+  </field>
+
   <field>
     <name>last_sync_date</name>
     <type>timestamp</type>
@@ -55,15 +65,6 @@
     <add>4.4</add>
   </field>
 
-
-  <field>
-    <name>accounts_display_name</name>
-    <title>Display Name</title>
-    <type>varchar</type>
-    <length>128</length>
-    <comment>Name from Accounts Package</comment>
-    <add>4.4</add>
-  </field>
   <field>
     <name>accounts_data</name>
     <title>Account System Data</title>
@@ -71,13 +72,24 @@
     <comment>json array of data as returned from accounts system</comment>
     <add>4.4</add>
   </field>
+
   <field>
-    <name>accounts_data</name>
-    <title>Account System Data</title>
+    <name>error_data</name>
+    <title>Account Error Data</title>
     <type>text</type>
     <comment>json array of error data as returned from accounts system</comment>
     <add>4.4</add>
   </field>
+
+  <field>
+    <name>accounts_needs_update</name>
+    <title>Accounts Needs Update</title>
+    <type>boolean</type>
+    <comment>Include in next push to accounts</comment>
+    <default>1</default>
+    <add>4.4</add>
+  </field>
+
   <field>
     <name>plugin</name>
     <title>Account Plugin</title>

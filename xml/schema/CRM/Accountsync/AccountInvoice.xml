@@ -71,9 +71,34 @@
   <field>
     <name>accounts_data</name>
     <title>Account System Data</title>
-    <type>varchar</type>
-    <length>128</length>
+    <type>text</type>
     <comment>json array of data as returned from accounts system</comment>
+    <add>4.4</add>
+  </field>
+
+  <field>
+    <name>error_data</name>
+    <title>Account Error Data</title>
+    <type>text</type>
+    <comment>json array of error data as returned from accounts system</comment>
+    <add>4.4</add>
+  </field>
+
+  <field>
+    <name>accounts_needs_update</name>
+    <title>Accounts Needs Update</title>
+    <type>boolean</type>
+    <comment>Include in next push to accounts</comment>
+    <default>1</default>
+    <add>4.4</add>
+  </field>
+
+  <field>
+    <name>plugin</name>
+    <title>Account Plugin</title>
+    <type>varchar</type>
+    <length>32</length>
+    <comment>Name of plugin creating the account</comment>
     <add>4.4</add>
   </field>
 </table>

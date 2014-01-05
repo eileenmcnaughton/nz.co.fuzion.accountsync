@@ -101,6 +101,42 @@ class CRM_Accountsync_DAO_AccountPayment extends CRM_Core_DAO
    */
   public $contact_id;
   /**
+   * When was the contact last synced.
+   *
+   * @var timestamp
+   */
+  public $last_sync_date;
+  /**
+   * When was the invoice last Altered in the accounts system.
+   *
+   * @var timestamp
+   */
+  public $accounts_modified_date;
+  /**
+   * json array of data as returned from accounts system
+   *
+   * @var text
+   */
+  public $accounts_data;
+  /**
+   * json array of error data as returned from accounts system
+   *
+   * @var text
+   */
+  public $error_data;
+  /**
+   * Include in next push to accounts
+   *
+   * @var boolean
+   */
+  public $accounts_needs_update;
+  /**
+   * Name of plugin creating the account
+   *
+   * @var string
+   */
+  public $plugin;
+  /**
    * class constructor
    *
    * @access public
@@ -147,6 +183,40 @@ class CRM_Accountsync_DAO_AccountPayment extends CRM_Core_DAO
           'type' => CRM_Utils_Type::T_INT,
           'FKClassName' => 'CRM_Contact_DAO_Contact',
         ) ,
+        'last_sync_date' => array(
+          'name' => 'last_sync_date',
+          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'title' => ts('Last Sync Date') ,
+          'default' => 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
+        ) ,
+        'accounts_modified_date' => array(
+          'name' => 'accounts_modified_date',
+          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'title' => ts('Accounts Modified Date') ,
+        ) ,
+        'accounts_data' => array(
+          'name' => 'accounts_data',
+          'type' => CRM_Utils_Type::T_TEXT,
+          'title' => ts('Account System Data') ,
+        ) ,
+        'error_data' => array(
+          'name' => 'error_data',
+          'type' => CRM_Utils_Type::T_TEXT,
+          'title' => ts('Account Error Data') ,
+        ) ,
+        'accounts_needs_update' => array(
+          'name' => 'accounts_needs_update',
+          'type' => CRM_Utils_Type::T_BOOLEAN,
+          'title' => ts('Accounts Needs Update') ,
+          'default' => '1',
+        ) ,
+        'plugin' => array(
+          'name' => 'plugin',
+          'type' => CRM_Utils_Type::T_STRING,
+          'title' => ts('Account Plugin') ,
+          'maxlength' => 32,
+          'size' => CRM_Utils_Type::MEDIUM,
+        ) ,
       );
     }
     return self::$_fields;
@@ -164,6 +234,12 @@ class CRM_Accountsync_DAO_AccountPayment extends CRM_Core_DAO
       self::$_fieldKeys = array(
         'id' => 'id',
         'contact_id' => 'contact_id',
+        'last_sync_date' => 'last_sync_date',
+        'accounts_modified_date' => 'accounts_modified_date',
+        'accounts_data' => 'accounts_data',
+        'error_data' => 'error_data',
+        'accounts_needs_update' => 'accounts_needs_update',
+        'plugin' => 'plugin',
       );
     }
     return self::$_fieldKeys;

@@ -42,7 +42,7 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
    * @var string
    * @static
    */
-  static $_tableName = 'civicrm_accountinvoice';
+  static $_tableName = 'civicrm_account_invoice';
   /**
    * static instance to hold the field values
    *
@@ -121,18 +121,36 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
   /**
    * json array of data as returned from accounts system
    *
-   * @var string
+   * @var text
    */
   public $accounts_data;
+  /**
+   * json array of error data as returned from accounts system
+   *
+   * @var text
+   */
+  public $error_data;
+  /**
+   * Include in next push to accounts
+   *
+   * @var boolean
+   */
+  public $accounts_needs_update;
+  /**
+   * Name of plugin creating the account
+   *
+   * @var string
+   */
+  public $plugin;
   /**
    * class constructor
    *
    * @access public
-   * @return civicrm_accountinvoice
+   * @return civicrm_account_invoice
    */
   function __construct()
   {
-    $this->__table = 'civicrm_accountinvoice';
+    $this->__table = 'civicrm_account_invoice';
     parent::__construct();
   }
   /**
@@ -180,21 +198,37 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
         ) ,
         'last_sync_date' => array(
           'name' => 'last_sync_date',
-          'type' => CRM_Utils_Type::T_TIMESTAMP,
+          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
           'title' => ts('Last Sync Date') ,
           'default' => 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
         ) ,
         'accounts_modified_date' => array(
           'name' => 'accounts_modified_date',
-          'type' => CRM_Utils_Type::T_DATE, // we lie to PEAR about this as it obnoxiously drops timestamp fields
-          'title' => ts('Accounts Last Change') ,
+          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'title' => ts('Accounts Modified Date') ,
         ) ,
         'accounts_data' => array(
           'name' => 'accounts_data',
-          'type' => CRM_Utils_Type::T_STRING,
+          'type' => CRM_Utils_Type::T_TEXT,
           'title' => ts('Account System Data') ,
-          'maxlength' => 128,
-          'size' => CRM_Utils_Type::HUGE,
+        ) ,
+        'error_data' => array(
+          'name' => 'error_data',
+          'type' => CRM_Utils_Type::T_TEXT,
+          'title' => ts('Account Error Data') ,
+        ) ,
+        'accounts_needs_update' => array(
+          'name' => 'accounts_needs_update',
+          'type' => CRM_Utils_Type::T_BOOLEAN,
+          'title' => ts('Accounts Needs Update') ,
+          'default' => '1',
+        ) ,
+        'plugin' => array(
+          'name' => 'plugin',
+          'type' => CRM_Utils_Type::T_STRING,
+          'title' => ts('Account Plugin') ,
+          'maxlength' => 32,
+          'size' => CRM_Utils_Type::MEDIUM,
         ) ,
       );
     }
@@ -217,6 +251,9 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
         'last_sync_date' => 'last_sync_date',
         'accounts_modified_date' => 'accounts_modified_date',
         'accounts_data' => 'accounts_data',
+        'error_data' => 'error_data',
+        'accounts_needs_update' => 'accounts_needs_update',
+        'plugin' => 'plugin',
       );
     }
     return self::$_fieldKeys;
@@ -257,7 +294,7 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
       foreach($fields as $name => $field) {
         if (CRM_Utils_Array::value('import', $field)) {
           if ($prefix) {
-            self::$_import['accountinvoice'] = & $fields[$name];
+            self::$_import['account_invoice'] = & $fields[$name];
           } else {
             self::$_import[$name] = & $fields[$name];
           }
@@ -281,7 +318,7 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
       foreach($fields as $name => $field) {
         if (CRM_Utils_Array::value('export', $field)) {
           if ($prefix) {
-            self::$_export['accountinvoice'] = & $fields[$name];
+            self::$_export['account_invoice'] = & $fields[$name];
           } else {
             self::$_export[$name] = & $fields[$name];
           }

@@ -106,38 +106,43 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
    */
   public $accounts_contact_id;
   /**
-   * When was the contact last synced.
-   *
-   * @var timestamp
-   */
-  public $last_sync_date;
-  /**
-   * When was the contact last synced.
-   *
-   * @var timestamp
-   */
-  public $accounts_modified_date;
-  /**
    * Name from Accounts Package
    *
    * @var string
    */
   public $accounts_display_name;
   /**
+   * When was the contact last synced.
+   *
+   * @var timestamp
+   */
+  public $last_sync_date;
+  /**
+   * When was the invoice last Altered in the accounts system.
+   *
+   * @var timestamp
+   */
+  public $accounts_modified_date;
+  /**
    * json array of data as returned from accounts system
    *
-   * @var string
+   * @var text
    */
   public $accounts_data;
-
   /**
-   * json array of error data
+   * json array of error data as returned from accounts system
    *
-   * @var string
+   * @var text
    */
   public $error_data;
   /**
-   * Accounts Plugin
+   * Include in next push to accounts
+   *
+   * @var boolean
+   */
+  public $accounts_needs_update;
+  /**
+   * Name of plugin creating the account
    *
    * @var string
    */
@@ -193,18 +198,7 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
           'name' => 'accounts_contact_id',
           'type' => CRM_Utils_Type::T_STRING,
           'maxlength' => 128,
-          'size' => CRM_Utils_Type::MEDIUM,
-        ) ,
-        'last_sync_date' => array(
-          'name' => 'last_sync_date',
-          'type' => CRM_Utils_Type::T_TIMESTAMP,
-          'title' => ts('Last Sync  Date') ,
-          'default' => 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
-        ) ,
-        'accounts_modified_date' => array(
-          'name' => 'accounts_modified_date',
-          'type' => CRM_Utils_Type::T_DATE, // we lie to PEAR about this as it obnoxiously drops timestamp fields
-          'title' => ts('Accounts Modified Date') ,
+          'size' => CRM_Utils_Type::HUGE,
         ) ,
         'accounts_display_name' => array(
           'name' => 'accounts_display_name',
@@ -213,17 +207,32 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
           'maxlength' => 128,
           'size' => CRM_Utils_Type::HUGE,
         ) ,
+        'last_sync_date' => array(
+          'name' => 'last_sync_date',
+          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'title' => ts('Last Sync Date') ,
+          'default' => 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
+        ) ,
+        'accounts_modified_date' => array(
+          'name' => 'accounts_modified_date',
+          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'title' => ts('Accounts Modified Date') ,
+        ) ,
         'accounts_data' => array(
           'name' => 'accounts_data',
           'type' => CRM_Utils_Type::T_TEXT,
           'title' => ts('Account System Data') ,
-          'size' => CRM_Utils_Type::HUGE,
         ) ,
         'error_data' => array(
           'name' => 'error_data',
           'type' => CRM_Utils_Type::T_TEXT,
-          'title' => ts('Account System Data') ,
-          'size' => CRM_Utils_Type::HUGE,
+          'title' => ts('Account Error Data') ,
+        ) ,
+        'accounts_needs_update' => array(
+          'name' => 'accounts_needs_update',
+          'type' => CRM_Utils_Type::T_BOOLEAN,
+          'title' => ts('Accounts Needs Update') ,
+          'default' => '1',
         ) ,
         'plugin' => array(
           'name' => 'plugin',
@@ -250,9 +259,13 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
         'id' => 'id',
         'contact_id' => 'contact_id',
         'accounts_contact_id' => 'accounts_contact_id',
-        'last_sync__date' => 'last_sync_date',
         'accounts_display_name' => 'accounts_display_name',
+        'last_sync_date' => 'last_sync_date',
+        'accounts_modified_date' => 'accounts_modified_date',
         'accounts_data' => 'accounts_data',
+        'error_data' => 'error_data',
+        'accounts_needs_update' => 'accounts_needs_update',
+        'plugin' => 'plugin',
       );
     }
     return self::$_fieldKeys;

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<tables xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="AccountContact.xml" parse="xml" />
+<xi:include href="AccountInvoice.xml" parse="xml" />
+<xi:include href="AccountLineItems.xml" parse="xml" />
+<xi:include href="AccountPayment.xml" parse="xml" />
+
+</tables>

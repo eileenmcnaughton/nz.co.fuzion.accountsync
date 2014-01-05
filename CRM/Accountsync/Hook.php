@@ -12,9 +12,9 @@ class CRM_Accountsync_Hook {
    * @param array $data data from accounts being processing
    * @param boolean $save save? - set this to false if it should be skipped
    */
-  static function accountPullPreSave($entity, &$data, &$save) {
-    return CRM_Utils_Hook::singleton()->invoke(3, $entity,
-      $data, $save, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
+  static function accountPullPreSave($entity, &$data, &$save, &$params) {
+    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+      $data, $save, $params, CRM_Core_DAO::$_nullObject,
       'civicrm_accountPullPreSave'
     );
   }
