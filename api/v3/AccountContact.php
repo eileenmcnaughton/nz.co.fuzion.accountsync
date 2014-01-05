@@ -105,7 +105,7 @@ function civicrm_api3_account_contact_getfields($params) {
         'size' => 45
       ),
       'error_data' => array (
-        'name' => 'accounts_data',
+        'name' => 'error_data',
         'type' => 32,
         'title' => 'Error Data',
         'size' => 45
