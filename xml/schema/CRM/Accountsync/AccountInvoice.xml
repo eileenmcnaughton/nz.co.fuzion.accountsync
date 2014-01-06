@@ -21,19 +21,6 @@
   </primaryKey>
 
   <field>
-    <name>contact_id</name>
-    <type>int unsigned</type>
-    <comment>FK to Contact</comment>
-    <add>4.4</add>
-  </field>
-  <foreignKey>
-    <name>contact_id</name>
-    <table>civicrm_contact</table>
-    <key>id</key>
-    <add>4.4</add>
-    <onDelete>CASCADE</onDelete>
-  </foreignKey>
-  <field>
     <name>contribution_id</name>
     <title>Contribution ID</title>
     <type>int unsigned</type>
@@ -52,6 +39,22 @@
     <fieldName>contribution_id</fieldName>
     <add>4.4</add>
   </index>
+
+  <field>
+    <name>accounts_invoice_id</name>
+    <type>varchar</type>
+    <length>128</length>
+    <comment>External Reference</comment>
+    <add>4.4</add>
+  </field>
+
+  <field>
+    <name>accounts_status_id</name>
+    <type>varchar</type>
+    <length>32</length>
+    <comment>Status in accounts system (mapped to civicrm definition)</comment>
+    <add>4.4</add>
+  </field>
 
   <field>
     <name>last_sync_date</name>

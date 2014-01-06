@@ -20,7 +20,7 @@ function _civicrm_api3_account_invoice_create_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_account_invoice_create($params) {
-  return _civicrm_api3_basic_create(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountInvoice', $params);
 }
 
 /**
@@ -31,7 +31,7 @@ function civicrm_api3_account_invoice_create($params) {
  * @throws API_Exception
  */
 function civicrm_api3_account_invoice_delete($params) {
-  return _civicrm_api3_basic_delete(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  return _civicrm_api3_basic_delete('CRM_Accountsync_BAO_AccountInvoice', $params);
 }
 
 /**
@@ -42,5 +42,84 @@ function civicrm_api3_account_invoice_delete($params) {
  * @throws API_Exception
  */
 function civicrm_api3_account_invoice_get($params) {
-  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
+  return _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountInvoice', $params);
+}
+
+/**
+ * AccountContact.getfields API
+ * (we can't rely on generic as it won't look at our DAO)
+ *
+ * @param array $params
+ * @return array API result descriptor
+ * @throws API_Exception
+ */
+function civicrm_api3_account_invoice_getfields($params) {
+  return civicrm_api3_create_success(
+    array (
+      'id' => array (
+        'name' => 'id',
+        'type' => 1,
+        'required' => 1,
+        'api.aliases' => array (
+          '0' => 'account_invoice_id'
+        )
+      ),
+
+      'contribution_id' => array (
+        'name' => 'contribution_id',
+        'type' => 1,
+        'FKClassName' => 'CRM_Contribute_DAO_Contribution'
+      ),
+
+      'accounts_invoice_id' => array (
+        'name' => 'accounts_invoice_id',
+        'type' => 2,
+        'maxlength' => 128,
+        'size' => 20
+      ),
+
+      'last_sync_date' => array (
+        'name' => 'last_sync_date',
+        'type' => 256,
+        'title' => 'Last Sync Date',
+        'default' => 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'
+      ),
+
+      'accounts_modified_date' => array (
+        'name' => 'accounts_modified_date',
+        'type' => 4,
+        'title' => 'Accounts Modified Date'
+      ),
+      'accounts_status_id' => array (
+        'name' => 'accounts_status_id',
+        'type' => 2,
+        'title' => 'Accounts Status',
+        'maxlength' => 32,
+      ),
+      'accounts_data' => array (
+        'name' => 'accounts_data',
+        'type' => 32,
+        'title' => 'Account System Data',
+        'size' => 45
+      ),
+      'error_data' => array (
+        'name' => 'error_data',
+        'type' => 32,
+        'title' => 'Error Data',
+        'size' => 45
+      ),
+      'accounts_needs_update' => array (
+        'name' => 'accounts_needs_update',
+        'type' => CRM_Utils_Type::T_BOOLEAN,
+        'title' => 'Update Accounts?',
+      ),
+      'plugin' => array (
+        'name' => 'plugin',
+        'type' => 2,
+        'title' => 'Account Plugin',
+        'maxlength' => 32,
+        'size' => 20,
+        'api.required' => TRUE,
+      )
+    ));
 }

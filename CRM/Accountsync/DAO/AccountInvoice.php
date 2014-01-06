@@ -94,18 +94,27 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
    * @var int unsigned
    */
   public $id;
-  /**
-   * FK to Contact
-   *
-   * @var int unsigned
-   */
-  public $contact_id;
+
   /**
    * FK to contribution table.
    *
    * @var int unsigned
    */
   public $contribution_id;
+  /**
+   * External Reference
+   *
+   * @var string
+   */
+  public $accounts_invoice_id;
+  /**
+   * Accounts Status id (mapped to a civicrm status id - so an integer
+   * but we store as a string to match contribution table
+   *
+   * @var string
+   */
+  public $accounts_status_id;
+  /**
   /**
    * When was the contact last synced.
    *
@@ -164,7 +173,6 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
   {
     if (!self::$_links) {
       self::$_links = array(
-        new CRM_Core_EntityReference(self::getTableName() , 'contact_id', 'civicrm_contact', 'id') ,
         new CRM_Core_EntityReference(self::getTableName() , 'contribution_id', 'civicrm_contribution', 'id') ,
       );
     }
@@ -185,16 +193,23 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
           'type' => CRM_Utils_Type::T_INT,
           'required' => true,
         ) ,
-        'contact_id' => array(
-          'name' => 'contact_id',
+        'accounts_status_id' => array(
+          'name' => 'accounts_status_id',
           'type' => CRM_Utils_Type::T_INT,
-          'FKClassName' => 'CRM_Contact_DAO_Contact',
+          'maxlength' => 32,
+          'size' => CRM_Utils_Type::MEDIUM,
         ) ,
         'contribution_id' => array(
           'name' => 'contribution_id',
           'type' => CRM_Utils_Type::T_INT,
           'title' => ts('Contribution ID') ,
           'FKClassName' => 'CRM_Contribute_DAO_Contribution',
+        ) ,
+        'accounts_invoice_id' => array(
+          'name' => 'accounts_invoice_id',
+          'type' => CRM_Utils_Type::T_STRING,
+          'maxlength' => 128,
+          'size' => CRM_Utils_Type::HUGE,
         ) ,
         'last_sync_date' => array(
           'name' => 'last_sync_date',
@@ -246,8 +261,9 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
     if (!(self::$_fieldKeys)) {
       self::$_fieldKeys = array(
         'id' => 'id',
-        'contact_id' => 'contact_id',
+        'account_status_id' => 'account_status_id',
         'contribution_id' => 'contribution_id',
+        'accounts_invoice_id' => 'accounts_invoice_id',
         'last_sync_date' => 'last_sync_date',
         'accounts_modified_date' => 'accounts_modified_date',
         'accounts_data' => 'accounts_data',

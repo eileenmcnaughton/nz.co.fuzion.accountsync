@@ -120,7 +120,8 @@ function civicrm_api3_account_contact_getfields($params) {
         'type' => 2,
         'title' => 'Account Plugin',
         'maxlength' => 32,
-        'size' => 20
+        'size' => 20,
+        'api.required' => TRUE,
       )
     ));
 }

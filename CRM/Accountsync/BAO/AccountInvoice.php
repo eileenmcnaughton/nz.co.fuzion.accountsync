@@ -7,7 +7,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    *
    * @param array $params key-value pairs
    * @return CRM_Accountsync_DAO_AccountInvoice|NULL
-   *
+   */
   public static function create($params) {
     $className = 'CRM_Accountsync_DAO_AccountInvoice';
     $entityName = 'AccountInvoice';
@@ -20,5 +20,5 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     CRM_Utils_Hook::post($hook, $entityName, $instance->id, $instance);
 
     return $instance;
-  } */
+  }
 }
