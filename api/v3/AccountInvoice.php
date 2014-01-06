@@ -46,6 +46,25 @@ function civicrm_api3_account_invoice_get($params) {
 }
 
 /**
+ * AccountInvoice.get derived invoice
+ * This function compiles what I think an invoice returned from the CiviCRM api should look like
+ * - unfortunately it takes a bit of building!
+ * NB I didn't got down the invoice.get path because it seemed to be that in
+ * future it might be used for something else
+ *
+ * We also have a problem doing getfields for this as the whole getfields _spec thing struggles a bit here
+ * - the generic getfields needs to be over-ridden due to the DAO not being in core
+ * & then the spec thing doesn't quite work *
+ * @todo - write a getfields that works - but for now array('id' => $contributionID)
+ * @param array $params
+ * @return array API result descriptor
+ * @throws API_Exception
+ */
+function civicrm_api3_account_invoice_getderived($params) {
+  return civicrm_api3_create_success(CRM_Accountsync_BAO_AccountInvoice::getDerived($params));
+}
+
+/**
  * AccountContact.getfields API
  * (we can't rely on generic as it won't look at our DAO)
  *
