@@ -32,7 +32,7 @@
     <table>civicrm_contribution</table>
     <key>id</key>
     <add>4.4</add>
-    <onDelete>CASCADE</onDelete>
+    <onDelete>RESTRICT</onDelete>
   </foreignKey>
   <index>
     <name>index_contribution_invoice</name>

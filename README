@@ -1,0 +1,45 @@
+This extension supports the CiviXero extension by doing the non Xero specific parts. It is a dependency
+although CiviCRM has no dependendy management
+
+IT PROVIDES
+1) tables for storing event sync info - in particular civicrm_account_contact & civicrm_invoice_contact
+2) apis for storing data in these tables
+3) hooks civicrm_accountPullPreSave & civicrm_accountPushAlterMapped
+4) api invoice.getderived. This turned out to be a fairly important api as the line items for a given
+   contact id are not easily retrieved. If the contribution is for a participant_payment then the
+   participant entity rather than the contribution entity links to the civicrm_line_item table. I may not
+   have used the best process to build this 'invoice' entity but it's a much better starting place for accounts
+   interaction. It also resolves all accounting codes with is relevant for accounts interaction
+
+
+TODO
+1) add api for completing contributions based on civicrm_account_invoice - ie taking those items where
+the status in accounts is completed & not in CiviCRM & updating CiviCRM (use contribution.completetransaction
+for the full love including updating related entitys &sending emails etc)
+
+2) add api for cancelling payments based on civicrm_account_invoice - ie taking those items where
+the status in accounts is cancelled & not in CiviCRM. GOTCHA - cancelling an invoice via the API doesn't
+cancel the event registraion - feature ? bug?
+
+3) add post hook (possibily configurable) to set/create a record in civicrm_account_invoice to accounts_needs_update
+when a contribution is created & also in civicrm_account_contact (probably create a record if required for
+contact & possibly in future allow people to configure which entity updates would trigger an update
+(e.g phone, email, address, contact, specific custom data groups, note that this could also be done in
+a customer specific extension
+
+4) Think about how people will create matches for accounts data to get them in sync. Currently this
+is do-able via hooks & so far my experience has been that the approach has been quite customer specific
+and involves a good deal of manual effort. It may be beyond the scope of this extension.
+
+5) Currently there is nothing in place to update contacts from accounts package data - I think that is
+out of the scope of this extension
+
+6) in my previous Xero implementation overpaid invoices would be adjusted in CiviCRM. I haven't figured out
+how this would look in the brave new world of CiviAccounts. I'm not currently storing the amount except in the
+extension specific field
+
+
+THOUGHTS on whether to enforce the contribution_id & contact_id in these tables
+1) I should either be relaxed & store the invoice ids / contact ids from the accounts data regardless or
+2) I should use the FKs to restrict the data in the 'parent' table from being deleted. In theory contributions
+can't be deleted anyway & in theory neither can contacts who have made contributions.
