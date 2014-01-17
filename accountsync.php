@@ -93,9 +93,10 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
   if(in_array($objectName, array_merge($createEntities, $updateEntities))) {
     _accountsync_create_account_contact($objectRef->contact_id, in_array($objectName, $createEntities));
   }
+
   if(in_array($objectName, $invoiceEntities)) {
     // we won't do updates as the invoices get 'locked' in the accounts system
-    _accountsync_create_account_invoice($objectRef->id, FALSE);
+    _accountsync_create_account_invoice($objectRef->id, TRUE);
   }
 }
 
