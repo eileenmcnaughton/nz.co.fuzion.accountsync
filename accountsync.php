@@ -86,9 +86,9 @@ function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders){
 
 function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
   $entities = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
-  $createEntities = $entities['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'];
-  $updateEntities = $entities['values'][CRM_Core_Config::domainID()]['account_sync_queue_update_contacts'];
-  $invoiceEntities = $entities['values'][CRM_Core_Config::domainID()]['account_sync_queue_create_invoice'];
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities['values'][CRM_Core_Config::domainID()], array());
+  $updateEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts',$entities['values'][CRM_Core_Config::domainID()], array());
+  $invoiceEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities['values'][CRM_Core_Config::domainID()], array());
 
   if(in_array($objectName, array_merge($createEntities, $updateEntities))) {
     _accountsync_create_account_contact($objectRef->contact_id, in_array($objectName, $createEntities));
