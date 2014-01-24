@@ -10,12 +10,9 @@ IT PROVIDES
    participant entity rather than the contribution entity links to the civicrm_line_item table. I may not
    have used the best process to build this 'invoice' entity but it's a much better starting place for accounts
    interaction. It also resolves all accounting codes with is relevant for accounts interaction
-
+5) api to update civicrm contributions based on related invoice status
 
 TODO
-1) add api for completing contributions based on civicrm_account_invoice - ie taking those items where
-the status in accounts is completed & not in CiviCRM & updating CiviCRM (use contribution.completetransaction
-for the full love including updating related entitys &sending emails etc)
 
 2) add api for cancelling payments based on civicrm_account_invoice - ie taking those items where
 the status in accounts is cancelled & not in CiviCRM. GOTCHA - cancelling an invoice via the API doesn't
