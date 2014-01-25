@@ -120,4 +120,25 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       civicrm_api3('contribution', 'completetransaction', array('id' => $dao->contribution_id));
     }
   }
+
+  /**
+   * Cancel contribution in Civi based on Xero Status
+   * @todo - I don't believe this will adequately cancel related entities
+   */
+  static function cancelContributionFromAccountsStatus($params) {
+     //get pending registrations
+    $sql = "SELECT  cas.contribution_id
+      FROM civicrm_account_invoice cas
+      LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
+      WHERE civi.contribution_status_id =2
+      AND accounts_status_id =3
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+
+    while ($dao->fetch()) {
+      $params['contribution_status_id'] = 3;
+      $params['id'] = $dao->contribution_id;
+      civicrm_api3('Contribution','Create',$params) ;
+    }
+  }
 }

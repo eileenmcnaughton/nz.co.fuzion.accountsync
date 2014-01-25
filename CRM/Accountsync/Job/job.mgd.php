@@ -19,4 +19,19 @@ return array (
       'parameters' => 'plugin=xero, accounts_status_id=1',
     ),
   ),
+  1 =>
+  array (
+    'name' => 'CiviAccountSync Cancel Contributions From Accounts',
+    'entity' => 'Job',
+    'params' =>
+    array (
+      'version' => 3,
+      'name' => 'CiviAccountSync Cancel Contributions',
+      'description' => 'Cancel Contributions in CiviCRM where cancelled in Accounts',
+      'api_entity' => 'account_invoice',
+      'api_action' => 'update_contribution',
+      'run_frequency' => 'Always',
+      'parameters' => 'plugin=xero, accounts_status_id=3',
+    ),
+  ),
 );

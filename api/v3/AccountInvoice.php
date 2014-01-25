@@ -166,6 +166,10 @@ function civicrm_api3_account_invoice_update_contribution($params) {
     CRM_Accountsync_BAO_AccountInvoice::completeContributionFromAccountsStatus($params);
     return civicrm_api3_create_success();
   }
+  if($params['accounts_status_id'] == 3) {
+    CRM_Accountsync_BAO_AccountInvoice::cancelContributionFromAccountsStatus($params);
+    return civicrm_api3_create_success();
+  }
   throw new Exception('Currently only complete is supported');
  // return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountInvoice', $params);
 }
