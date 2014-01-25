@@ -112,11 +112,10 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       SELECT contribution_id
       FROM civicrm_account_invoice cas
       LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
-      WHERE civi.contribution_status_id <> accounts_status_id
+      WHERE civi.contribution_status_id =2
       AND accounts_status_id = 1
       ";
     $dao = CRM_Core_DAO::executeQuery($sql);
-    $dao->find();
     while ($dao->fetch()) {
       civicrm_api3('contribution', 'completetransaction', array('id' => $dao->contribution_id));
     }
