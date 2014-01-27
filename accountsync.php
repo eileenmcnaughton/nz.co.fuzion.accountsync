@@ -101,6 +101,38 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
 }
 
 /**
+ *
+ * @param unknown $op
+ * @param unknown $objectName
+ * @param unknown $id
+ * @param unknown $params
+ */
+function accountsync_civicrm_pre($op, $objectName, $id, &$params ) {
+  if (($op == 'delete'|| $op == 'trash') && ($objectName == 'Individual' || $objectName = 'Organization' || $objectName == 'Household')) {
+    try {
+      $accountContact = civicrm_api3('account_contact', 'getsingle', array(
+        'contact_id' => $id,
+        'plugin' => 'xero')
+      );
+
+      if(empty($accountContact['accounts_contact_id'])) {
+        civicrm_api3('account_contact', 'delete', array('id' => $accountContact['id']));
+      }
+      elseif($op == 'trash') {
+        CRM_Core_Session::setStatus(ts('You are deleting a contact that has been synced to your accounts system. It is recommended you restore the contact & fix this'));
+      }
+      else {
+        civicrm_api3('account_contact', 'delete', array('id' => $accountContact['id']));
+        CRM_Core_Session::setStatus(ts('You have deleted a contact that has been synced to your accounts system. The sync tracking record has been deleted. Resolution is unclear'));
+
+      }
+    }
+    catch(Exception $e) {
+      //doesn't exist - move along, nothing to see here
+    }
+  }
+}
+/**
  * Create account contact record or set needs_update flag
  * @param integer $contactID
  */
@@ -158,6 +190,7 @@ function _accountsync_create_account_contact($contactID, $createNew) {
         //@todo - this will only move old contact ref to the new one - if both have xero accounts
         // then it will fail
         $accountContact = civicrm_api3('account_contact', 'getsingle', array('plugin' => 'xero', 'contact_id' => $old_id));
+        civicrm_api3('account_contact', 'delete', array('contact_id' => $old_id));
         $accountContact['contact_id'] = $new_id;
         $accountContact = civicrm_api3('account_contact', 'create', $accountContact);
       }
