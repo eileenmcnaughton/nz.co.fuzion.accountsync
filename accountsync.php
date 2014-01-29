@@ -108,6 +108,19 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
  * @param unknown $params
  */
 function accountsync_civicrm_pre($op, $objectName, $id, &$params ) {
+  _accountsync_handle_contact_deletion($op, $objectName, $id);
+  _accountsync_handle_contribution_deletion($op, $objectName, $id);
+
+}
+
+/**
+ * Update account_contact record to relect attempt to delete contact
+ * @param op
+ * @param objectName
+ * @param id
+ */
+
+function _accountsync_handle_contact_deletion($op, $objectName, $id) {
   if (($op == 'delete'|| $op == 'trash') && ($objectName == 'Individual' || $objectName = 'Organization' || $objectName == 'Household')) {
     try {
       $accountContact = civicrm_api3('account_contact', 'getsingle', array(
@@ -132,6 +145,36 @@ function accountsync_civicrm_pre($op, $objectName, $id, &$params ) {
     }
   }
 }
+
+/**
+ * Update account_contact record to relect attempt to delete contact
+ * @param op
+ * @param objectName
+ * @param id
+ */
+
+function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
+  if (($op == 'delete') && ($objectName == 'Contribution')) {
+    try {
+      $accountInvoice = civicrm_api3('account_invoice', 'getsingle', array(
+        'contribution_id' => $id,
+        'plugin' => 'xero')
+      );
+
+      if(empty($accountInvoice['accounts_invoice_id'])) {
+        civicrm_api3('account_invoide', 'delete', array('id' => $accountInvoice['id']));
+      }
+      else {
+        //here we need to create a way to void
+        CRM_Core_Session::setStatus(ts('You have deleted an invoice that has been synced to your accounts system. You will need to remove it from your accounting package'));
+      }
+    }
+    catch (Exception $e) {
+      //doesn't exist - move along, nothing to see here
+    }
+  }
+}
+
 /**
  * Create account contact record or set needs_update flag
  * @param integer $contactID
