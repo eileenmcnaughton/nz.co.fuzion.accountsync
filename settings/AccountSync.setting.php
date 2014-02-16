@@ -10,7 +10,7 @@ return array(
     'is_domain' => 1,
     'is_contact' => 0,
     'description' => 'Entity updates to trigger queuing for contact creation',
-    'title' =>  'Entities to trigger contact sync',
+    'title' =>  'Entities to trigger contact Create in the Remote System',
     'help_text' => 'When these entities are created the contact will be queued for sync',
     'default' => array('Contribution'),
     'html_type' => 'advmultiselect',
