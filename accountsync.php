@@ -84,14 +84,35 @@ function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders){
   }
 }
 
+/**
+ * Implement civicrm_post hook. If an entity is created or updated check if it is an entity which
+ * we want to trigger a contact or invoice to be pushed to the account system or to trigger an update in the accounts system
+ * we write that to the accounts contact or accounts invoice table at this point
+ * @param string $op
+ * @param string $objectName
+ * @param int $objectId
+ * @param object $objectRef
+ */
 function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
+  $whitelistOps = array('update', 'create', 'restore');
+  if(!in_array($op, $whitelistOps)) {
+    return;
+  }
+
   $entities = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
   $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities['values'][CRM_Core_Config::domainID()], array());
   $updateEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts',$entities['values'][CRM_Core_Config::domainID()], array());
   $invoiceEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities['values'][CRM_Core_Config::domainID()], array());
+  $objectName = _accountsync_map_objectname_to_entity($objectName);
 
   if(in_array($objectName, array_merge($createEntities, $updateEntities))) {
-    _accountsync_create_account_contact($objectRef->contact_id, in_array($objectName, $createEntities));
+    if(isset($objectRef->contact_id)) {
+      $contactID = $objectRef->contact_id;
+    }
+    else {
+      $contactID = $objectRef->id;
+    }
+    _accountsync_create_account_contact($contactID, in_array($objectName, $createEntities));
   }
 
   if(in_array($objectName, $invoiceEntities)) {
@@ -108,6 +129,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
  * @param unknown $params
  */
 function accountsync_civicrm_pre($op, $objectName, $id, &$params ) {
+  $objectName = _accountsync_map_objectname_to_entity($objectName);
   _accountsync_handle_contact_deletion($op, $objectName, $id);
   _accountsync_handle_contribution_deletion($op, $objectName, $id);
 
@@ -120,8 +142,8 @@ function accountsync_civicrm_pre($op, $objectName, $id, &$params ) {
  * @param id
  */
 
-function _accountsync_handle_contact_deletion($op, $objectName, $id) {
-  if (($op == 'delete'|| $op == 'trash') && ($objectName == 'Individual' || $objectName = 'Organization' || $objectName == 'Household')) {
+function _accountsync_handle_contact_deletion($op, $entity, $id) {
+  if (($op == 'delete'|| $op == 'trash') && ($entity == 'Contact')) {
     try {
       $accountContact = civicrm_api3('account_contact', 'getsingle', array(
         'contact_id' => $id,
@@ -175,26 +197,48 @@ function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
 }
 
 /**
+ * Get Entity name from object name - this mostly exists because contact has several subtypes
+ * @param string $objectName
+ * @return string entity name
+ */
+function _accountsync_map_objectname_to_entity($objectName) {
+  $contactEntities = array('Contact', 'Individual', 'Organization', 'Household');
+  if(in_array($objectName, $contactEntities)) {
+    return 'Contact';
+  }
+  return $objectName;
+}
+/**
+ * Get array of enabled plugins - currently we don't have a mechanism for this & are just returning xero
+ */
+function _accountsync_get_enabled_plugins() {
+  return array('xero');
+}
+
+/**
  * Create account contact record or set needs_update flag
  * @param integer $contactID
  */
 function _accountsync_create_account_contact($contactID, $createNew) {
-  $accountContact = array('contact_id' => $contactID, 'accounts_needs_update' => 1);
-  try {
-    $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array('plugin' => 'xero', 'return' => 'id', 'contact_id' => $contactID));
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    // new contact
-    if(!$createNew) {
-      return;
+  $accountContact = array('contact_id' => $contactID);
+  foreach (_accountsync_get_enabled_plugins() as $plugin) {
+    $accountContact['plugin'] = $plugin;
+    try {
+      $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array_merge($accountContact, array('return' => 'id')));
     }
-  }
-  $accountContact['plugin'] = 'xero';
-  try {
-    civicrm_api3('account_contact', 'create', $accountContact);
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    // unknown failure
+    catch (CiviCRM_API3_Exception $e) {
+      // new contact
+      if(!$createNew) {
+        continue;
+      }
+      try {
+        $accountContact['accounts_needs_update'] = 1;
+        civicrm_api3('account_contact', 'create', $accountContact);
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        // unknown failure
+      }
+    }
   }
 }
   /**
