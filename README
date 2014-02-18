@@ -1,5 +1,5 @@
 This extension supports the CiviXero extension by doing the non Xero specific parts. It is a dependency
-although CiviCRM has no dependendy management
+although CiviCRM has no dependency management
 
 IT PROVIDES
 1) tables for storing event sync info - in particular civicrm_account_contact & civicrm_invoice_contact
@@ -11,27 +11,26 @@ IT PROVIDES
    have used the best process to build this 'invoice' entity but it's a much better starting place for accounts
    interaction. It also resolves all accounting codes with is relevant for accounts interaction
 5) api to update civicrm contributions based on related invoice status
-
-TODO
-
-2) add api for cancelling payments based on civicrm_account_invoice - ie taking those items where
+6) api for cancelling payments based on civicrm_account_invoice - ie taking those items where
 the status in accounts is cancelled & not in CiviCRM. GOTCHA - cancelling an invoice via the API doesn't
 cancel the event registraion - feature ? bug?
 
+TODO
 
-3) Think about how people will create matches for accounts data to get them in sync. Currently this
+
+1) Think more about how people will create matches for accounts data to get them in sync. Currently this
 is do-able via hooks & so far my experience has been that the approach has been quite customer specific
 and involves a good deal of manual effort. It may be beyond the scope of this extension.
 
-4) Currently there is nothing in place to update contacts from accounts package data - I think that is
+2) Currently there is nothing in place to update contacts from accounts package data - I think that is
 out of the scope of this extension
 
-5) in my previous Xero implementation overpaid invoices would be adjusted in CiviCRM. I haven't figured out
+3) in my previous Xero implementation overpaid invoices would be adjusted in CiviCRM. I haven't figured out
 how this would look in the brave new world of CiviAccounts. I'm not currently storing the amount except in the
 extension specific field. Another unhandled situation is when the total value of the contribution is edited not to
 match the total of the price set
 
-6) there is a merge hook - but it only works when one contact has an accountsync contact & the other doesn't.
+4) there is a merge hook - but it only works when one contact has an accountsync contact & the other doesn't.
 
 
 THOUGHTS on whether to enforce the contribution_id & contact_id in these tables
