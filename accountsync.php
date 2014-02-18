@@ -266,9 +266,10 @@ function _accountsync_create_account_contact($contactID, $createNew) {
   }
 
   /**
-   * Sample code from webform_civicrm.module 7.x-1.4
    * Implements hook_civicrm_merge().
-   * Update submission data to reflect new cid when contacts are merged.
+   * If the 'deleted' contact has a accounting system record synced to it and the retained one does not then the old one will be
+   * removed and the xero id will be assigned to the retained one
+   *
    */
   function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
     if (!empty($new_id) && !empty($old_id) && $type == 'sqls') {
