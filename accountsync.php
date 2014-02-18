@@ -160,9 +160,8 @@ function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
         'contribution_id' => $id,
         'plugin' => 'xero')
       );
-
       if(empty($accountInvoice['accounts_invoice_id'])) {
-        civicrm_api3('account_invoide', 'delete', array('id' => $accountInvoice['id']));
+        civicrm_api3('account_invoice', 'delete', array('id' => $accountInvoice['id']));
       }
       else {
         //here we need to create a way to void
