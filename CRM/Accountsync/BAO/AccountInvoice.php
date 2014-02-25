@@ -85,6 +85,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   */
   static function _getAdditionalParticipanLineItems(&$invoice) {
     $rowsTotal = 0;
+    if(!is_array($invoice['line_items'])) {
+      // this seems to occur when the participant record has been deleted & not the contribution record
+      $invoice['line_items'] = array();
+      return;
+    }
     foreach ($invoice['line_items'] as $line_item) {
       $rowsTotal .= $line_item['line_total'];
     }
