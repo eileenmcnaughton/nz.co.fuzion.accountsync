@@ -16,7 +16,8 @@ return array (
       'api_entity' => 'account_invoice',
       'api_action' => 'update_contribution',
       'run_frequency' => 'Always',
-      'parameters' => 'plugin=xero, accounts_status_id=1',
+      'parameters' => 'plugin=xero
+accounts_status_id=1',
     ),
   ),
   1 =>
@@ -31,7 +32,8 @@ return array (
       'api_entity' => 'account_invoice',
       'api_action' => 'update_contribution',
       'run_frequency' => 'Always',
-      'parameters' => 'plugin=xero, accounts_status_id=3',
+      'parameters' => 'plugin=xero
+       accounts_status_id=3',
     ),
   ),
 );
