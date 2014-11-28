@@ -29,6 +29,9 @@ class CRM_Accountsync_Hook {
    * @param string $entity entity - eg. 'contact'
    * @param array $data data from accounts being processing
    * @param boolean $save save? - set this to false if it should be skipped
+   * @param $params
+   *
+   * @return
    */
   static function accountPushAlterMapped($entity, &$data, &$save, &$params) {
     return CRM_Utils_Hook::singleton()->invoke(4, $entity,
