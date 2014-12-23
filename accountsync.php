@@ -94,7 +94,7 @@ function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders){
  * @param object $objectRef
  */
 function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef){
-  $whitelistOps = array('update', 'create', 'restore');
+  $whitelistOps = array('update', 'create', 'restore', 'edit');
   if(!in_array($op, $whitelistOps)) {
     return;
   }
