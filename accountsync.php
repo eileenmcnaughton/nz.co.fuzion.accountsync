@@ -254,29 +254,36 @@ function _accountsync_create_account_contact($contactID, $createNew) {
     }
   }
 }
-  /**
-   * Create account invoice record or set needs_update flag
-   * @param integer $contributionID
-   */
-  function _accountsync_create_account_invoice($contributionID, $createNew) {
-    $accountInvoice = array('contribution_id' => $contributionID, 'accounts_needs_update' => 1);
-    try {
-      $accountInvoice['id'] = civicrm_api3('account_invoice', 'getvalue', array('plugin' => 'xero', 'return' => 'id', 'contribution_id' => $contributionID));
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      // new contact
-      if(!$createNew) {
-        return;
-      }
-    }
-    $accountInvoice['plugin'] = 'xero';
-    try {
-      civicrm_api3('account_invoice', 'create', $accountInvoice);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      // unknown failure
+
+/**
+ * Create account invoice record or set needs_update flag.
+ *
+ * @param int $contributionID
+ * @param bool $createNew
+ */
+function _accountsync_create_account_invoice($contributionID, $createNew) {
+  $accountInvoice = array('contribution_id' => $contributionID, 'accounts_needs_update' => 1);
+  try {
+    $accountInvoice['id'] = civicrm_api3('account_invoice', 'getvalue', array(
+      'plugin' => 'xero',
+      'return' => 'id',
+      'contribution_id' => $contributionID,
+      ));
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    // new contact
+    if (!$createNew) {
+      return;
     }
   }
+  $accountInvoice['plugin'] = 'xero';
+  try {
+    civicrm_api3('account_invoice', 'create', $accountInvoice);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    // Unknown failure.
+  }
+}
 
   /**
    * Implements hook_civicrm_merge().
