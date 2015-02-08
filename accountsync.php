@@ -101,6 +101,7 @@ function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders) {
  */
 function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   $whitelistOps = array('update', 'create', 'restore', 'edit');
+
   if (!in_array($op, $whitelistOps)) {
     return;
   }
@@ -206,13 +207,18 @@ function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
 }
 
 /**
- * Get Entity name from object name - this mostly exists because contact has several subtypes
+ * Get Entity name from object name.
+ *
+ * This mostly exists because contact has several subtypes.
+ *
  * @param string $objectName
- * @return string entity name
+ *
+ * @return string
+ *   Entity name
  */
 function _accountsync_map_objectname_to_entity($objectName) {
   $contactEntities = array('Contact', 'Individual', 'Organization', 'Household');
-  if(in_array($objectName, $contactEntities)) {
+  if (in_array($objectName, $contactEntities)) {
     return 'Contact';
   }
   return $objectName;
@@ -229,8 +235,15 @@ function _accountsync_get_enabled_plugins() {
 /**
  * Create account contact record or set needs_update flag.
  *
+ * In this function we check whether the contact exists. If it does we set the
+ * update flag.
+ *
+ * If it doesn't then depending on the $createNew variable we will create a new
+ * contact.
+ *
  * @param int $contactID
  * @param bool $createNew
+ *   Should a new contact be created if one does not exist?
  */
 function _accountsync_create_account_contact($contactID, $createNew) {
   $accountContact = array('contact_id' => $contactID);
@@ -238,10 +251,12 @@ function _accountsync_create_account_contact($contactID, $createNew) {
     $accountContact['plugin'] = $plugin;
     try {
       $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array_merge($accountContact, array('return' => 'id')));
+      $accountContact['accounts_needs_update'] = 1;
+      civicrm_api3('account_contact', 'create', $accountContact);
     }
     catch (CiviCRM_API3_Exception $e) {
       // new contact
-      if(!$createNew) {
+      if (!$createNew) {
         continue;
       }
       try {
