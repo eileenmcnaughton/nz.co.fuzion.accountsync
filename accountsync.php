@@ -314,7 +314,7 @@ function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL,
       $accountContact = civicrm_api3('account_contact', 'getsingle', array('plugin' => 'xero', 'contact_id' => $old_id));
       civicrm_api3('account_contact', 'delete', array('contact_id' => $old_id));
       $accountContact['contact_id'] = $new_id;
-      $accountContact = civicrm_api3('account_contact', 'create', $accountContact);
+      civicrm_api3('account_contact', 'create', $accountContact);
     }
     catch (Exception $e) {
       //nothing to do here
