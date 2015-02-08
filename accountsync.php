@@ -300,24 +300,24 @@ function _accountsync_create_account_invoice($contributionID, $createNew) {
   }
 }
 
-  /**
-   * Implements hook_civicrm_merge().
-   * If the 'deleted' contact has a accounting system record synced to it and the retained one does not then the old one will be
-   * removed and the xero id will be assigned to the retained one
-   *
-   */
-  function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
-    if (!empty($new_id) && !empty($old_id) && $type == 'sqls') {
-      try {
-        //@todo - this will only move old contact ref to the new one - if both have xero accounts
-        // then it will fail
-        $accountContact = civicrm_api3('account_contact', 'getsingle', array('plugin' => 'xero', 'contact_id' => $old_id));
-        civicrm_api3('account_contact', 'delete', array('contact_id' => $old_id));
-        $accountContact['contact_id'] = $new_id;
-        $accountContact = civicrm_api3('account_contact', 'create', $accountContact);
-      }
-      catch (Exception $e) {
-        //nothing to do here
-      }
+/**
+ * Implements hook_civicrm_merge().
+ *
+ * If the 'deleted' contact has a accounting system record synced to it and the retained one does not then the old one will be
+ * removed and the xero id will be assigned to the retained one
+ */
+function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
+  if (!empty($new_id) && !empty($old_id) && $type == 'sqls') {
+    try {
+      //@todo - this will only move old contact ref to the new one - if both have xero accounts
+      // then it will fail
+      $accountContact = civicrm_api3('account_contact', 'getsingle', array('plugin' => 'xero', 'contact_id' => $old_id));
+      civicrm_api3('account_contact', 'delete', array('contact_id' => $old_id));
+      $accountContact['contact_id'] = $new_id;
+      $accountContact = civicrm_api3('account_contact', 'create', $accountContact);
+    }
+    catch (Exception $e) {
+      //nothing to do here
     }
   }
+}
