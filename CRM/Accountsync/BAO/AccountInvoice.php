@@ -23,8 +23,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   }
 
   /**
+   * Get a 'complex' invoice.
+   *
    * Only call this via the api... I made it public static because of the move away from 'real' BAO
-   * classes in preparation for doctrine but the api is the way to go
+   * classes in preparation for doctrine but the api is the way to go.
+   *
    * @param array $params
    */
   public static function getDerived($params) {
@@ -46,24 +49,24 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           )
         )
       ), $params));
-      if($contribution['api.line_item.get']['count']) {
+      if ($contribution['api.line_item.get']['count']) {
         $contribution['line_items'] = $contribution['api.line_item.get']['values'];
       }
       else {
         //we'll keep the participant record for anyone trying to do hooks
         $contribution['participant'] = $contribution['api.participant_payment.get']['values'][0]['api.participant.get']['values'][0];
         $contribution['line_items'] = $contribution['participant']['api.line_item.get']['values'];
-        //if muliple participants one line item each
+        //if multiple participants one line item each
         self::_getAdditionalParticipanLineItems($contribution);
       }
       foreach ($contribution['line_items'] as &$lineItem) {
         $lineItem['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($lineItem['financial_type_id']);
-        if(!isset($lineItem['contact_id'])) {
+        if (!isset($lineItem['contact_id'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
           // for conformity & ease downstream
           $lineItem['contact_id'] = $contribution['contact_id'];
         }
-        if(!isset($lineItem['display_name'])) {
+        if (!isset($lineItem['display_name'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
           // for conformity & ease downstream
           $lineItem['display_name'] = $contribution['display_name'];
@@ -75,12 +78,29 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     catch(Exception $e) {
       // probably shouldn't catch & let calling class catch
     }
+
+    // In 4.6 this might be more reliable as Monish did some tidy up on BAO_Search stuff.
+    // Relying on it being unique makes me nervous...
+    if (empty($contribution['payment_instrument_id'])) {
+      $paymentInstruments = civicrm_api3('contribution', 'getoptions', array('field' => 'payment_instrument_id'));
+      $contribution['payment_instrument_id'] = array_search($contribution['payment_instrument'], $paymentInstruments['values']);
+    }
+    $instrumentFinancialAccounts = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount();
+    $contribution['payment_instrument_financial_account_id'] = $instrumentFinancialAccounts[$contribution['payment_instrument_id']];
+    $contribution['payment_instrument_accounting_code'] = civicrm_api3('financial_account', 'getvalue', array(
+      'id' => $contribution['payment_instrument_financial_account_id'],
+      'return' => 'accounting_code',
+    ));
+
     return array($contribution['id'] => $contribution);
   }
 
   /**
-  * Get Line items for invoice. At this stage only secondary participants are being fetched here
+  * Get Line items for invoice.
+   *
+   * At this stage only secondary participants are being fetched here
   * @param array $invoice Invoice array being prepared for Xero
+   *
   * @return array $lineitems if there are some else null
   */
   static function _getAdditionalParticipanLineItems(&$invoice) {
