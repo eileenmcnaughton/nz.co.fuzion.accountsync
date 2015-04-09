@@ -3,14 +3,19 @@
 class CRM_Accountsync_Hook {
 
   /**
-   * This hook allows an entity retrieved from Xero to be altered prior to processing
+   * This hook allows an entity retrieved from Xero to be altered prior to processing.
+   *
    * It is somewhat like the pre hook except that
    * - it allows the save to be cancelled
    * - it deals with a single Accounts entity not a CiviCRM entity
    *
    * @param string $entity entity - eg. 'contact'
    * @param array $data data from accounts being processing
-   * @param boolean $save save? - set this to false if it should be skipped
+   * @param bool $save
+   *   Save? - set this to false if it should be skipped
+   *
+   * @return mixed
+   *   Ignored value.
    */
   static function accountPullPreSave($entity, &$data, &$save, &$params) {
     return CRM_Utils_Hook::singleton()->invoke(4, $entity,
@@ -21,17 +26,19 @@ class CRM_Accountsync_Hook {
 
 
   /**
-   * This hook allows an entity retrieved from Xero to be altered prior to processing
+   * This hook allows an entity retrieved from Xero to be altered prior to processing.
+   *
    * It is somewhat like the pre hook except that
    * - it allows the save to be cancelled
    * - it deals with a single Accounts entity not a CiviCRM entity
    *
    * @param string $entity entity - eg. 'contact'
    * @param array $data data from accounts being processing
-   * @param boolean $save save? - set this to false if it should be skipped
+   * @param bool $save save? - set this to false if it should be skipped
    * @param $params
    *
-   * @return
+   * @return mixed
+   *   Ignore value.
    */
   static function accountPushAlterMapped($entity, &$data, &$save, &$params) {
     return CRM_Utils_Hook::singleton()->invoke(4, $entity,

@@ -3,9 +3,10 @@
 class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvoice {
 
   /**
-   * Create a new AccountInvoice based on array-data
+   * Create a new AccountInvoice based on array-data.
    *
    * @param array $params key-value pairs
+   *
    * @return CRM_Accountsync_DAO_AccountInvoice|NULL
    */
   public static function create($params) {
@@ -29,6 +30,8 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    * classes in preparation for doctrine but the api is the way to go.
    *
    * @param array $params
+   *
+   * @return array
    */
   public static function getDerived($params) {
     try{
@@ -46,8 +49,8 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           'api.participant.get' => array(
             'api.line_item.get' => 1,
             'return' => 'participant_source, event_id, financial_type_id',
-          )
-        )
+          ),
+        ),
       ), $params));
       if ($contribution['api.line_item.get']['count']) {
         $contribution['line_items'] = $contribution['api.line_item.get']['values'];
@@ -96,16 +99,18 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   }
 
   /**
-  * Get Line items for invoice.
+   * Get Line items for invoice.
    *
-   * At this stage only secondary participants are being fetched here
-  * @param array $invoice Invoice array being prepared for Xero
+   * At this stage only secondary participants are being fetched here.
    *
-  * @return array $lineitems if there are some else null
-  */
-  static function _getAdditionalParticipanLineItems(&$invoice) {
+   * @param array $invoice Invoice array being prepared for Xero
+   *
+   * @return array|null
+   *   Line items if there are some else null
+   */
+  protected static function _getAdditionalParticipanLineItems(&$invoice) {
     $rowsTotal = 0;
-    if(!is_array($invoice['line_items'])) {
+    if (!is_array($invoice['line_items'])) {
       // this seems to occur when the participant record has been deleted & not the contribution record
       $invoice['line_items'] = array();
       return;
@@ -117,22 +122,26 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     if ($invoice['total_amount'] > $rowsTotal) {
       // api let us down use direct sql
       // @TODO get api to accept the below
-      //  $otherParticipants = civicrm_api('Participant','Get',array('version' =>3,'participant_registered_by_id' =>$invoice['participant_id']));
+      // $otherParticipants = civicrm_api('Participant','Get',array('version' =>3,'participant_registered_by_id' =>$invoice['participant_id']));
       $sql = "SELECT p.id, contact_id, display_name FROM civicrm_participant p
       LEFT JOIN civicrm_contact c ON c.id = p.contact_id
       WHERE registered_by_id = %1";
       $dao = CRM_Core_DAO::executeQuery($sql, array(1 => array($invoice['participant']['id'], 'Integer')));
       while ($dao->fetch()) {
-        $lineitems = civicrm_api3('line_item', 'get', array('sequential' => 1, 'entity_id' => $dao->id, 'entity_table' => 'civicrm_participant'));
-        $invoice['line_items'][] = array_merge($lineitems['values'][0], array('contact_id' => $dao->contact_id, 'display_name' => $dao->display_name));
+        $lineItems = civicrm_api3('line_item', 'get', array(
+          'sequential' => 1,
+          'entity_id' => $dao->id,
+          'entity_table' => 'civicrm_participant',
+        ));
+        $invoice['line_items'][] = array_merge($lineItems['values'][0], array('contact_id' => $dao->contact_id, 'display_name' => $dao->display_name));
       }
     }
   }
 
   /**
-   * Update contributions in civicrm based on their status in Xero
+   * Update contributions in civicrm based on their status in Xero.
    */
-  static function completeContributionFromAccountsStatus($params) {
+  protected static function completeContributionFromAccountsStatus() {
     $sql = "
       SELECT contribution_id
       FROM civicrm_account_invoice cas
@@ -147,11 +156,12 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   }
 
   /**
-   * Cancel contribution in Civi based on Xero Status
+   * Cancel contribution in Civi based on Xero Status.
+   *
    * @todo - I don't believe this will adequately cancel related entities
    */
-  static function cancelContributionFromAccountsStatus($params) {
-     //get pending registrations
+  protected static function cancelContributionFromAccountsStatus($params) {
+    //get pending registrations
     $sql = "SELECT  cas.contribution_id
       FROM civicrm_account_invoice cas
       LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
@@ -166,4 +176,5 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       civicrm_api3('Contribution','Create',$params) ;
     }
   }
+
 }
