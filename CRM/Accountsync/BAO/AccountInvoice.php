@@ -62,8 +62,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
         //if multiple participants one line item each
         self::_getAdditionalParticipanLineItems($contribution);
       }
+
       foreach ($contribution['line_items'] as &$lineItem) {
         $lineItem['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($lineItem['financial_type_id']);
+        $lineItem['accounts_contact_id'] = self::getAccountsContact($lineItem['financial_type_id']);
+        $contributionAccountsContactIDs[$lineItem['accounts_contact_id']] = TRUE;
         if (!isset($lineItem['contact_id'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
           // for conformity & ease downstream
@@ -77,6 +80,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       }
       //@todo move the getAccountingCode to a fn that caches it
       $contribution['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($contribution['financial_type_id']);
+      $contribution['accounts_contact_id'] = array_keys($contributionAccountsContactIDs);
     }
     catch(Exception $e) {
       // probably shouldn't catch & let calling class catch
@@ -173,8 +177,29 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     while ($dao->fetch()) {
       $params['contribution_status_id'] = 3;
       $params['id'] = $dao->contribution_id;
-      civicrm_api3('Contribution','Create',$params) ;
+      civicrm_api3('Contribution', 'Create', $params);
     }
+  }
+
+  /**
+   * Get the financial_contact from the financial type id.
+   *
+   * @param int $financialTypeID
+   *
+   * @return mixed
+   */
+  protected static function getAccountsContact($financialTypeID) {
+    static $contacts = array();
+    if (!in_array($financialTypeID, $contacts)) {
+      $accountingCode = tapestrymultiaccounts_get_civicrm_account_code($financialTypeID);
+      $contacts[$financialTypeID] = CRM_Core_DAO::singleValueQuery(
+        "SELECT contact_id FROM civicrm_financial_account
+         WHERE accounting_code = %1
+        ",
+        array(1 => array($accountingCode, 'String'))
+      );
+    }
+    return $contacts[$financialTypeID];
   }
 
 }
