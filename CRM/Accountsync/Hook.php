@@ -17,11 +17,22 @@ class CRM_Accountsync_Hook {
    * @return mixed
    *   Ignored value.
    */
-  static function accountPullPreSave($entity, &$data, &$save, &$params) {
-    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
-      $data, $save, $params, CRM_Core_DAO::$_nullObject,
-      'civicrm_accountPullPreSave'
-    );
+  public static function accountPullPreSave($entity, &$data, &$save, &$params) {
+    $codeVersion = explode('.', CRM_Utils_System::version());
+    // if db.ver < code.ver, time to upgrade
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) >= 0) {
+      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+        $data, $save, $params, CRM_Core_DAO::$_nullObject,
+        'civicrm_accountPullPreSave'
+      );
+    }
+    else {
+      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+        $data, $save, $params, CRM_Core_DAO::$_nullObject,
+        CRM_Core_DAO::$_nullObject,
+        'civicrm_accountPullPreSave'
+      );
+    }
   }
 
 
@@ -40,10 +51,20 @@ class CRM_Accountsync_Hook {
    * @return mixed
    *   Ignore value.
    */
-  static function accountPushAlterMapped($entity, &$data, &$save, &$params) {
-    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
-      $data, $save, $params, CRM_Core_DAO::$_nullObject,
-      'civicrm_accountPushAlterMapped'
-    );
+  public static function accountPushAlterMapped($entity, &$data, &$save, &$params) {
+    $codeVersion = explode('.', CRM_Utils_System::version());
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
+      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+        $data, $save, $params, CRM_Core_DAO::$_nullObject,
+        CRM_Core_DAO::$_nullObject,
+        'civicrm_accountPushAlterMapped'
+      );
+    }
+    else {
+      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+        $data, $save, $params, CRM_Core_DAO::$_nullObject,
+        'civicrm_accountPushAlterMapped'
+      );
+    }
   }
 }
