@@ -11,46 +11,44 @@ function accountsync_civicrm_config(&$config) {
 
 /**
  * Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
  */
 function accountsync_civicrm_xmlMenu(&$files) {
   _accountsync_civix_civicrm_xmlMenu($files);
 }
 
 /**
- * Implementation of hook_civicrm_install
+ * Implements hook_civicrm_install().
  */
 function accountsync_civicrm_install() {
   return _accountsync_civix_civicrm_install();
 }
 
 /**
- * Implementation of hook_civicrm_uninstall
+ * Implements hook_civicrm_uninstall().
  */
 function accountsync_civicrm_uninstall() {
   return _accountsync_civix_civicrm_uninstall();
 }
 
 /**
- * Implementation of hook_civicrm_enable
+ * Implements hook_civicrm_enable().
  */
 function accountsync_civicrm_enable() {
   return _accountsync_civix_civicrm_enable();
 }
 
 /**
- * Implementation of hook_civicrm_disable
+ * Implements hook_civicrm_disable().
  */
 function accountsync_civicrm_disable() {
   return _accountsync_civix_civicrm_disable();
 }
 
 /**
- * Implementats hook_civicrm_upgrade().
+ * Implements hook_civicrm_upgrade().
  *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ * @param string $op The type of operation being performed; 'check' or 'enqueue'
+ * @param CRM_Queue_Queue $queue for 'enqueue') the modifiable list of pending up upgrade tasks
  *
  * @return mixed
  *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
@@ -61,7 +59,7 @@ function accountsync_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
 }
 
 /**
- * Implementation of hook_civicrm_managed
+ * Implements hook_civicrm_managed().
  *
  * Generate a list of entities to create/deactivate/delete when this module
  * is installed, disabled, uninstalled.
@@ -110,7 +108,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities['values'][CRM_Core_Config::domainID()], array());
   $updateEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities['values'][CRM_Core_Config::domainID()], array());
   $invoiceEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities['values'][CRM_Core_Config::domainID()], array());
-  $objectName = _accountsync_map_objectname_to_entity($objectName);
+  $objectName = _accountsync_map_object_name_to_entity($objectName);
 
   if (in_array($objectName, array_merge($createEntities, $updateEntities))) {
     if (isset($objectRef->contact_id)) {
@@ -131,13 +129,13 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 /**
  * Implements hook_civicrm_pre().
  *
- * @param unknown $op
+ * @param string $op
  * @param string $objectName
- * @param unknown $id
+ * @param int $id
  * @param array $params
  */
 function accountsync_civicrm_pre($op, $objectName, $id, &$params) {
-  $objectName = _accountsync_map_objectname_to_entity($objectName);
+  $objectName = _accountsync_map_object_name_to_entity($objectName);
   _accountsync_handle_contact_deletion($op, $objectName, $id);
   _accountsync_handle_contribution_deletion($op, $objectName, $id);
 
@@ -150,7 +148,6 @@ function accountsync_civicrm_pre($op, $objectName, $id, &$params) {
  * @param string $entity
  * @param int $id
  */
-
 function _accountsync_handle_contact_deletion($op, $entity, $id) {
   if (($op == 'delete'|| $op == 'trash') && ($entity == 'Contact')) {
     try {
@@ -184,7 +181,6 @@ function _accountsync_handle_contact_deletion($op, $entity, $id) {
  * @param string $objectName
  * @param int $id
  */
-
 function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
   if (($op == 'delete') && ($objectName == 'Contribution')) {
     try {
@@ -216,7 +212,7 @@ function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
  * @return string
  *   Entity name
  */
-function _accountsync_map_objectname_to_entity($objectName) {
+function _accountsync_map_object_name_to_entity($objectName) {
   $contactEntities = array('Contact', 'Individual', 'Organization', 'Household');
   if (in_array($objectName, $contactEntities)) {
     return 'Contact';
@@ -305,6 +301,12 @@ function _accountsync_create_account_invoice($contributionID, $createNew) {
  *
  * If the 'deleted' contact has a accounting system record synced to it and the retained one does not then the old one will be
  * removed and the xero id will be assigned to the retained one
+ *
+ * @param string $type
+ * @param array $data
+ * @param null $new_id
+ * @param null $old_id
+ * @param null $tables
  */
 function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
   if (!empty($new_id) && !empty($old_id) && $type == 'sqls') {
