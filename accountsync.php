@@ -499,6 +499,7 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
       'plugin' => 'xero',
       'return' => 'id',
       'contribution_id' => $contributionID,
+      'connector_id' => $connector_id,
       ));
   }
   catch (CiviCRM_API3_Exception $e) {
