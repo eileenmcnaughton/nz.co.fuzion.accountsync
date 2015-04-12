@@ -91,6 +91,13 @@
   </field>
 
   <field>
+    <name>connector_id</name>
+    <type>int unsigned</type>
+    <comment>Use if more than one connector of the same type is required with the connector extension</comment>
+    <add>4.4</add>
+  </field>
+
+  <field>
     <name>plugin</name>
     <title>Account Plugin</title>
     <type>varchar</type>

@@ -238,6 +238,10 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
           'title' => ts('Accounts Needs Update') ,
           'default' => '1',
         ) ,
+        'connector_id' => array(
+          'name' => 'connector_id',
+          'type' => CRM_Utils_Type::T_INT,
+        ),
         'plugin' => array(
           'name' => 'plugin',
           'type' => CRM_Utils_Type::T_STRING,
@@ -268,6 +272,7 @@ class CRM_Accountsync_DAO_AccountInvoice extends CRM_Core_DAO
         'accounts_modified_date' => 'accounts_modified_date',
         'accounts_data' => 'accounts_data',
         'error_data' => 'error_data',
+        'connector_id' => 'connector_id',
         'accounts_needs_update' => 'accounts_needs_update',
         'plugin' => 'plugin',
       );

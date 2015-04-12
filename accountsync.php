@@ -104,26 +104,234 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     return;
   }
 
-  $entities = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities['values'][CRM_Core_Config::domainID()], array());
-  $updateEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities['values'][CRM_Core_Config::domainID()], array());
-  $invoiceEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities['values'][CRM_Core_Config::domainID()], array());
+  $connectors = _accountsync_get_connectors();
   $objectName = _accountsync_map_object_name_to_entity($objectName);
 
-  if (in_array($objectName, array_merge($createEntities, $updateEntities))) {
-    if (isset($objectRef->contact_id)) {
-      $contactID = $objectRef->contact_id;
+  foreach ($connectors as $connector_id) {
+    $createEntities = _accountsync_get_contact_create_entities($connector_id);
+    $updateEntities = _accountsync_get_contact_update_entities($connector_id);
+    $invoiceEntities = _accountsync_get_invoice_create_entities($connector_id);
+    if ($objectName == 'LineItem') {
+      // If only some financial types apply to this connector and the line
+      // item does not have one of them then skip to the next connector.
+      $financial_type_id = is_array($objectRef) ? $objectRef['financial_type_id'] : $objectRef->financial_type_id;
+      if (!_accountsync_validate_for_connector($connector_id, $financial_type_id)) {
+        continue;
+      }
     }
-    else {
-      $contactID = $objectRef->id;
+
+    if (in_array($objectName, array_merge($createEntities, $updateEntities))) {
+      if (isset($objectRef->contact_id)) {
+        $contactID = $objectRef->contact_id;
+      }
+      elseif ($objectName == 'LineItem') {
+        // See https://issues.civicrm.org/jira/browse/CRM-16268.
+        $contribution_id = (is_array($objectRef)) ? $objectRef['contribution_id'] : $objectRef->contribution_id;
+        $contactID = civicrm_api3('Contribution', 'getvalue', array(
+          'id' => $contribution_id,
+          'return' => 'contact_id',
+        ));
+      }
+      else {
+        $contactID = $objectRef->id;
+      }
+      _accountsync_create_account_contact($contactID, in_array($objectName, $createEntities), $connector_id);
     }
-    _accountsync_create_account_contact($contactID, in_array($objectName, $createEntities));
+
+    if (in_array($objectName, $invoiceEntities)) {
+      $contribution_id = ($objectName == 'LineItem') ? (is_array($objectRef) ? $objectRef['contribution_id'] : $objectRef->contribution_id) : $objectRef->id;
+      // we won't do updates as the invoices get 'locked' in the accounts system
+      _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+    }
   }
 
-  if (in_array($objectName, $invoiceEntities)) {
-    // we won't do updates as the invoices get 'locked' in the accounts system
-    _accountsync_create_account_invoice($objectRef->id, TRUE);
+}
+
+/**
+ * Get connectors configured on this site.
+ *
+ * If you have the nz.co.fuzion.connectors extension enabled and connectors available
+ * through it then these will be used. Otherwise the settings table is used.
+ *
+ * @return array
+ *   Array of ids from civicrm_connectors or 0 for settings only.
+ */
+function _accountsync_get_connectors() {
+  $connectors = array();
+  if (empty($connectors)) {
+    try {
+      $result = civicrm_api3('connector_type', 'get', array(
+        'module' => 'accountsync',
+        'function' => 'credentials',
+        'api.connector.get' => 1,
+      ));
+
+      if (!$result['count']) {
+        throw new Exception('No connector types found. Fallback to settings');
+      }
+      foreach ($result['values'] as $id => $connector_type) {
+        $connectorResults = $connector_type['api.connector.get'];
+        if (!empty($connectorResults['count'])) {
+          foreach ($connectorResults['values'] as $connectorResult) {
+            $connectors[] = $connectorResult['id'];
+          }
+        }
+      }
+      if (empty($connectors)) {
+        throw new Exception('No connectors found. Fallback to settings');
+      }
+
+    }
+    catch (Exception $e) {
+      $connectors = array(0);
+    }
   }
+  return $connectors;
+}
+
+/**
+ * Check if entity is valid for this connector.
+ *
+ * If we are dealing with a Contribution AND the connector has a contact_id
+ * then we will check that the line items in the invoice related to this contact ID.
+ *
+ * @param int $connector_id
+ * @param int $financial_type_id
+ *
+ * @return bool
+ */
+function _accountsync_validate_for_connector($connector_id, $financial_type_id) {
+  if ($connector_id == 0) {
+    return TRUE;
+  }
+  $accounts_contact_id = _accountsync_get_account_contact_id($connector_id);
+  static $connector_financial_types = array();
+  if (!in_array($financial_type_id, $connector_financial_types)) {
+    $connector_financial_types[$financial_type_id] = CRM_Accountsync_BAO_AccountInvoice::getAccountsContact($financial_type_id);
+  }
+  if ($accounts_contact_id == CRM_Utils_Array::value($financial_type_id, $connector_financial_types)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+
+}
+
+/**
+ * Get the entities whose change should trigger a contact creation in the accounts package.
+ *
+ * @param int $connector_id
+ *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
+ *
+ * @return array
+ *   Entities that result in a contact being created when the are edited or created.
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function _accountsync_get_contact_create_entities($connector_id) {
+  $entities = _accountsync_get_entity_action_settings($connector_id);
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities, array());
+  return $createEntities;
+}
+
+/**
+ * Get the entities whose change should trigger a contact update in the accounts package.
+ *
+ * @param int $connector_id
+ *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
+ *
+ * @return array
+ *   Entities that result in a contact being created when the are edited or created.
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function _accountsync_get_contact_update_entities($connector_id) {
+  $entities = _accountsync_get_entity_action_settings($connector_id);
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities, array());
+  return $createEntities;
+}
+
+/**
+ * Get the entities whose change should trigger an invoice creation in the accounts package.
+ *
+ * @param int $connector_id
+ *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
+ *
+ * @return array
+ *   Entities that result in an invoice being created when the are edited or created.
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function _accountsync_get_invoice_create_entities($connector_id) {
+  $entities = _accountsync_get_entity_action_settings($connector_id);
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities, array());
+  return $createEntities;
+}
+
+/**
+ * Get the account contact id for the connector, if relevant.
+ *
+ * @param int $connector_id
+ *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
+ *
+ * @return array
+ *   Entities that result in a contact being created when the are edited or created.
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function _accountsync_get_account_contact_id($connector_id) {
+  $entities = _accountsync_get_entity_action_settings($connector_id);
+  return CRM_Utils_Array::value('account_sync_account_contact_id', $entities, array());
+}
+
+/**
+ * Get the settings for which actions trigger accounts updates.
+ *
+ * In theory we can store this on the connector but at this stage we are
+ * just using the general settings on a per-connector basis.
+ *
+ * @param int $connector_id
+ *
+ * @return array
+ * @throws \CiviCRM_API3_Exception
+ */
+function _accountsync_get_entity_action_settings($connector_id) {
+  static $entities = array();
+  if (empty($entities[$connector_id])) {
+    $result = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
+    $entities[$connector_id] = $result['values'][CRM_Core_Config::domainID()];
+    if (!empty($connector_id)) {
+      try {
+        // If we have an account contact then we should refer to line items
+        // rather than contributions to figure out whether each line item relates
+        // to the connector in question.
+        // We can't rely on the financial type of the contribution
+        // and, indeed, we provide for the possibility line items may
+        // be related to account for more than one contact.
+        // If we start storing this setting on the connector we can avoid looking
+        // for it here.
+        $connector_account_id = civicrm_api3('connector', 'getvalue', array(
+          'id' => $connector_id,
+          'return' => 'contact_id',
+        ));
+        if (!empty($connector_account_id)) {
+          foreach (array('account_sync_queue_contacts', 'account_sync_queue_create_invoice') as $key) {
+            foreach ($entities[$connector_id][$key] as $index => $entity) {
+              if ($entity == 'Contribution') {
+                $entities[$connector_id][$key][$index] = 'LineItem';
+              }
+            }
+          }
+          $entities[$connector_id]['account_sync_account_contact_id'] = $connector_account_id;
+        }
+      }
+      catch (Exception $e) {
+        // No change/
+      }
+    }
+  }
+  return $entities[$connector_id];
 }
 
 /**
@@ -240,11 +448,17 @@ function _accountsync_get_enabled_plugins() {
  * @param int $contactID
  * @param bool $createNew
  *   Should a new contact be created if one does not exist?
+ * @param int $connector_id
+ *   ID of connector for civicrm_connector if nz.co.fuzion.connectors enabled.
+ *   Otherwise this will be 0.
  */
-function _accountsync_create_account_contact($contactID, $createNew) {
+function _accountsync_create_account_contact($contactID, $createNew, $connector_id) {
   $accountContact = array('contact_id' => $contactID);
   foreach (_accountsync_get_enabled_plugins() as $plugin) {
     $accountContact['plugin'] = $plugin;
+    if ($connector_id) {
+      $accountContact['connector_id'] = $connector_id;
+    }
     try {
       $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array_merge($accountContact, array('return' => 'id')));
       $accountContact['accounts_needs_update'] = 1;
@@ -271,9 +485,15 @@ function _accountsync_create_account_contact($contactID, $createNew) {
  *
  * @param int $contributionID
  * @param bool $createNew
+ * @param int $connector_id
+ *   ID of connector for civicrm_connector if nz.co.fuzion.connectors enabled.
+ *   Otherwise this will be 0.
  */
-function _accountsync_create_account_invoice($contributionID, $createNew) {
+function _accountsync_create_account_invoice($contributionID, $createNew, $connector_id) {
   $accountInvoice = array('contribution_id' => $contributionID, 'accounts_needs_update' => 1);
+  if ($connector_id) {
+    $accountInvoice['connector_id'] = $connector_id;
+  }
   try {
     $accountInvoice['id'] = civicrm_api3('account_invoice', 'getvalue', array(
       'plugin' => 'xero',

@@ -188,7 +188,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    *
    * @return mixed
    */
-  protected static function getAccountsContact($financialTypeID) {
+  public static function getAccountsContact($financialTypeID) {
     static $contacts = array();
     if (!in_array($financialTypeID, $contacts)) {
       $accountingCode = tapestrymultiaccounts_get_civicrm_account_code($financialTypeID);

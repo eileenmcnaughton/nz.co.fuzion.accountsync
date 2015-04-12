@@ -7,7 +7,9 @@
  */
 function _accountsync_civix_civicrm_config(&$config = NULL) {
   static $configured = FALSE;
-  if ($configured) return;
+  if ($configured) {
+    return;
+  }
   $configured = TRUE;
 
   $template =& CRM_Core_Smarty::singleton();
@@ -22,13 +24,13 @@ function _accountsync_civix_civicrm_config(&$config = NULL) {
   }
 
   $include_path = $extRoot . PATH_SEPARATOR . get_include_path( );
-  set_include_path( $include_path );
+  set_include_path($include_path);
 }
 
 /**
- * (Delegated) Implementation of hook_civicrm_xmlMenu
+ * Implements hook_civicrm_xmlMenu().
  *
- * @param $files array(string)
+ * @param array $files (string)
  */
 function _accountsync_civix_civicrm_xmlMenu(&$files) {
   foreach (_accountsync_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
@@ -37,7 +39,7 @@ function _accountsync_civix_civicrm_xmlMenu(&$files) {
 }
 
 /**
- * Implementation of hook_civicrm_install
+ * Implements hook_civicrm_install().
  */
 function _accountsync_civix_civicrm_install() {
   _accountsync_civix_civicrm_config();
@@ -47,7 +49,7 @@ function _accountsync_civix_civicrm_install() {
 }
 
 /**
- * Implementation of hook_civicrm_uninstall
+ * Implements hook_civicrm_uninstall().
  */
 function _accountsync_civix_civicrm_uninstall() {
   _accountsync_civix_civicrm_config();
@@ -178,10 +180,12 @@ function _accountsync_civix_glob($pattern) {
 /**
  * Inserts a navigation menu item at a given place in the hierarchy
  *
- * $menu - menu hierarchy
- * $path - path where insertion should happen (ie. Administer/System Settings)
- * $item - menu you need to insert (parent/child attributes will be filled for you)
- * $parentId - used internally to recurse in the menu structure
+ * @param $menu - menu hierarchy
+ * @param $path - path where insertion should happen (ie. Administer/System Settings)
+ * @param $item - menu you need to insert (parent/child attributes will be filled for you)
+ * @param $parentId - used internally to recurse in the menu structure
+ *
+ * @return bool
  */
 function _accountsync_civix_insert_navigation_menu(&$menu, $path, $item, $parentId = NULL) {
   static $navId;

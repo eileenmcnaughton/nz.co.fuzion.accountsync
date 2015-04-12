@@ -187,7 +187,7 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
         'id' => array(
           'name' => 'id',
           'type' => CRM_Utils_Type::T_INT,
-          'required' => true,
+          'required' => TRUE,
         ) ,
         'contact_id' => array(
           'name' => 'contact_id',
@@ -209,13 +209,15 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
         ) ,
         'last_sync_date' => array(
           'name' => 'last_sync_date',
-          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'type' => CRM_Utils_Type::T_DATE,
           'title' => ts('Last Sync Date') ,
           'default' => 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
         ) ,
         'accounts_modified_date' => array(
           'name' => 'accounts_modified_date',
-          'type' => CRM_Utils_Type::T_DATE, // we are trying to fool the DAO here as it has funny ideas about timestamps
+          // we are trying to fool the DAO here as it has funny ideas about timestamps
+          'type' => CRM_Utils_Type::T_DATE,
           'title' => ts('Accounts Modified Date') ,
         ) ,
         'accounts_data' => array(
@@ -234,6 +236,10 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
           'title' => ts('Accounts Needs Update') ,
           'default' => '1',
         ) ,
+        'connector_id' => array(
+          'name' => 'connector_id',
+          'type' => CRM_Utils_Type::T_INT,
+        ),
         'plugin' => array(
           'name' => 'plugin',
           'type' => CRM_Utils_Type::T_STRING,
@@ -265,6 +271,7 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
         'accounts_data' => 'accounts_data',
         'error_data' => 'error_data',
         'accounts_needs_update' => 'accounts_needs_update',
+        'connector_id' => 'connector_id',
         'plugin' => 'plugin',
       );
     }
@@ -315,6 +322,7 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
     }
     return self::$_import;
   }
+
   /**
    * returns the list of fields that can be exported
    *

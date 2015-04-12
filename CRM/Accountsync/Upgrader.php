@@ -41,14 +41,28 @@ class CRM_Accountsync_Upgrader extends CRM_Accountsync_Upgrader_Base {
    *
    * @return TRUE on success
    * @throws Exception
-   *
-  public function upgrade_4200() {
-    $this->ctx->log->info('Applying update 4200');
-    CRM_Core_DAO::executeQuery('UPDATE foo SET bar = "whiz"');
-    CRM_Core_DAO::executeQuery('DELETE FROM bang WHERE willy = wonka(2)');
-    return TRUE;
-  } // */
+   */
+  public function upgrade_1000() {
+    $this->ctx->log->info('Applying update 1000');
+    CRM_Core_DAO::executeQuery("
+ALTER TABLE `civicrm_account_contact`
+  ADD COLUMN `connector_id` INT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type' AFTER `accounts_needs_update`,
+  DROP INDEX `account_system_id`,
+  ADD UNIQUE INDEX `account_system_id` (`accounts_contact_id`, `connector_id`, `plugin`),
+  DROP INDEX `contact_id_plugin`,
+  ADD UNIQUE INDEX `contact_id_plugin` (`contact_id`, `connector_id`, `plugin`);
+");
 
+    CRM_Core_DAO::executeQuery("
+  ALTER TABLE `civicrm_account_invoice`
+  ADD COLUMN `connector_id` INT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type' AFTER `accounts_needs_update`,
+  DROP INDEX `account_system_id`,
+  ADD UNIQUE INDEX `account_system_id` (`accounts_invoice_id`, `connector_id`, `plugin`),
+  DROP INDEX `invoice_id_plugin`,
+  ADD UNIQUE INDEX `invoice_id_plugin` (`contribution_id`, `connector_id`, `plugin`)
+    ");
+    return TRUE;
+  }
 
   /**
    * Example: Run an external SQL script
