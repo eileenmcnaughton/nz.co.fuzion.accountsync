@@ -20,16 +20,16 @@ class CRM_Accountsync_Hook {
   public static function accountPullPreSave($entity, &$data, &$save, &$params) {
     $codeVersion = explode('.', CRM_Utils_System::version());
     // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.4) >= 0) {
+    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
       return CRM_Utils_Hook::singleton()->invoke(4, $entity,
         $data, $save, $params, CRM_Core_DAO::$_nullObject,
+        CRM_Core_DAO::$_nullObject,
         'civicrm_accountPullPreSave'
       );
     }
     else {
       return CRM_Utils_Hook::singleton()->invoke(4, $entity,
         $data, $save, $params, CRM_Core_DAO::$_nullObject,
-        CRM_Core_DAO::$_nullObject,
         'civicrm_accountPullPreSave'
       );
     }
