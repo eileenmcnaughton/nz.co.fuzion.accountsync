@@ -456,9 +456,7 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
   $accountContact = array('contact_id' => $contactID);
   foreach (_accountsync_get_enabled_plugins() as $plugin) {
     $accountContact['plugin'] = $plugin;
-    if ($connector_id) {
-      $accountContact['connector_id'] = $connector_id;
-    }
+    $accountContact['connector_id'] = $connector_id;
     try {
       $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array_merge($accountContact, array('return' => 'id')));
       $accountContact['accounts_needs_update'] = 1;
