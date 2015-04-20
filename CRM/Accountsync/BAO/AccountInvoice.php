@@ -203,3 +203,17 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   }
 
 }
+
+/**
+ * Get the accounting code from the financial type id.
+ *
+ * @param int $financialTypeID
+ * @return mixed
+ */
+function tapestrymultiaccounts_get_civicrm_account_code($financialTypeID) {
+  static $codes = array();
+  if (!in_array($financialTypeID, $codes)) {
+    $codes[$financialTypeID] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($financialTypeID);
+  }
+  return $codes[$financialTypeID];
+}
