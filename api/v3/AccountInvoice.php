@@ -189,7 +189,7 @@ function _civicrm_api3_account_invoice_update_contribution(&$spec) {
  * @return array
  *   API result descriptor
  *
- * @throws API_Exception
+ * @throws \Exception
  */
 function civicrm_api3_account_invoice_update_contribution($params) {
   if ($params['accounts_status_id'] == 1) {
