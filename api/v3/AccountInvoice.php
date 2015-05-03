@@ -114,6 +114,15 @@ function civicrm_api3_account_invoice_getfields($params) {
         'size' => 20
       ),
 
+      'connector_id' => array (
+        'name' => 'connector_id',
+        'type' => 2,
+        'maxlength' => 128,
+        'size' => 20,
+        'title' => 'ID of connector or 0 for site wide',
+        'api.default' => 0,
+      ),
+
       'last_sync_date' => array(
         'name' => 'last_sync_date',
         'type' => 256,
