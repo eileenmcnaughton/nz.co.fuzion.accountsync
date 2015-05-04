@@ -145,7 +145,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   /**
    * Update contributions in civicrm based on their status in Xero.
    */
-  static function completeContributionFromAccountsStatus() {
+  public static function completeContributionFromAccountsStatus() {
     $sql = "
       SELECT contribution_id
       FROM civicrm_account_invoice cas
@@ -164,7 +164,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    *
    * @todo - I don't believe this will adequately cancel related entities
    */
-  static function cancelContributionFromAccountsStatus($params) {
+  public static function cancelContributionFromAccountsStatus($params) {
     //get pending registrations
     $sql = "SELECT  cas.contribution_id
       FROM civicrm_account_invoice cas
