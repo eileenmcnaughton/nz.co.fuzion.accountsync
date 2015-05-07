@@ -533,8 +533,6 @@ function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL,
       //@todo - this will only move old contact ref to the new one - if both have xero accounts
       // then it will fail
       $accountContact = civicrm_api3('account_contact', 'getsingle', array('plugin' => 'xero', 'contact_id' => $old_id));
-//      civicrm_api3('account_contact', 'delete', $accountContact);
-//      unset($accountContact['id']);
       $accountContact['contact_id'] = $new_id;
       civicrm_api3('account_contact', 'create', $accountContact);
     }
