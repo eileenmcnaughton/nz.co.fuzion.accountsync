@@ -344,9 +344,8 @@ function _accountsync_get_entity_action_settings($connector_id) {
  */
 function accountsync_civicrm_pre($op, $objectName, $id, &$params) {
   $objectName = _accountsync_map_object_name_to_entity($objectName);
-  _accountsync_handle_contact_deletion($op, $objectName, $id);
-  _accountsync_handle_contribution_deletion($op, $objectName, $id);
-
+  _accountsync_handle_contact_deletion($op, $objectName, $id, $params);
+  _accountsync_handle_contribution_deletion($op, $objectName, $id, $params);
 }
 
 /**
@@ -355,9 +354,10 @@ function accountsync_civicrm_pre($op, $objectName, $id, &$params) {
  * @param string $op
  * @param string $entity
  * @param int $id
+ * @param array $params
  */
-function _accountsync_handle_contact_deletion($op, $entity, $id) {
-  if (($op == 'delete'|| $op == 'trash') && ($entity == 'Contact')) {
+function _accountsync_handle_contact_deletion($op, $entity, $id, &$params) {
+  if (($op == 'delete' || $op == 'trash' || ($op == 'update' && !empty($params['is_deleted']))) && ($entity == 'Contact')) {
     try {
       $accountContact = civicrm_api3('account_contact', 'getsingle', array(
         'contact_id' => $id,
@@ -367,7 +367,7 @@ function _accountsync_handle_contact_deletion($op, $entity, $id) {
       if (empty($accountContact['accounts_contact_id'])) {
         civicrm_api3('account_contact', 'delete', array('id' => $accountContact['id']));
       }
-      elseif ($op == 'trash') {
+      elseif ($op == 'trash' || $op == 'update') {
         CRM_Core_Session::setStatus(ts('You are deleting a contact that has been synced to your accounts system. It is recommended you restore the contact & fix this'));
       }
       else {
@@ -388,8 +388,9 @@ function _accountsync_handle_contact_deletion($op, $entity, $id) {
  * @param string $op
  * @param string $objectName
  * @param int $id
+ * @param array $params
  */
-function _accountsync_handle_contribution_deletion($op, $objectName, $id) {
+function _accountsync_handle_contribution_deletion($op, $objectName, $id, &$params) {
   if (($op == 'delete') && ($objectName == 'Contribution')) {
     try {
       $accountInvoice = civicrm_api3('account_invoice', 'getsingle', array(
