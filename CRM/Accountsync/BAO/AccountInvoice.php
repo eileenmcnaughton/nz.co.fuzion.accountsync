@@ -43,7 +43,6 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       // as in theory any params could be passed in - resulting in many - there are some api
       // issues around getfields to resolve though - see notes on api
       $contribution = civicrm_api3('contribution', 'getsingle', array_merge(array(
-        'api.line_item.get' => 1,
         'api.participant_payment.get' => array(
           'return' => 'api.participant., participant_id',
           'api.participant.get' => array(
@@ -52,6 +51,12 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           ),
         ),
       ), $params));
+      // There is a chaining bug on line item because chaining passes contribution_id along as entity_id.
+      // CRM-16522.
+      $contribution['api.line_item.get'] = civicrm_api3('line_item', 'get', array(
+        'contribution_id' => $contribution['id'],
+      ));
+
       if ($contribution['api.line_item.get']['count']) {
         $contribution['line_items'] = $contribution['api.line_item.get']['values'];
       }
@@ -92,6 +97,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       $paymentInstruments = civicrm_api3('contribution', 'getoptions', array('field' => 'payment_instrument_id'));
       $contribution['payment_instrument_id'] = array_search($contribution['payment_instrument'], $paymentInstruments['values']);
     }
+
     $instrumentFinancialAccounts = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount();
     $contribution['payment_instrument_financial_account_id'] = $instrumentFinancialAccounts[$contribution['payment_instrument_id']];
     try {
