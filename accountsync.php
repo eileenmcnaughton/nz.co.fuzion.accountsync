@@ -124,18 +124,32 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (isset($objectRef->contact_id)) {
         $contactID = $objectRef->contact_id;
       }
-      elseif ($objectName == 'LineItem') {
-        // See https://issues.civicrm.org/jira/browse/CRM-16268.
-        $contribution_id = (is_array($objectRef)) ? $objectRef['contribution_id'] : $objectRef->contribution_id;
-        $contactID = civicrm_api3('Contribution', 'getvalue', array(
-          'id' => $contribution_id,
-          'return' => 'contact_id',
-        ));
-      }
       else {
-        $contactID = $objectRef->id;
+        switch ($objectName) {
+          case 'LineItem':
+            // See https://issues.civicrm.org/jira/browse/CRM-16268.
+            $contribution_id = (is_array($objectRef)) ? $objectRef['contribution_id'] : $objectRef->contribution_id;
+            $contactID = civicrm_api3('Contribution', 'getvalue', array(
+                'id' => $contribution_id,
+                'return' => 'contact_id',
+            ));
+            break;
+          case 'Contribution':
+            $contribution_id = $objectRef->id;
+            $contactID = civicrm_api3('Contribution', 'getvalue', array(
+                'id' => $contribution_id,
+                'return' => 'contact_id',
+            ));
+            break;
+          case 'Contact':
+            $contactID = $objectRef->id;
+            break;
+        }
       }
-      _accountsync_create_account_contact($contactID, in_array($objectName, $createEntities), $connector_id);
+
+      if (isset($contactID)) {
+        _accountsync_create_account_contact($contactID, in_array($objectName, $createEntities), $connector_id);
+      }
     }
 
     if (in_array($objectName, $invoiceEntities)) {
