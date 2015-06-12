@@ -202,7 +202,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   public static function getAccountsContact($financialTypeID) {
     static $contacts = array();
     if (!in_array($financialTypeID, $contacts)) {
-      $accountingCode = tapestrymultiaccounts_get_civicrm_account_code($financialTypeID);
+      $accountingCode = self::getAccountCode($financialTypeID);
       $contacts[$financialTypeID] = CRM_Core_DAO::singleValueQuery(
         "SELECT contact_id FROM civicrm_financial_account
          WHERE accounting_code = %1
@@ -211,6 +211,21 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       );
     }
     return $contacts[$financialTypeID];
+  }
+
+  /**
+   * Get the accounting code from the financial type id.
+   *
+   * @param int $financialTypeID *
+   *
+   * @return string
+   */
+  public static function getAccountCode($financialTypeID) {
+    static $codes = array();
+    if (!in_array($financialTypeID, $codes)) {
+      $codes[$financialTypeID] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($financialTypeID);
+    }
+    return $codes[$financialTypeID];
   }
 
 }
