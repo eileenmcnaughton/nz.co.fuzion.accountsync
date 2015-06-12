@@ -407,12 +407,12 @@ function _accountsync_handle_contact_deletion($op, $entity, $id, &$params) {
 function _accountsync_handle_contribution_deletion($op, $objectName, $id, &$params) {
   if (($op == 'delete') && ($objectName == 'Contribution')) {
     try {
-      $accountInvoice = civicrm_api3('account_invoice', 'getsingle', array(
+      $accountInvoice = civicrm_api3('AccountInvoice', 'getsingle', array(
         'contribution_id' => $id,
         'plugin' => 'xero')
       );
       if (empty($accountInvoice['accounts_invoice_id'])) {
-        civicrm_api3('account_invoice', 'delete', array('id' => $accountInvoice['id']));
+        civicrm_api3('AccountInvoice', 'delete', array('id' => $accountInvoice['id']));
       }
       else {
         //here we need to create a way to void
@@ -508,7 +508,7 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
     $accountInvoice['connector_id'] = $connector_id;
   }
   try {
-    $accountInvoice['id'] = civicrm_api3('account_invoice', 'getvalue', array(
+    $accountInvoice['id'] = civicrm_api3('AccountInvoice', 'getvalue', array(
       'plugin' => 'xero',
       'return' => 'id',
       'contribution_id' => $contributionID,
@@ -523,7 +523,7 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
   }
   $accountInvoice['plugin'] = 'xero';
   try {
-    civicrm_api3('account_invoice', 'create', $accountInvoice);
+    civicrm_api3('AccountInvoice', 'create', $accountInvoice);
   }
   catch (CiviCRM_API3_Exception $e) {
     // Unknown failure.
