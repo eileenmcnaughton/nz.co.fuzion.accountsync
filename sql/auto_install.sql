@@ -38,6 +38,7 @@ CREATE TABLE `civicrm_account_invoice` (
   `accounts_data` TEXT NULL COMMENT 'json array of data as returned from accounts system' COLLATE 'utf8_unicode_ci',
   `error_data` TEXT NULL COMMENT 'json array of error data' COLLATE 'utf8_unicode_ci',
   `plugin` VARCHAR(32) NOT NULL COMMENT 'Plugin creating the account' COLLATE 'utf8_unicode_ci',
+  `connector_id` INT(11) NULL DEFAULT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
   `accounts_needs_update` TINYINT(4) NULL DEFAULT '0' COMMENT 'Include in next push to accounts',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `account_system_id` (`accounts_invoice_id`, `plugin`),
