@@ -62,4 +62,21 @@ return array(
       'Contribution' => 'Contribution',
     )
   ),
+  'account_sync_contribution_day_zero' => array(
+    'group_name' => 'Account Sync',
+    'group' => 'accountsync',
+    'name' => 'account_sync_contribution_day_zero',
+    'type' => 'Date',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Do not include contributions prior to this date',
+    'title' =>  'Day zero for contributions (eg. 2014-12-25 for Christmas 2014)',
+    'help_text' => 'Earlier contributions are never synced.',
+    'html_type' => 'Date',
+    'default' => '1990-01-01',
+    'quick_form_type' => 'Date',
+    'html_attributes' => array(
+      'formatType' => 'activityDateTime',
+    )
+  ),
  );

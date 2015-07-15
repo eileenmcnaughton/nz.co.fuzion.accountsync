@@ -111,6 +111,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     $createEntities = _accountsync_get_contact_create_entities($connector_id);
     $updateEntities = _accountsync_get_contact_update_entities($connector_id);
     $invoiceEntities = _accountsync_get_invoice_create_entities($connector_id);
+    $invoiceDayZero = _accountsync_get_invoice_day_zero($connector_id);
     if ($objectName == 'LineItem') {
       // If only some financial types apply to this connector and the line
       // item does not have one of them then skip to the next connector.
@@ -154,11 +155,42 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 
     if (in_array($objectName, $invoiceEntities)) {
       $contribution_id = ($objectName == 'LineItem') ? (is_array($objectRef) ? $objectRef['contribution_id'] : $objectRef->contribution_id) : $objectRef->id;
+      if (isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZero)) {
+        return;
+      }
       // we won't do updates as the invoices get 'locked' in the accounts system
       _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
     }
   }
 
+}
+
+/**
+ * Is the invoice before the day zero.
+ *
+ * We only sync contributions afer the day zero date.
+ *
+ * @param string $objectName
+ * @param CRM_Contribute_BAO_Contribution| CRM_Financial_BAO_LineItem $objectRef
+ * @param int $contribution_id
+ * @param string $invoiceDayZero
+ *
+ * @throws \CiviCRM_API3_Exception
+ *
+ * @return bool
+ */
+function isBeforeDayZero($objectName,$objectRef, $contribution_id, $invoiceDayZero) {
+  $receive_date = ($objectName == 'Contribution') ? $objectRef->receive_date : NULL;
+  if (!$receive_date) {
+    $receive_date = civicrm_api3('Contribution', 'getvalue', array(
+      'id' => $contribution_id,
+      'return' => 'receive_date'
+    ));
+  }
+  if (strtotime($receive_date) < strtotime($invoiceDayZero)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 /**
@@ -280,6 +312,23 @@ function _accountsync_get_contact_update_entities($connector_id) {
 function _accountsync_get_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
   $createEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities, array());
+  return $createEntities;
+}
+
+/**
+ * Get the entities whose change should trigger an invoice creation in the accounts package.
+ *
+ * @param int $connector_id
+ *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
+ *
+ * @return array
+ *   Entities that result in an invoice being created when the are edited or created.
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function _accountsync_get_invoice_day_zero($connector_id) {
+  $entities = _accountsync_get_entity_action_settings($connector_id);
+  $createEntities = CRM_Utils_Array::value('account_sync_contribution_day_zero', $entities, array());
   return $createEntities;
 }
 
