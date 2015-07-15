@@ -363,6 +363,17 @@ function _accountsync_get_entity_action_settings($connector_id) {
   static $entities = array();
   if (empty($entities[$connector_id])) {
     $result = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
+    // There appears to be a bug in CiviCRM core whereby sometimes extension
+    // setting metadata isn't cached. If we think that is the case we'll flush the caches
+    // to fix it. This happens rarely & represents a serious functionality breakage
+    // so performance trade off is OK
+    if (!isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
+     && !isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
+    ) {
+      civicrm_api3('system', 'flush', array());
+      $result = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
+    }
+
     $entities[$connector_id] = $result['values'][CRM_Core_Config::domainID()];
     if (!empty($connector_id)) {
       try {
