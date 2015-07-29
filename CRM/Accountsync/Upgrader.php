@@ -65,6 +65,21 @@ ALTER TABLE `civicrm_account_contact`
   }
 
   /**
+   * Example: Run a couple simple queries
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1100() {
+    $this->ctx->log->info('Applying update 1100');
+    CRM_Core_DAO::executeQuery("
+ALTER TABLE `civicrm_account_contact`
+  ADD COLUMN `do_not_sync` TINYINT(4) DEFAULT 0 COMMENT 'Do not sync this contact' AFTER `accounts_needs_update`
+");
+    return TRUE;
+  }
+
+  /**
    * Example: Run an external SQL script
    *
    * @return TRUE on success

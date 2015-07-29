@@ -19,7 +19,8 @@ CREATE TABLE `civicrm_account_contact` (
   `error_data` TEXT NULL COMMENT 'json array of error data' COLLATE 'utf8_unicode_ci',
   `plugin` VARCHAR(32) NOT NULL COMMENT 'Plugin creating the account' COLLATE 'utf8_unicode_ci',
   `connector_id` INT(11) NULL DEFAULT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
-  `accounts_needs_update` TINYINT(4) NULL DEFAULT '0' COMMENT 'Include in next push to accounts',
+  `accounts_needs_update` TINYINT(4) NULL DEFAULT '1' COMMENT 'Include in next push to accounts',
+  `do_not_sync` TINYINT(4) NULL DEFAULT '0' COMMENT 'Do Not Sync',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `account_system_id` (`accounts_contact_id`, `connector_id`, `plugin`),
   UNIQUE INDEX `contact_id_plugin` (`contact_id`, `connector_id`, `plugin`)

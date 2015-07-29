@@ -142,6 +142,12 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
    */
   public $accounts_needs_update;
   /**
+   * Do not sync this contact.
+   *
+   * @var boolean
+   */
+  public $do_not_sync;
+  /**
    * Name of plugin creating the account
    *
    * @var string
@@ -247,6 +253,12 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
           'maxlength' => 32,
           'size' => CRM_Utils_Type::MEDIUM,
         ) ,
+        'do_not_sync' => array(
+          'name' => 'do_not_sync',
+          'type' => CRM_Utils_Type::T_BOOLEAN,
+          'title' => ts('Do Not Sync') ,
+          'default' => '0',
+        ),
       );
     }
     return self::$_fields;
@@ -271,6 +283,7 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO
         'accounts_data' => 'accounts_data',
         'error_data' => 'error_data',
         'accounts_needs_update' => 'accounts_needs_update',
+        'do_not_sync' => 'do_not_sync',
         'connector_id' => 'connector_id',
         'plugin' => 'plugin',
       );
