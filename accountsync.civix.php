@@ -3,7 +3,9 @@
 // AUTO-GENERATED FILE -- Civix may overwrite any changes made to this file
 
 /**
- * (Delegated) Implementation of hook_civicrm_config
+ * (Delegated) Implements hook_civicrm_config().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
 function _accountsync_civix_civicrm_config(&$config = NULL) {
   static $configured = FALSE;
@@ -14,12 +16,13 @@ function _accountsync_civix_civicrm_config(&$config = NULL) {
 
   $template =& CRM_Core_Smarty::singleton();
 
-  $extRoot = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
+  $extRoot = dirname(__FILE__) . DIRECTORY_SEPARATOR;
   $extDir = $extRoot . 'templates';
 
   if ( is_array( $template->template_dir ) ) {
       array_unshift( $template->template_dir, $extDir );
-  } else {
+  }
+  else {
       $template->template_dir = array( $extDir, $template->template_dir );
   }
 
@@ -28,9 +31,11 @@ function _accountsync_civix_civicrm_config(&$config = NULL) {
 }
 
 /**
- * Implements hook_civicrm_xmlMenu().
+ * (Delegated) Implements hook_civicrm_xmlMenu().
  *
- * @param array $files (string)
+ * @param $files array(string)
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function _accountsync_civix_civicrm_xmlMenu(&$files) {
   foreach (_accountsync_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
@@ -40,56 +45,67 @@ function _accountsync_civix_civicrm_xmlMenu(&$files) {
 
 /**
  * Implements hook_civicrm_install().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function _accountsync_civix_civicrm_install() {
   _accountsync_civix_civicrm_config();
   if ($upgrader = _accountsync_civix_upgrader()) {
-    return $upgrader->onInstall();
+    $upgrader->onInstall();
   }
 }
 
 /**
  * Implements hook_civicrm_uninstall().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
 function _accountsync_civix_civicrm_uninstall() {
   _accountsync_civix_civicrm_config();
   if ($upgrader = _accountsync_civix_upgrader()) {
-    return $upgrader->onUninstall();
+    $upgrader->onUninstall();
   }
 }
 
 /**
- * (Delegated) Implementation of hook_civicrm_enable
+ * (Delegated) Implements hook_civicrm_enable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
 function _accountsync_civix_civicrm_enable() {
   _accountsync_civix_civicrm_config();
   if ($upgrader = _accountsync_civix_upgrader()) {
     if (is_callable(array($upgrader, 'onEnable'))) {
-      return $upgrader->onEnable();
+      $upgrader->onEnable();
     }
   }
 }
 
 /**
- * (Delegated) Implementation of hook_civicrm_disable
+ * (Delegated) Implements hook_civicrm_disable().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
+ * @return mixed
  */
 function _accountsync_civix_civicrm_disable() {
   _accountsync_civix_civicrm_config();
   if ($upgrader = _accountsync_civix_upgrader()) {
     if (is_callable(array($upgrader, 'onDisable'))) {
-      return $upgrader->onDisable();
+      $upgrader->onDisable();
     }
   }
 }
 
 /**
- * (Delegated) Implementation of hook_civicrm_upgrade
+ * (Delegated) Implements hook_civicrm_upgrade().
  *
  * @param $op string, the type of operation being performed; 'check' or 'enqueue'
  * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
  *
  * @return mixed  based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
  *                for 'enqueue', returns void
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function _accountsync_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   if ($upgrader = _accountsync_civix_upgrader()) {
@@ -97,10 +113,14 @@ function _accountsync_civix_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) 
   }
 }
 
+/**
+ * @return CRM_Accountsync_Upgrader
+ */
 function _accountsync_civix_upgrader() {
   if (!file_exists(__DIR__.'/CRM/Accountsync/Upgrader.php')) {
     return NULL;
-  } else {
+  }
+  else {
     return CRM_Accountsync_Upgrader_Base::instance();
   }
 }
@@ -143,9 +163,11 @@ function _accountsync_civix_find_files($dir, $pattern) {
   return $result;
 }
 /**
- * (Delegated) Implementation of hook_civicrm_managed
+ * (Delegated) Implements hook_civicrm_managed().
  *
  * Find any *.mgd.php files, merge their content, and return.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
 function _accountsync_civix_civicrm_managed(&$entities) {
   $mgdFiles = _accountsync_civix_find_files(__DIR__, '*.mgd.php');
@@ -161,6 +183,60 @@ function _accountsync_civix_civicrm_managed(&$entities) {
 }
 
 /**
+ * (Delegated) Implements hook_civicrm_caseTypes().
+ *
+ * Find any and return any files matching "xml/case/*.xml"
+ *
+ * Note: This hook only runs in CiviCRM 4.4+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function _accountsync_civix_civicrm_caseTypes(&$caseTypes) {
+  if (!is_dir(__DIR__ . '/xml/case')) {
+    return;
+  }
+
+  foreach (_accountsync_civix_glob(__DIR__ . '/xml/case/*.xml') as $file) {
+    $name = preg_replace('/\.xml$/', '', basename($file));
+    if ($name != CRM_Case_XMLProcessor::mungeCaseType($name)) {
+      $errorMessage = sprintf("Case-type file name is malformed (%s vs %s)", $name, CRM_Case_XMLProcessor::mungeCaseType($name));
+      CRM_Core_Error::fatal($errorMessage);
+      // throw new CRM_Core_Exception($errorMessage);
+    }
+    $caseTypes[$name] = array(
+      'module' => 'nz.co.fuzion.accountsync',
+      'name' => $name,
+      'file' => $file,
+    );
+  }
+}
+
+/**
+* (Delegated) Implements hook_civicrm_angularModules().
+*
+* Find any and return any files matching "ang/*.ang.php"
+*
+* Note: This hook only runs in CiviCRM 4.5+.
+*
+* @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_angularModules
+*/
+function _accountsync_civix_civicrm_angularModules(&$angularModules) {
+  if (!is_dir(__DIR__ . '/ang')) {
+    return;
+  }
+
+  $files = _accountsync_civix_glob(__DIR__ . '/ang/*.ang.php');
+  foreach ($files as $file) {
+    $name = preg_replace(':\.ang\.php$:', '', basename($file));
+    $module = include $file;
+    if (empty($module['ext'])) {
+      $module['ext'] = 'nz.co.fuzion.accountsync';
+    }
+    $angularModules[$name] = $module;
+  }
+}
+
+/**
  * Glob wrapper which is guaranteed to return an array.
  *
  * The documentation for glob() says, "On some systems it is impossible to
@@ -168,7 +244,7 @@ function _accountsync_civix_civicrm_managed(&$entities) {
  * result for an empty match is sometimes array() and sometimes FALSE.
  * This wrapper provides consistency.
  *
- * @see http://php.net/glob
+ * @link http://php.net/glob
  * @param string $pattern
  * @return array, possibly empty
  */
@@ -178,14 +254,12 @@ function _accountsync_civix_glob($pattern) {
 }
 
 /**
- * Inserts a navigation menu item at a given place in the hierarchy
+ * Inserts a navigation menu item at a given place in the hierarchy.
  *
- * @param $menu - menu hierarchy
- * @param $path - path where insertion should happen (ie. Administer/System Settings)
- * @param $item - menu you need to insert (parent/child attributes will be filled for you)
- * @param $parentId - used internally to recurse in the menu structure
- *
- * @return bool
+ * @param array $menu - menu hierarchy
+ * @param string $path - path where insertion should happen (ie. Administer/System Settings)
+ * @param array $item - menu you need to insert (parent/child attributes will be filled for you)
+ * @param int $parentId - used internally to recurse in the menu structure
  */
 function _accountsync_civix_insert_navigation_menu(&$menu, $path, $item, $parentId = NULL) {
   static $navId;
@@ -203,7 +277,8 @@ function _accountsync_civix_insert_navigation_menu(&$menu, $path, $item, $parent
       ))
     );
     return true;
-  } else {
+  }
+  else {
     // Find an recurse into the next level down
     $found = false;
     $path = explode('/', $path);
@@ -215,5 +290,23 @@ function _accountsync_civix_insert_navigation_menu(&$menu, $path, $item, $parent
       }
     }
     return $found;
+  }
+}
+
+/**
+ * (Delegated) Implements hook_civicrm_alterSettingsFolders().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
+ */
+function _accountsync_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
+  static $configured = FALSE;
+  if ($configured) {
+    return;
+  }
+  $configured = TRUE;
+
+  $settingsDir = __DIR__ . DIRECTORY_SEPARATOR . 'settings';
+  if(is_dir($settingsDir) && !in_array($settingsDir, $metaDataFolders)) {
+    $metaDataFolders[] = $settingsDir;
   }
 }
