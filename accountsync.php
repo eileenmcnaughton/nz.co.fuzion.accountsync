@@ -554,6 +554,20 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
 }
 
 /**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * Note: This hook only runs in CiviCRM 4.5+. It may
+ * use features only available in v4.6+.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function accountsync_civicrm_angularModules(&$angularModules) {
+  _accountsync_civix_civicrm_angularModules($angularModules);
+}
+
+/**
  * Create account invoice record or set needs_update flag.
  *
  * @param int $contributionID
