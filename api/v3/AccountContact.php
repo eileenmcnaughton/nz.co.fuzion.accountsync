@@ -42,7 +42,35 @@ function civicrm_api3_account_contact_delete($params) {
  * @throws API_Exception
  */
 function civicrm_api3_account_contact_get($params) {
-  return _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountContact', $params);
+  $accountContacts =  _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountContact', $params);
+  foreach ($accountContacts['values'] as $id => $accountContact) {
+    if (!empty($accountContacts['values'][$id]['accounts_data'])) {
+      $accountContacts['values'][$id]['accounts_data'] = json_decode($accountContacts['values'][$id]['accounts_data'], TRUE);
+      CRM_Accountsync_Hook::mapAccountsData($accountContacts['values'][$id]['accounts_data'], 'contact', $params['plugin']);
+    }
+  }
+  return $accountContacts;
+}
+
+/**
+ * AccountContact.get API
+ *
+ * @param array $params
+ * @return array API result descriptor
+ * @throws API_Exception
+ */
+function civicrm_api3_account_contact_getsuggestions($params) {
+  $contacts = civicrm_api3('AccountContact', 'get', array('plugin' => 'xero'));
+  $suggestions = array();
+  foreach ($contacts['values'] as $contact) {
+    $possibles = civicrm_api3('Contact', 'get', array('display_name' => $contact['accounts_display_name']));
+    foreach ($possibles['values'] as $possible) {
+      $possible['contact_id'] = $possible['id'];
+      $possible['id'] = $contact['id'];
+      $suggestions[$contacts['id']] = $possible;
+    }
+  }
+  return civicrm_api3_create_success($suggestions, $params);
 }
 
 /**
