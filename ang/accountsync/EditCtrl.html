@@ -33,14 +33,10 @@
           </label>
           <label>
             <input type="radio" ng-model="accountContact.suggestion" value="link_contact"/>
-            {{ ts('Match') }}
+            {{ ts('Match') }} <input crm-entityref="{entity: 'Contact', select: {allowClear:true}}" ng-model="accountContact.suggested_contact_id" />
           </label>
         </div>
     </td>
-    <td>
-      <input crm-entityref="{entity: 'Contact', select: {allowClear:true}}" ng-model="accountContact.suggested_contact_id" />
-    </td>
-
   </tr>
   </table>
 
