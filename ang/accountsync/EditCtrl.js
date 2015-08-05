@@ -53,8 +53,7 @@
                   do_not_sync: 1,
                   contact_id: accountContact.contact_id,
                   plugin: 'xero'
-                }).catch(function(apiResult) {
-                  console.log(apiResult);
+                }).then(function(apiResult) {
                   $scope.removeItem($scope.accountContacts, accountContact);
                   $scope.totalCount--;
                 })
