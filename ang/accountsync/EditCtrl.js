@@ -61,6 +61,13 @@
             break;
 
           case 'create_individual':
+            if (!accountContact['accounts_data']['civicrm_formatted']['first_name']
+            &! accountContact['accounts_data']['civicrm_formatted']['last_name']
+            ) {
+              var split = accountContact['accounts_data']['civicrm_formatted']['display_name'].split(' ');
+              accountContact['accounts_data']['civicrm_formatted']['first_name'] = split.shift();
+              accountContact['accounts_data']['civicrm_formatted']['last_name'] = split.pop();
+            }
           case 'create_organization':
 
             var contactCreateParams = accountContact['accounts_data']['civicrm_formatted'];
