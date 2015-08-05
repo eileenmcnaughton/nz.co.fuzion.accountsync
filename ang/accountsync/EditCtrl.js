@@ -14,7 +14,7 @@
               do_not_sync: 0,
               contact_id: {'IS NULL' : 1},
               'sequential' : 1,
-              'options' : {'limit' : 3}
+              'options' : {'limit' : 10}
             });
           },
           totalCount: function(crmApi) {
