@@ -8,6 +8,7 @@
     <tr ng-repeat="accountContact in accountContacts">
       <td>
         <p ng-show="accountContact.accounts_display_name">{{ ts('%1', {1: accountContact.accounts_display_name}) }}</p>
+        <p ng-show="accountContact.accounts_data.civicrm_formatted.email">({{ ts('%1', {1: accountContact.accounts_data.civicrm_formatted.email}) }})</p>
         <p ng-show="!accountContact.accounts_display_name">{{ ts('Name not provided.') }}</p>
      </td>
 
