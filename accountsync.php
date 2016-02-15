@@ -630,3 +630,22 @@ function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL,
     }
   }
 }
+
+/**
+ * Implements hook_civicrm_entityTypes.
+ *
+ * @param array $entityTypes
+ *   Registered entity types.
+ */
+function accountsync_civicrm_entityTypes(&$entityTypes) {
+  $entityTypes['CRM_Accountsync_DAO_AccountContact'] = array(
+    'name' => 'AccountContact',
+    'class' => 'CRM_Accountsync_DAO_AccountContact',
+    'table' => 'civicrm_account_contact',
+  );
+  $entityTypes['CRM_Accountsync_DAO_AccountInvoice'] = array(
+    'name' => 'AccountInvoice',
+    'class' => 'CRM_Accountsync_DAO_AccountInvoice',
+    'table' => 'civicrm_account_invoice',
+  );
+}
