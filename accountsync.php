@@ -130,11 +130,18 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
           case 'LineItem':
             // See https://issues.civicrm.org/jira/browse/CRM-16268.
             $contribution_id = (is_array($objectRef)) ? $objectRef['contribution_id'] : $objectRef->contribution_id;
+            if (!$contribution_id) {
+              // We are updating a line item in what is probably a trivial way - e.g updating a price set field label
+              // skip out early
+              // @todo refine when we return early in case of odd cases where we DO want to know.
+              return;
+            }
             $contactID = civicrm_api3('Contribution', 'getvalue', array(
                 'id' => $contribution_id,
                 'return' => 'contact_id',
             ));
             break;
+
           case 'Contribution':
             $contribution_id = $objectRef->id;
             $contactID = civicrm_api3('Contribution', 'getvalue', array(
