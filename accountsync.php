@@ -186,12 +186,15 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  *
  * @return bool
  */
-function isBeforeDayZero($objectName,$objectRef, $contribution_id, $invoiceDayZero) {
+function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZero) {
+  if (empty($invoiceDayZero)) {
+    return FALSE;
+  }
   $receive_date = ($objectName == 'Contribution') ? $objectRef->receive_date : NULL;
   if (!$receive_date) {
     $receive_date = civicrm_api3('Contribution', 'getvalue', array(
       'id' => $contribution_id,
-      'return' => 'receive_date'
+      'return' => 'receive_date',
     ));
   }
   if (strtotime($receive_date) < strtotime($invoiceDayZero)) {
