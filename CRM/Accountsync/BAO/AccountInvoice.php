@@ -72,8 +72,8 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
         $lineItem['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($lineItem['financial_type_id']);
         if ($accounts_contact_id = self::getAccountsContact($lineItem['financial_type_id'])) {
           $lineItem['accounts_contact_id'] = $accounts_contact_id;
+          $contributionAccountsContactIDs[$lineItem['accounts_contact_id']] = TRUE;
         }
-        $contributionAccountsContactIDs[$lineItem['accounts_contact_id']] = TRUE;
         if (!isset($lineItem['contact_id'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
           // for conformity & ease downstream
