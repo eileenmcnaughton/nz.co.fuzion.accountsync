@@ -70,7 +70,9 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
 
       foreach ($contribution['line_items'] as &$lineItem) {
         $lineItem['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($lineItem['financial_type_id']);
-        $lineItem['accounts_contact_id'] = self::getAccountsContact($lineItem['financial_type_id']);
+        if ($accounts_contact_id = self::getAccountsContact($lineItem['financial_type_id'])) {
+          $lineItem['accounts_contact_id'] = $accounts_contact_id;
+        }
         $contributionAccountsContactIDs[$lineItem['accounts_contact_id']] = TRUE;
         if (!isset($lineItem['contact_id'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
@@ -202,15 +204,17 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   public static function getAccountsContact($financialTypeID) {
     static $contacts = array();
     if (!in_array($financialTypeID, $contacts)) {
-      $accountingCode = self::getAccountCode($financialTypeID);
-      $contacts[$financialTypeID] = CRM_Core_DAO::singleValueQuery(
-        "SELECT contact_id FROM civicrm_financial_account
-         WHERE accounting_code = %1
-        ",
-        array(1 => array($accountingCode, 'String'))
-      );
+      if ($accountingCode = self::getAccountCode($financialTypeID)) {
+        $contacts[$financialTypeID] = CRM_Core_DAO::singleValueQuery(
+          "SELECT contact_id FROM civicrm_financial_account
+            WHERE accounting_code = %1 ",
+          array(1 => array($accountingCode, 'String'))
+        );
+      }
     }
-    return $contacts[$financialTypeID];
+    if (isset($contacts[$financialTypeID])) {
+      return $contacts[$financialTypeID];
+    }
   }
 
   /**
@@ -225,7 +229,9 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     if (!in_array($financialTypeID, $codes)) {
       $codes[$financialTypeID] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($financialTypeID);
     }
-    return $codes[$financialTypeID];
+    if (isset($codes[$financialTypeID])) {
+      return $codes[$financialTypeID];
+    }
   }
 
 }
