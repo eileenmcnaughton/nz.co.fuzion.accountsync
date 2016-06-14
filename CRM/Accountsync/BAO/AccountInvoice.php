@@ -219,11 +219,15 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    * @param int $financialTypeID *
    *
    * @return string
+   * @throws \CRM_Core_Exception
    */
   public static function getAccountCode($financialTypeID) {
     static $codes = array();
     if (!in_array($financialTypeID, $codes)) {
       $codes[$financialTypeID] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($financialTypeID);
+    }
+    if ($codes[$financialTypeID] === NULL) {
+      throw new CRM_Core_Exception("No Income Account code configured for financial type $financialTypeID");
     }
     return $codes[$financialTypeID];
   }
