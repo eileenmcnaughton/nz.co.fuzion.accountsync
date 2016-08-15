@@ -3,9 +3,10 @@
 class CRM_Accountsync_BAO_AccountContact extends CRM_Accountsync_DAO_AccountContact {
 
   /**
-   * Create a new AccountContact based on array-data
+   * Create a new AccountContact based on array-data.
    *
    * @param array $params key-value pairs
+   *
    * @return CRM_Accountsync_DAO_AccountContact|NULL
    */
   public static function create($params) {
