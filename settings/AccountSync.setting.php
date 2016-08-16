@@ -1,5 +1,16 @@
 <?php
 
+$results = civicrm_api3('PaymentProcessor', 'get', array(
+  'sequential' => 0,
+  'is_test' => 0,
+  'return' => "id,name",
+));
+
+$processors = array();
+foreach ($results['values'] as $processor => $details) {
+  $processors[$processor] = $details['name'];
+}
+
 return array(
   'account_sync_queue_contacts' => array(
     'group_name' => 'Account Sync',
@@ -61,6 +72,22 @@ return array(
     'html_attributes' => array(
       'Contribution' => 'Contribution',
     )
+  ),
+  'account_sync_skip_inv_by_pymt_processor' => array(
+    'group_name' => 'Account Sync',
+    'group' => 'accountsync',
+    'name' => 'account_sync_skip_inv_by_pymt_processor',
+    'type' => 'Array',
+    'add' => '4.4',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => 'Skip trigger of Invoice Creation when entities use this payment processor',
+    'title' =>  'Payment processors to trigger skip of invoice create',
+    'help_text' => 'When entities that use these payment processors are created an invoice will not be queued for create',
+    'html_type' => 'advmultiselect',
+    'default' => array(''),
+    'quick_form_type' => 'Element',
+    'html_attributes' => $processors,
   ),
   'account_sync_contribution_day_zero' => array(
     'group_name' => 'Account Sync',
