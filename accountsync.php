@@ -534,13 +534,24 @@ function _accountsync_map_object_name_to_entity($objectName) {
   }
   return $objectName;
 }
+
 /**
  * Get array of enabled plugins.
  *
  * Currently we don't have a mechanism for this & are just returning xero.
  */
 function _accountsync_get_enabled_plugins() {
-  return array('xero');
+  static $plugins = array();
+
+  if (empty($plugins)) {
+    /* Use the CiviCRM hook system to get a list of plugins.
+     * This is largely undocumented, so just following the pattern of built-in
+     * hooks.
+     */
+    CRM_Utils_Hook::singleton()->invoke(1, $plugins, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'civicrm_accountsync_plugins');
+  }
+
+  return $plugins;
 }
 
 /**
