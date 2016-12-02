@@ -106,4 +106,24 @@ return array(
       'formatType' => 'activityDateTime',
     )
   ),
+  'account_sync_send_receipt' => array(
+    'group_name' => 'Account Sync',
+    'group' => 'accountsync',
+    'name' => 'account_sync_send_receipt',
+    'type' => 'Array',
+    'add' => '4.4',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'default' => array('no_override'),
+    'title' => 'Send receipts for Contributions',
+    'description' => '',
+    'help_text' => 'Set \'Send receipt?\' option for all Contributions synced.',
+    'html_type' => 'Select',
+    'quick_form_type' => 'Element',
+    'html_attributes' => array(
+      'no_override' => 'No override',
+      'send' => 'Send',
+      'do_not_send' => 'Do not send',
+    ),
+  ),
  );
