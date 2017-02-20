@@ -1,25 +1,33 @@
 (function(angular, $, _) {
 
+  // To allow for multiple plugins, pass the plugin used as a parameter.
+  // Default is xero for legacy reasons.
   angular.module('accountsync').config(function($routeProvider) {
-      $routeProvider.when('/accounts/contact/sync', {
+      $routeProvider.when('/accounts/contact/sync/:plugin?', {
         controller: 'AccountsyncEditCtrl',
         templateUrl: '~/accountsync/EditCtrl.html',
 
         // If you need to look up data when opening the page, list it out
         // under "resolve".
         resolve: {
-          suggestions: function(crmApi) {
+          suggestions: function(crmApi, $route) {
+
+            var plugin = ('plugin' in $route.current.params)? $route.current.params.plugin: 'xero';
+
             return crmApi('AccountContact', 'getsuggestions', {
-              plugin: 'xero',
+              plugin: plugin,
               do_not_sync: 0,
               contact_id: {'IS NULL' : 1},
               'sequential' : 1,
               'options' : {'limit' : 10}
             });
           },
-          totalCount: function(crmApi) {
+          totalCount: function(crmApi, $route) {
+
+            var plugin = ('plugin' in $route.current.params)? $route.current.params.plugin: 'xero';
+
             return crmApi('AccountContact', 'getcount', {
-              plugin: 'xero',
+              plugin: plugin,
               do_not_sync: 0,
               contact_id: {'IS NULL' : 1}
             });
@@ -33,10 +41,12 @@
   //   $scope -- This is the set of variables shared between JS and HTML.
   //   crmApi, crmStatus, crmUiHelp -- These are services provided by civicrm-core.
   //   accountContacts -- The current account contacts, defined above in config().
-  angular.module('accountsync').controller('AccountsyncEditCtrl', function($scope, crmApi, crmStatus, crmUiHelp, suggestions, totalCount) {
+  angular.module('accountsync').controller('AccountsyncEditCtrl', function($scope, crmApi, crmStatus, crmUiHelp, suggestions, totalCount, $routeParams) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('accountsync');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/accountsync/EditCtrl'}); // See: templates/CRM/accountsync/EditCtrl.hlp
+
+    var plugin = ('plugin' in $routeParams)? $routeParams.plugin: 'xero';
 
     // We have accountContact available in JS. We also want to reference it in HTML.
     $scope.accountContacts = suggestions.values;
@@ -52,7 +62,7 @@
                   id: accountContact.id,
                   do_not_sync: 1,
                   contact_id: accountContact.contact_id,
-                  plugin: 'xero'
+                  plugin: plugin
                 }).then(function(apiResult) {
                   $scope.removeItem($scope.accountContacts, accountContact);
                   $scope.totalCount--;
@@ -109,7 +119,7 @@
 
       var nextContact = crmApi('AccountContact', 'getsuggestions', {
           'id' : {'>' : $scope.accountContacts[$scope.accountContacts.length -1]['id']},
-          'plugin' : 'xero',
+          'plugin' : plugin,
           'options' : {'limit' : 1},
           'sequential' : 1
         }
