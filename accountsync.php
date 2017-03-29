@@ -111,7 +111,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     $createEntities = _accountsync_get_contact_create_entities($connector_id);
     $updateEntities = _accountsync_get_contact_update_entities($connector_id);
     $invoiceEntities = _accountsync_get_invoice_create_entities($connector_id);
-    $skipInvoiceEntities = _accountsync_get_skip_invoice_create_entities();
+    $skipInvoiceEntities = _accountsync_get_skip_invoice_create_entities($connector_id);
     $invoiceDayZero = _accountsync_get_invoice_day_zero($connector_id);
     if ($objectName == 'LineItem') {
       // If only some financial types apply to this connector and the line
@@ -332,12 +332,15 @@ function _accountsync_get_invoice_create_entities($connector_id) {
 /**
  * Get the entities whose change should skip the trigger for invoice creation
  *
+ * @param int $connector_id
+ *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
+ *
  * @return array
  *   Payment processor entities that result in an invoice *not* being created when they are edited or created.
  *
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_skip_invoice_create_entities() {
+function _accountsync_get_skip_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
   $skipEntities = CRM_Utils_Array::value('account_sync_skip_inv_by_pymt_processor', $entities, array());
   return $skipEntities;
