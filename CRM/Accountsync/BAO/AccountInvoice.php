@@ -158,7 +158,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    */
   public static function completeContributionFromAccountsStatus() {
     $sql = "
-      SELECT contribution_id
+      SELECT contribution_id, receive_date
       FROM civicrm_account_invoice cas
       LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
       WHERE civi.contribution_status_id =2
@@ -167,11 +167,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     // Get send receipt override
-    $result = civicrm_api3('Setting', 'getvalue', array(
+    $isSendReceipt = civicrm_api3('Setting', 'getvalue', array(
         'domain_id' => CRM_Core_Config::domainID(),
         'name' => 'account_sync_send_receipt',
       ));
-    switch ($result) {
+    switch ($isSendReceipt) {
       case 'send':
         $send_receipt = 1;
         break;
@@ -184,11 +184,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     }
 
     while ($dao->fetch()) {
-      if (isset($send_receipt)) {
-        civicrm_api3('contribution', 'completetransaction', array('id' => $dao->contribution_id, 'is_email_receipt' => $send_receipt));
-      } else {
-        civicrm_api3('contribution', 'completetransaction', array('id' => $dao->contribution_id));
+      $params = array('id' => $dao->contribution_id, 'receive_date' => $dao->receive_date);
+      if (is_numeric($isSendReceipt)) {
+        $params['is_email_receipt'] = $send_receipt;
       }
+      civicrm_api3('contribution', 'completetransaction', $params);
     }
   }
 
