@@ -80,6 +80,24 @@ ALTER TABLE `civicrm_account_contact`
   }
 
   /**
+   * Change accounts_status_id to have a default of 0.
+   *
+   * It was previously NULL but then a query like accounts_status_id IN ()
+   *  would not get unset rows.
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1200() {
+    $this->ctx->log->info('Applying update 1200');
+    CRM_Core_DAO::executeQuery("
+ALTER TABLE `civicrm_account_invoice`
+  ALTER COLUMN `accounts_status_id` SET DEFAULT 0
+");
+    return TRUE;
+  }
+
+  /**
    * Example: Run an external SQL script
    *
    * @return TRUE on success
