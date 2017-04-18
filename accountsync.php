@@ -169,6 +169,10 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (in_array($objectRef->payment_processor, $skipInvoiceEntities)) {
         return;
       }
+      //Don't create account invoice for zero contribution.
+      if (empty(floatval($objectRef->total_amount))) {
+        continue;
+      }
       // we won't do updates as the invoices get 'locked' in the accounts system
       _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
     }
