@@ -96,6 +96,18 @@ ALTER TABLE `civicrm_account_invoice`
 ");
     return TRUE;
   }
+  
+  /**
+   * Change existing accounts_status_id to 0 for NULL values.
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1300() {
+    $this->ctx->log->info('Applying update 1300');
+    CRM_Core_DAO::executeQuery("UPDATE `civicrm_account_invoice` SET `accounts_status_id` = 0 WHERE `accounts_status_id` IS NULL");
+    return TRUE;
+  }
 
   /**
    * Example: Run an external SQL script
