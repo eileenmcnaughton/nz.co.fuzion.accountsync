@@ -347,6 +347,10 @@ function _accountsync_get_invoice_create_entities($connector_id) {
 function _accountsync_get_skip_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
   $skipEntities = CRM_Utils_Array::value('account_sync_skip_inv_by_pymt_processor', $entities, array());
+  if ($skipEntities === array('')) {
+    // There is some minor weirdness around the settings format sometimes. Handle.
+    return array();
+  }
   return $skipEntities;
 }
 
