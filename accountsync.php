@@ -170,7 +170,8 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         return;
       }
       //Don't create account invoice for zero contribution.
-      if (empty(floatval($objectRef->total_amount))) {
+      // On update the property may not exist, in which case we should skip the check.
+      if (property_exists($objectRef, 'total_amount') && empty(floatval($objectRef->total_amount))) {
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
