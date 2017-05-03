@@ -583,7 +583,11 @@ function _accountsync_get_enabled_plugins() {
  *   Otherwise this will be 0.
  */
 function _accountsync_create_account_contact($contactID, $createNew, $connector_id) {
-  $accountContact = array('contact_id' => $contactID);
+  $accountContact = array(
+    'contact_id' => $contactID,
+    // Do not rollback on fail.
+    'is_transactional' => FALSE,
+  );
   foreach (_accountsync_get_enabled_plugins() as $plugin) {
     $accountContact['plugin'] = $plugin;
     $accountContact['connector_id'] = $connector_id;
@@ -632,7 +636,11 @@ function accountsync_civicrm_angularModules(&$angularModules) {
  *   Otherwise this will be 0.
  */
 function _accountsync_create_account_invoice($contributionID, $createNew, $connector_id) {
-  $accountInvoice = array('contribution_id' => $contributionID, 'accounts_needs_update' => 1);
+  $accountInvoice = array(
+    'contribution_id' => $contributionID, 'accounts_needs_update' => 1,
+    // Do not rollback on fail.
+    'is_transactional' => FALSE,
+  );
   foreach(_accountsync_get_enabled_plugins() as $plugin) {
     unset($accountInvoice['id']); // Ensure id is not set in case of multiple plugins
 
