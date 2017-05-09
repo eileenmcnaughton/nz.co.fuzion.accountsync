@@ -174,6 +174,16 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (property_exists($objectRef, 'total_amount') && empty(floatval($objectRef->total_amount))) {
         continue;
       }
+      $pushEnabledStatuses = Civi::settings()->get('xero_push_contribution_status');
+      $status = civicrm_api3('Contribution', 'getvalue', array(
+        'id' => $contribution_id,
+        'return' => "contribution_status_id",
+      ));
+      //Skip contribution with status not enabled in xero settings.
+      if (!in_array($status, $pushEnabledStatuses)) {
+        continue;
+      }
+
       // we won't do updates as the invoices get 'locked' in the accounts system
       _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
     }
