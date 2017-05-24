@@ -169,18 +169,15 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (in_array($objectRef->payment_processor, $skipInvoiceEntities)) {
         return;
       }
-      //Don't create account invoice for zero contribution.
-      // On update the property may not exist, in which case we should skip the check.
-      if (property_exists($objectRef, 'total_amount') && empty(floatval($objectRef->total_amount))) {
-        continue;
-      }
       $pushEnabledStatuses = Civi::settings()->get('xero_push_contribution_status');
-      $status = civicrm_api3('Contribution', 'getvalue', array(
-        'id' => $contribution_id,
-        'return' => "contribution_status_id",
-      ));
+
+      //Don't create account invoice for zero contribution.
       //Skip contribution with status not enabled in xero settings.
-      if (!in_array($status, $pushEnabledStatuses)) {
+      $contribution = civicrm_api3('Contribution', 'getsingle', array(
+        'id' => $contribution_id,
+        'return' => array("total_amount", "contribution_status_id"),
+      ));
+      if (empty(floatval($contribution['total_amount'])) || !in_array($contribution['contribution_status_id'], $pushEnabledStatuses)) {
         continue;
       }
 
