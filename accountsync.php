@@ -171,15 +171,26 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       }
       $pushEnabledStatuses = Civi::settings()->get('account_sync_push_contribution_status');
       //Don't create account invoice for zero contribution.
-      //Skip contribution with status not enabled in xero settings.
-      $contribution = civicrm_api3('Contribution', 'getsingle', array(
-        'id' => $contribution_id,
-        'return' => array("total_amount", "contribution_status_id"),
-      ));
-      if (empty(floatval($contribution['total_amount'])) || !in_array($contribution['contribution_status_id'], $pushEnabledStatuses)) {
+      //Skip contribution with status not enabled in settings.
+      $contriValues = array();
+      $returnValues = array('contribution_status_id', 'total_amount');
+      foreach ($returnValues as $key => $val) {
+        if (!empty($objectRef->$val)) {
+          $contriValues[$val] = $objectRef->$val;
+          unset($returnValues[$key]);
+        }
+      }
+      //Get from api if not present in $objectRef.
+      if (!empty($returnValues)) {
+        $apiValues = civicrm_api3('Contribution', 'getsingle', array(
+          'id' => $contribution_id,
+          'return' => $returnValues,
+        ));
+        $contriValues = array_merge($contriValues, $apiValues);
+      }
+      if (empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
         continue;
       }
-
       // we won't do updates as the invoices get 'locked' in the accounts system
       _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
     }
