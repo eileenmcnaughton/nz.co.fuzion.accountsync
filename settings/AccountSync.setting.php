@@ -10,6 +10,10 @@ $processors = array();
 foreach ($results['values'] as $processor => $details) {
   $processors[$processor] = $details['name'];
 }
+$status = civicrm_api3('Contribution', 'getoptions', array(
+  'field' => 'contribution_status_id',
+));
+$defaultContributionStatus = array_keys(array_intersect($status['values'], array('Completed', 'Pending')));
 
 return array(
   'account_sync_queue_contacts' => array(
@@ -125,5 +129,27 @@ return array(
       'send' => 'Send',
       'do_not_send' => 'Do not send',
     ),
+  ),
+  'account_sync_push_contribution_status' => array(
+    'group_name' => 'Account Sync',
+    'group' => 'accountsync',
+    'name' => 'account_sync_push_contribution_status',
+    'type' => 'Array',
+    'add' => '4.7',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'default' => $defaultContributionStatus,
+    'description' => 'Select contribution status that can be pushed to Invoice table.',
+    'title' =>  'Push Contribution Status',
+    'help_text' => '',
+    'html_type' => 'Select',
+    'html_attributes' => array(
+      'multiple' => 1,
+      'class' => 'crm-select2',
+    ),
+    'pseudoconstant' => array(
+      'optionGroupName' => 'contribution_status',
+    ),
+    'quick_form_type' => 'Select',
   ),
  );

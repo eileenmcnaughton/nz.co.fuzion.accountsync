@@ -169,9 +169,26 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (in_array($objectRef->payment_processor, $skipInvoiceEntities)) {
         return;
       }
+      $pushEnabledStatuses = Civi::settings()->get('account_sync_push_contribution_status');
       //Don't create account invoice for zero contribution.
-      // On update the property may not exist, in which case we should skip the check.
-      if (property_exists($objectRef, 'total_amount') && empty(floatval($objectRef->total_amount))) {
+      //Skip contribution with status not enabled in settings.
+      $contriValues = array();
+      $returnValues = array('contribution_status_id', 'total_amount');
+      foreach ($returnValues as $key => $val) {
+        if (!empty($objectRef->$val)) {
+          $contriValues[$val] = $objectRef->$val;
+          unset($returnValues[$key]);
+        }
+      }
+      //Get from api if not present in $objectRef.
+      if (!empty($returnValues)) {
+        $apiValues = civicrm_api3('Contribution', 'getsingle', array(
+          'id' => $contribution_id,
+          'return' => $returnValues,
+        ));
+        $contriValues = array_merge($contriValues, $apiValues);
+      }
+      if (empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
