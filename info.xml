@@ -14,11 +14,10 @@
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
   <releaseDate>2014-02-18</releaseDate>
-  <version>1.0</version>
-  <develStage>beta</develStage>
+  <version>1.1</version>
+  <develStage>stable</develStage>
   <compatibility>
-    <ver>4.2</ver>
-    <ver>4.4</ver>
+    <ver>4.7</ver>
   </compatibility>
   <comments>This module does nothing without an extension (CiviXero) - see ReadMe for more</comments>
   <civix>
