@@ -117,7 +117,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       // If only some financial types apply to this connector and the line
       // item does not have one of them then skip to the next connector.
       $financial_type_id = is_array($objectRef) ? $objectRef['financial_type_id'] : $objectRef->financial_type_id;
-      if (!_accountsync_validate_for_connector($connector_id, $financial_type_id)) {
+      if (empty($financial_type_id) || !_accountsync_validate_for_connector($connector_id, $financial_type_id)) {
         continue;
       }
     }
