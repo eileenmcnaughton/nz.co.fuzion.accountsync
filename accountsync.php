@@ -169,7 +169,11 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (in_array($objectRef->payment_processor, $skipInvoiceEntities)) {
         return;
       }
-      $pushEnabledStatuses = Civi::settings()->get('account_sync_push_contribution_status');
+      $pushEnabledStatuses = civicrm_api3('Setting', 'getvalue', array(
+        'domain_id' => CRM_Core_Config::domainID(),
+        'name' => 'account_sync_push_contribution_status'
+      ));
+
       //Don't create account invoice for zero contribution.
       //Skip contribution with status not enabled in settings.
       $contriValues = array();
