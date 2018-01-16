@@ -86,7 +86,7 @@
             if (contactCreateParams['contact_type'] == 'organization') {
               contactCreateParams['organization_name'] = contactCreateParams['display_name'];
             }
-            contactCreateParams['api.AccountContact.create'] = {'id' : accountContact['id']};
+            contactCreateParams['api.AccountContact.create'] = {'id' : accountContact['id'], 'accounts_needs_update' : 1};
             var success = crmStatus(
               {start: ts('Saving...'), success: ts('Saved')},
                 crmApi('Contact', 'create', contactCreateParams)
@@ -103,7 +103,11 @@
           case 'link_contact':
             var success = crmStatus(
               {start: ts('Saving...'), success: ts('Saved')},
-              crmApi('AccountContact', 'create', {'id' : accountContact['id'], 'contact_id' : accountContact['suggested_contact_id']})
+              crmApi('AccountContact', 'create', {
+                'id' : accountContact['id'],
+                'contact_id' : accountContact['suggested_contact_id'],
+                'accounts_needs_update' : 1,
+              })
             )
             .then(function(apiResult) {
               $scope.totalCount--;
