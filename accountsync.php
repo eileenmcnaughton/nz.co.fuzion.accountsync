@@ -605,6 +605,21 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
     // Do not rollback on fail.
     'is_transactional' => FALSE,
   );
+
+  try {
+    $contact = civicrm_api3("contact", "getsingle", array(
+        "id"     => $contactID,
+        "return" => array("id", "is_deleted"),
+    ));
+    if ($contact["contact_is_deleted"]) {
+        // Contact is deleted, Skip the sync.
+        return;
+    }
+  } catch(CiviCRM_API3_Exception $e) {
+    // Contact not found, Skip the sync.
+    return;
+  }
+
   foreach (_accountsync_get_enabled_plugins() as $plugin) {
     $accountContact['plugin'] = $plugin;
     $accountContact['connector_id'] = $connector_id;
