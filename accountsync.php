@@ -609,7 +609,7 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
   try {
     $contact = civicrm_api3("contact", "getsingle", array(
         "id"     => $contactID,
-        "return" => array("id", "is_deleted"),
+        "return" => array("id", "contact_is_deleted"),
     ));
     if ($contact["contact_is_deleted"]) {
         // Contact is deleted, Skip the sync.
