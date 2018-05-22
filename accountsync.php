@@ -173,7 +173,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       //Don't create account invoice for zero contribution.
       //Skip contribution with status not enabled in settings.
       $contriValues = array();
-      $returnValues = array('contribution_status_id', 'total_amount');
+      $returnValues = array('contribution_status_id', 'total_amount', 'is_test');
       foreach ($returnValues as $key => $val) {
         if (!empty($objectRef->$val)) {
           $contriValues[$val] = $objectRef->$val;
@@ -188,7 +188,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         ));
         $contriValues = array_merge($contriValues, $apiValues);
       }
-      if (empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
+      if ($contriValues['is_test'] || empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
