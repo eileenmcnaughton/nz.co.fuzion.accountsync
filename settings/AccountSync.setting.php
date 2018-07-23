@@ -1,15 +1,5 @@
 <?php
 
-$results = civicrm_api3('PaymentProcessor', 'get', array(
-  'sequential' => 0,
-  'is_test' => 0,
-  'return' => "id,name",
-));
-
-$processors = array();
-foreach ($results['values'] as $processor => $details) {
-  $processors[$processor] = $details['name'];
-}
 $status = civicrm_api3('Contribution', 'getoptions', array(
   'field' => 'contribution_status_id',
 ));
@@ -28,13 +18,15 @@ return array(
     'title' =>  'Entities to trigger contact Create in the Remote System',
     'help_text' => 'When these entities are created the contact will be queued for sync',
     'default' => array('Contribution'),
-    'html_type' => 'advmultiselect',
-    'quick_form_type' => 'Element',
+    'quick_form_type' => 'Select',
+    'html_type' => 'Select',
     'html_attributes' => array(
-      'Contact' => 'Contact',
-      'Contribution' => 'Contribution',
-      'ContributionRecur' => 'Recurring Contribution',
-    )
+      'class' => 'crm-select2',
+      'multiple' => TRUE,
+    ),
+    'pseudoconstant' => array(
+      'callback' => 'CRM_Accountsync_BAO_Config::getSupportedContributionEntities',
+    ),
   ),
   'account_sync_queue_update_contacts' => array(
     'group_name' => 'Account Sync',
@@ -47,17 +39,16 @@ return array(
     'description' => 'Trigger contact update when entity edited or created',
     'title' =>  'Entities to trigger contact update',
     'help_text' => 'When these entities are created the contact will be queued for update',
-    'html_type' => 'advmultiselect',
     'default' => array('Contact', 'Email', 'Address', 'Phone'),
-    'quick_form_type' => 'Element',
+    'quick_form_type' => 'Select',
+    'html_type' => 'Select',
     'html_attributes' => array(
-      'Contact' => 'Contact',
-      'Contribution' => 'Contribution',
-      'ContributionRecur' => 'Recurring Contribution',
-      'Address' => 'Address',
-      'Email' => 'Email',
-      'Phone' => 'Phone',
-    )
+      'class' => 'crm-select2',
+      'multiple' => TRUE,
+    ),
+    'pseudoconstant' => array(
+      'callback' => 'CRM_Accountsync_BAO_Config::getSupportedContactUpdateEntities',
+    ),
   ),
   'account_sync_queue_create_invoice' => array(
     'group_name' => 'Account Sync',
@@ -70,12 +61,16 @@ return array(
     'description' => 'Trigger Invoice Creation when entity created',
     'title' =>  'Entities to trigger invoice create',
     'help_text' => 'When these entities are created an invoice will be queued for create',
-    'html_type' => 'advmultiselect',
+    'html_type' => 'Select',
     'default' => array('Contribution'),
-    'quick_form_type' => 'Element',
+    'quick_form_type' => 'Select',
     'html_attributes' => array(
-      'Contribution' => 'Contribution',
-    )
+      'class' => 'crm-select2',
+      'multiple' => TRUE,
+    ),
+    'pseudoconstant' => array(
+      'callback' => 'CRM_Accountsync_BAO_Config::getSupportedContributionCreateEntities',
+    ),
   ),
   'account_sync_skip_inv_by_pymt_processor' => array(
     'group_name' => 'Account Sync',
@@ -88,10 +83,16 @@ return array(
     'description' => 'Skip trigger of Invoice Creation when entities use this payment processor',
     'title' =>  'Payment processors to trigger skip of invoice create',
     'help_text' => 'When entities that use these payment processors are created an invoice will not be queued for create',
-    'html_type' => 'advmultiselect',
+    'html_type' => 'Select',
     'default' => array(''),
-    'quick_form_type' => 'Element',
-    'html_attributes' => $processors,
+    'quick_form_type' => 'Select',
+    'html_attributes' => array(
+      'class' => 'crm-select2',
+      'multiple' => TRUE,
+    ),
+    'pseudoconstant' => [
+      'callback' => 'CRM_Accountsync_BAO_Config::getPaymentProcessors',
+    ],
   ),
   'account_sync_contribution_day_zero' => array(
     'group_name' => 'Account Sync',
