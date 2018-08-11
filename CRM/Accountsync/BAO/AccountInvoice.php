@@ -201,7 +201,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $sql = "SELECT  cas.contribution_id
       FROM civicrm_account_invoice cas
       LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
-      AND accounts_status_id =3
+      WHERE accounts_status_id =3
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
 
