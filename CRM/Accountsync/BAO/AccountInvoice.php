@@ -98,8 +98,8 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       $contribution['payment_instrument_id'] = array_search($contribution['payment_instrument'], $paymentInstruments['values']);
     }
 
-    $contribution['payment_instrument_financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($contribution['payment_instrument_id']);
     try {
+      $contribution['payment_instrument_financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($contribution['payment_instrument_id']);
       $contribution['payment_instrument_accounting_code'] = civicrm_api3('financial_account', 'getvalue', array(
         'id' => $contribution['payment_instrument_financial_account_id'],
         'return' => 'accounting_code',
