@@ -187,7 +187,13 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       if (is_numeric($isSendReceipt)) {
         $params['is_email_receipt'] = $send_receipt;
       }
-      civicrm_api3('contribution', 'completetransaction', $params);
+      try {
+        civicrm_api3('contribution', 'completetransaction', $params);
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        // CiviCRM failed to complete the contribution.
+        // TODO: Need to log error somewhere so Admin know contribution completed transaction has failed.
+      }
     }
   }
 
