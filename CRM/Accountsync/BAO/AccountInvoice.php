@@ -106,7 +106,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       ));
     }
     catch(Exception $e) {
-      ;
+
     }
 
     return array($contribution['id'] => $contribution);
@@ -157,7 +157,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    */
   public static function completeContributionFromAccountsStatus() {
     $sql = "
-      SELECT contribution_id, receive_date
+      SELECT cas.id civicrm_account_invoice_id, contribution_id, receive_date
       FROM civicrm_account_invoice cas
       LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
       WHERE civi.contribution_status_id =2
@@ -174,9 +174,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       case 'send':
         $send_receipt = 1;
         break;
+
       case 'do_not_send':
         $send_receipt = 0;
         break;
+
       default:
         $send_receipt = NULL;
         break;
@@ -192,7 +194,11 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       }
       catch (CiviCRM_API3_Exception $e) {
         // CiviCRM failed to complete the contribution.
-        // TODO: Need to log error somewhere so Admin know contribution completed transaction has failed.
+        $error = 'Contribution:completetransaction API failed, ' . $e->getMessage();
+        civicrm_api3('AccountInvoice', 'create', array(
+          'id'         => $dao->civicrm_account_invoice_id,
+          'error_data' => json_encode([$error]),
+        ));
       }
     }
   }
