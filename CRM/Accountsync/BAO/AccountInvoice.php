@@ -55,6 +55,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       // CRM-16522.
       $contribution['api.line_item.get'] = civicrm_api3('line_item', 'get', array(
         'contribution_id' => $contribution['id'],
+        'options' => ['limit' => 0],
       ));
 
       if ($contribution['api.line_item.get']['count']) {
