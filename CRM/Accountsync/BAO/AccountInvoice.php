@@ -187,7 +187,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
 
     while ($dao->fetch()) {
       $params = array('id' => $dao->contribution_id, 'receive_date' => $dao->receive_date);
-      if (is_numeric($isSendReceipt)) {
+      if (is_numeric($send_receipt)) {
         $params['is_email_receipt'] = $send_receipt;
       }
       try {
