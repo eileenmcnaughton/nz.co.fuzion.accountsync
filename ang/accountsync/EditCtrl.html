@@ -24,12 +24,8 @@
             {{ ts('Exclude')}}
           </label>
           <label>
-            <input type="radio" ng-model="accountContact.suggestion" value="create_individual"/>
-            {{ ts('Create Individual') }}
-            </label>
-          <label>
-            <input type="radio" ng-model="accountContact.suggestion" value="create_organization"/>
-            {{ ts('Create Organization') }}
+            <input type="radio" ng-model="accountContact.suggestion" value="create_contact"/>
+            {{ ts('Create: ') }} <input crm-entityref="{entity: 'ContactType', select: {allowClear:true}}" ng-model="accountContact.suggested_contact_type" />
           </label>
           <label>
             <input type="radio" ng-model="accountContact.suggestion" value="link_contact"/>
