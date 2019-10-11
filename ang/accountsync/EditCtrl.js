@@ -52,74 +52,91 @@
     $scope.accountContacts = suggestions.values;
     $scope.totalCount = totalCount.result;
 
-      $scope.save = function save(accountContact) {
-        accountContact['accounts_data']['civicrm_formatted']['contact_type'] = 'Individual';
-        switch (accountContact['suggestion']) {
-          case 'do_not_sync':
-            var success = crmStatus(
-                {start: ts('Saving...'), success: ts('Saved')},
-                crmApi('AccountContact', 'create', {
-                  id: accountContact.id,
-                  do_not_sync: 1,
-                  contact_id: accountContact.contact_id,
-                  plugin: plugin
-                }).then(function(apiResult) {
-                  $scope.removeItem($scope.accountContacts, accountContact);
-                  $scope.totalCount--;
-                })
-            );
-            break;
+    $scope.save = function save(accountContact) {
+      var success;
+      accountContact.accounts_data.civicrm_formatted.contact_type = 'Individual';
+      switch (accountContact.suggestion) {
+        case 'do_not_sync':
+          success = crmStatus(
+            {start: ts('Saving...'), success: ts('Saved')},
+            crmApi('AccountContact', 'create', {
+              id: accountContact.id,
+              do_not_sync: 1,
+              contact_id: accountContact.contact_id,
+              plugin: plugin
+            }).then(function(apiResult) {
+              $scope.removeItem($scope.accountContacts, accountContact);
+              $scope.totalCount--;
+            })
+          );
+          break;
 
-          case 'create_individual':
-            if (!accountContact['accounts_data']['civicrm_formatted']['first_name']
-            &! accountContact['accounts_data']['civicrm_formatted']['last_name']
-            ) {
-              var split = accountContact['accounts_data']['civicrm_formatted']['display_name'].split(' ');
-              accountContact['accounts_data']['civicrm_formatted']['first_name'] = split.shift();
-              accountContact['accounts_data']['civicrm_formatted']['last_name'] = split.pop();
+        case 'create_contact':
+          var contactCreateParams = {};
+          var contactType = crmApi('ContactType', 'getsingle', {
+            return: {0: 'parent_id', 1: 'name'},
+            id: accountContact.suggested_contact_type,
+          }).then(function(contactType) {
+            if (contactType) {
+              if (contactType.parent_id) {
+                contactCreateParams.contact_type = contactType.parent_id;
+                contactCreateParams.contact_sub_type = contactType.name;
+              }
+              else {
+                contactCreateParams.contact_type = contactType.id;
+              }
             }
-          case 'create_organization':
 
-            var contactCreateParams = accountContact['accounts_data']['civicrm_formatted'];
-            var contactTypeString = accountContact['suggestion'].split('_');
-            contactCreateParams['contact_type'] = contactTypeString[1];
-            if (contactCreateParams['contact_type'] == 'organization') {
-              contactCreateParams['organization_name'] = contactCreateParams['display_name'];
+            if (contactCreateParams.contact_type == 3) {
+              contactCreateParams.contact_type = 'Organization';
+              contactCreateParams.organization_name = accountContact.accounts_display_name;
             }
-            contactCreateParams['api.AccountContact.create'] = {'id' : accountContact['id'], 'accounts_needs_update' : 1};
-            var success = crmStatus(
+            else if (contactCreateParams.contact_type == 1) {
+              contactCreateParams.contact_type = 'Individual';
+              if (!accountContact.accounts_data.civicrm_formatted.first_name && !accountContact.accounts_data.civicrm_formatted.last_name) {
+                var split = accountContact.accounts_data.civicrm_formatted.display_name.split(' ');
+                accountContact.accounts_data.civicrm_formatted.first_name = split.shift();
+                accountContact.accounts_data.civicrm_formatted.last_name = split.join(' ');
+              }
+              contactCreateParams.first_name = accountContact.accounts_data.civicrm_formatted.first_name;
+              contactCreateParams.last_name = accountContact.accounts_data.civicrm_formatted.last_name;
+            }
+            contactCreateParams['api.AccountContact.create'] = {id: accountContact.id, accounts_needs_update: 1, plugin: plugin};
+            success = crmStatus(
               {start: ts('Saving...'), success: ts('Saved')},
-                crmApi('Contact', 'create', contactCreateParams)
+              crmApi('Contact', 'create', contactCreateParams)
             ).then(function(apiResult) {
-              $scope.totalCount--;
-              $scope.removeItem($scope.accountContacts, accountContact);
-            },
-            function(error) {
-              console.log(error);
-                }
+                $scope.totalCount--;
+                $scope.removeItem($scope.accountContacts, accountContact);
+              },
+              function(error) {
+                console.log(error);
+              }
             );
-            break;
+          });
 
-          case 'link_contact':
-            var success = crmStatus(
-              {start: ts('Saving...'), success: ts('Saved')},
-              crmApi('AccountContact', 'create', {
-                'id' : accountContact['id'],
-                'contact_id' : accountContact['suggested_contact_id'],
-                'accounts_needs_update' : 1,
-              })
-            )
+          break;
+
+        case 'link_contact':
+          success = crmStatus(
+            {start: ts('Saving...'), success: ts('Saved')},
+            crmApi('AccountContact', 'create', {
+              'id' : accountContact['id'],
+              'contact_id' : accountContact['suggested_contact_id'],
+              'accounts_needs_update' : 1,
+            })
+          )
             .then(function(apiResult) {
-              $scope.totalCount--;
-              $scope.removeItem($scope.accountContacts, accountContact);
-            },
-            function(apiResult) {
-              accountContact['suggestion'] = 'do_not_sync';
-              accountContact['is_error'] = true;
-          })
-                ;
-            break;
-        }
+                $scope.totalCount--;
+                $scope.removeItem($scope.accountContacts, accountContact);
+              },
+              function(apiResult) {
+                accountContact['suggestion'] = 'do_not_sync';
+                accountContact['is_error'] = true;
+              });
+          break;
+
+      }
 
       var nextContact = crmApi('AccountContact', 'getsuggestions', {
           'id' : {'>' : $scope.accountContacts[$scope.accountContacts.length -1]['id']},
