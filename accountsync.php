@@ -20,28 +20,28 @@ function accountsync_civicrm_xmlMenu(&$files) {
  * Implements hook_civicrm_install().
  */
 function accountsync_civicrm_install() {
-  return _accountsync_civix_civicrm_install();
+  _accountsync_civix_civicrm_install();
 }
 
 /**
  * Implements hook_civicrm_uninstall().
  */
 function accountsync_civicrm_uninstall() {
-  return _accountsync_civix_civicrm_uninstall();
+  _accountsync_civix_civicrm_uninstall();
 }
 
 /**
  * Implements hook_civicrm_enable().
  */
 function accountsync_civicrm_enable() {
-  return _accountsync_civix_civicrm_enable();
+  _accountsync_civix_civicrm_enable();
 }
 
 /**
  * Implements hook_civicrm_disable().
  */
 function accountsync_civicrm_disable() {
-  return _accountsync_civix_civicrm_disable();
+  _accountsync_civix_civicrm_disable();
 }
 
 /**
@@ -65,24 +65,14 @@ function accountsync_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * is installed, disabled, uninstalled.
  */
 function accountsync_civicrm_managed(&$entities) {
-  return _accountsync_civix_civicrm_managed($entities);
+  _accountsync_civix_civicrm_managed($entities);
 }
 
 /**
  * Implements hook_civicrm_config().
  */
 function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders) {
-  static $configured = FALSE;
-  if ($configured) {
-    return;
-  }
-  $configured = TRUE;
-
-  $extRoot = dirname(__FILE__) . DIRECTORY_SEPARATOR;
-  $extDir = $extRoot . 'settings';
-  if (!in_array($extDir, $metaDataFolders)) {
-    $metaDataFolders[] = $extDir;
-  }
+  _accountsync_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
@@ -739,14 +729,5 @@ function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL,
  *   Registered entity types.
  */
 function accountsync_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes['CRM_Accountsync_DAO_AccountContact'] = array(
-    'name' => 'AccountContact',
-    'class' => 'CRM_Accountsync_DAO_AccountContact',
-    'table' => 'civicrm_account_contact',
-  );
-  $entityTypes['CRM_Accountsync_DAO_AccountInvoice'] = array(
-    'name' => 'AccountInvoice',
-    'class' => 'CRM_Accountsync_DAO_AccountInvoice',
-    'table' => 'civicrm_account_invoice',
-  );
+  _accountsync_civix_civicrm_entityTypes($entityTypes);
 }
