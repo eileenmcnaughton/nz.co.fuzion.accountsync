@@ -1,6 +1,3 @@
 (function(angular, $, _) {
-  // Declare a list of dependencies.
-  angular.module('accountsync', [
-    'crmUi', 'crmUtil', 'ngRoute'
-  ]);
+  angular.module('accountsync', CRM.angRequires('accountsync'));
 })(angular, CRM.$, CRM._);
