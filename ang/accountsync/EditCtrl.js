@@ -1,8 +1,10 @@
 (function(angular, $, _) {
 
+  angular.module('accountsync', CRM.angular.modules)
+
   // To allow for multiple plugins, pass the plugin used as a parameter.
   // Default is xero for legacy reasons.
-  angular.module('accountsync').config(function($routeProvider) {
+  .config(function($routeProvider) {
       $routeProvider.when('/accounts/contact/sync/:plugin?', {
         controller: 'AccountsyncEditCtrl',
         templateUrl: '~/accountsync/EditCtrl.html',
@@ -35,13 +37,13 @@
         }
       });
     }
-  );
+  )
 
   // The controller uses *injection*. This default injects a few things:
   //   $scope -- This is the set of variables shared between JS and HTML.
   //   crmApi, crmStatus, crmUiHelp -- These are services provided by civicrm-core.
   //   accountContacts -- The current account contacts, defined above in config().
-  angular.module('accountsync').controller('AccountsyncEditCtrl', function($scope, crmApi, crmStatus, crmUiHelp, suggestions, totalCount, $routeParams) {
+  .controller('AccountsyncEditCtrl', function($scope, crmApi, crmStatus, crmUiHelp, suggestions, totalCount, $routeParams) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('accountsync');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/accountsync/EditCtrl'}); // See: templates/CRM/accountsync/EditCtrl.hlp
@@ -121,8 +123,8 @@
           success = crmStatus(
             {start: ts('Saving...'), success: ts('Saved')},
             crmApi('AccountContact', 'create', {
-              'id' : accountContact['id'],
-              'contact_id' : accountContact['suggested_contact_id'],
+              'id' : accountContact.id,
+              'contact_id' : accountContact.suggested_contact_id,
               'accounts_needs_update' : 1,
             })
           )
@@ -131,8 +133,8 @@
                 $scope.removeItem($scope.accountContacts, accountContact);
               },
               function(apiResult) {
-                accountContact['suggestion'] = 'do_not_sync';
-                accountContact['is_error'] = true;
+                accountContact.suggestion = 'do_not_sync';
+                accountContact.is_error = true;
               });
           break;
 
@@ -160,7 +162,5 @@
       }
     };
   });
-
-
 
 })(angular, CRM.$, CRM._);

@@ -461,25 +461,13 @@ function _accountsync_civix_civicrm_entityTypes(&$entityTypes) {
     array (
       'name' => 'AccountContact',
       'class' => 'CRM_Accountsync_DAO_AccountContact',
-      'table' => 'civicrm_accountcontact',
+      'table' => 'civicrm_account_contact',
     ),
     'CRM_Accountsync_DAO_AccountInvoice' => 
     array (
       'name' => 'AccountInvoice',
       'class' => 'CRM_Accountsync_DAO_AccountInvoice',
-      'table' => 'civicrm_accountinvoice',
-    ),
-    'CRM_Accountsync_DAO_AccountLineItems' => 
-    array (
-      'name' => 'AccountLineItems',
-      'class' => 'CRM_Accountsync_DAO_AccountLineItems',
-      'table' => 'civicrm_accountlineitems',
-    ),
-    'CRM_Accountsync_DAO_AccountPayment' => 
-    array (
-      'name' => 'AccountPayment',
-      'class' => 'CRM_Accountsync_DAO_AccountPayment',
-      'table' => 'civicrm_accountpayment',
+      'table' => 'civicrm_account_invoice',
     ),
   ));
 }
