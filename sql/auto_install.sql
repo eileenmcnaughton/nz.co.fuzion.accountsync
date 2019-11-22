@@ -1,25 +1,9 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 5                                                  |
--- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2019                                |
--- +--------------------------------------------------------------------+
--- | This file is a part of CiviCRM.                                    |
+-- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
--- | CiviCRM is free software; you can copy, modify, and distribute it  |
--- | under the terms of the GNU Affero General Public License           |
--- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
--- |                                                                    |
--- | CiviCRM is distributed in the hope that it will be useful, but     |
--- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
--- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
--- | See the GNU Affero General Public License for more details.        |
--- |                                                                    |
--- | You should have received a copy of the GNU Affero General Public   |
--- | License and the CiviCRM Licensing Exception along                  |
--- | with this program; if not, contact CiviCRM LLC                     |
--- | at info[AT]civicrm[DOT]org. If you have questions about the        |
--- | GNU Affero General Public License or the licensing of CiviCRM,     |
--- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+-- | This work is published under the GNU AGPLv3 license with some      |
+-- | permitted exceptions and without any warranty. For full license    |
+-- | and copyright information, see https://civicrm.org/licensing       |
 -- +--------------------------------------------------------------------+
 --
 -- Generated from schema.tpl
@@ -28,27 +12,11 @@
 
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 5                                                  |
--- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2019                                |
--- +--------------------------------------------------------------------+
--- | This file is a part of CiviCRM.                                    |
+-- | Copyright CiviCRM LLC. All rights reserved.                        |
 -- |                                                                    |
--- | CiviCRM is free software; you can copy, modify, and distribute it  |
--- | under the terms of the GNU Affero General Public License           |
--- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
--- |                                                                    |
--- | CiviCRM is distributed in the hope that it will be useful, but     |
--- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
--- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
--- | See the GNU Affero General Public License for more details.        |
--- |                                                                    |
--- | You should have received a copy of the GNU Affero General Public   |
--- | License and the CiviCRM Licensing Exception along                  |
--- | with this program; if not, contact CiviCRM LLC                     |
--- | at info[AT]civicrm[DOT]org. If you have questions about the        |
--- | GNU Affero General Public License or the licensing of CiviCRM,     |
--- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+-- | This work is published under the GNU AGPLv3 license with some      |
+-- | permitted exceptions and without any warranty. For full license    |
+-- | and copyright information, see https://civicrm.org/licensing       |
 -- +--------------------------------------------------------------------+
 --
 -- Generated from drop.tpl
@@ -87,17 +55,15 @@ CREATE TABLE `civicrm_account_contact` (
      `accounts_contact_id` varchar(128)    COMMENT 'External Reference',
      `accounts_display_name` varchar(128)    COMMENT 'Name from Accounts Package',
      `last_sync_date` timestamp   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When was the contact last synced.',
-     `accounts_modified_date` timestamp   DEFAULT '0000-00-00 00:00:00' COMMENT 'When was the invoice last Altered in the accounts system.',
+     `accounts_modified_date` timestamp NULL   COMMENT 'When was the invoice last Altered in the accounts system.',
      `accounts_data` text    COMMENT 'json array of data as returned from accounts system',
      `error_data` text    COMMENT 'json array of error data as returned from accounts system',
      `accounts_needs_update` tinyint   DEFAULT 1 COMMENT 'Include in next push to accounts',
      `connector_id` int unsigned   DEFAULT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
      `plugin` varchar(32)    COMMENT 'Name of plugin creating the account',
-     `do_not_sync` tinyint   DEFAULT 0 COMMENT 'Do not sync this contact' 
-,
-        PRIMARY KEY (`id`)
- 
-    ,     UNIQUE INDEX `UI_account_system_id`(
+     `do_not_sync` tinyint   DEFAULT 0 COMMENT 'Do not sync this contact',
+        PRIMARY KEY (`id`),
+        UNIQUE INDEX `UI_account_system_id`(
         accounts_contact_id
       , connector_id
       , plugin
@@ -107,8 +73,8 @@ CREATE TABLE `civicrm_account_contact` (
       , connector_id
       , plugin
   )
-  
-,          CONSTRAINT FK_civicrm_account_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE  
+
+,          CONSTRAINT FK_civicrm_account_contact_contact_id FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
 )    ;
 
 -- /*******************************************************
@@ -126,15 +92,15 @@ CREATE TABLE `civicrm_account_invoice` (
      `accounts_invoice_id` varchar(128)   DEFAULT NULL COMMENT 'External Reference',
      `accounts_status_id` int unsigned   DEFAULT 0 COMMENT 'Status in accounts system (mapped to civicrm definition)',
      `last_sync_date` timestamp NOT NULL  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'When was the contact last synced.',
-     `accounts_modified_date` timestamp NOT NULL  DEFAULT '0000-00-00 00:00:00' COMMENT 'When was the invoice last Altered in the accounts system.',
+     `accounts_modified_date` timestamp NULL   COMMENT 'When was the invoice last Altered in the accounts system.',
      `accounts_data` text   DEFAULT NULL COMMENT 'json array of data as returned from accounts system',
      `error_data` text   DEFAULT NULL COMMENT 'json array of error data as returned from accounts system',
      `accounts_needs_update` tinyint   DEFAULT 0 COMMENT 'Include in next push to accounts',
      `connector_id` int unsigned   DEFAULT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
-     `plugin` varchar(32)    COMMENT 'Name of plugin creating the account' 
+     `plugin` varchar(32)    COMMENT 'Name of plugin creating the account'
 ,
         PRIMARY KEY (`id`)
- 
+
     ,     INDEX `index_contribution_invoice`(
         contribution_id
   )
@@ -148,8 +114,8 @@ CREATE TABLE `civicrm_account_invoice` (
       , connector_id
       , plugin
   )
-  
-,          CONSTRAINT FK_civicrm_account_invoice_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE RESTRICT  
+
+,          CONSTRAINT FK_civicrm_account_invoice_contribution_id FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution`(`id`) ON DELETE RESTRICT
 )    ;
 
- 
+
