@@ -718,6 +718,7 @@ function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL,
         // then it will fail
         $accountContact = civicrm_api3('account_contact', 'getsingle', ['plugin' => $plugin, 'contact_id' => $old_id]);
         $accountContact['contact_id'] = $new_id;
+        $accountContact['is_transactional'] = FALSE;
         civicrm_api3('account_contact', 'create', $accountContact);
       }
       catch (Exception $e) {
