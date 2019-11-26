@@ -88,7 +88,7 @@ function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders) {
  * @param object $objectRef
  */
 function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  $whitelistOps = array('update', 'create', 'restore', 'edit');
+  $whitelistOps = ['update', 'create', 'restore', 'edit'];
 
   if (!in_array($op, $whitelistOps)) {
     return;
@@ -127,18 +127,18 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
               // @todo refine when we return early in case of odd cases where we DO want to know.
               return;
             }
-            $contactID = civicrm_api3('Contribution', 'getvalue', array(
-                'id' => $contribution_id,
-                'return' => 'contact_id',
-            ));
+            $contactID = civicrm_api3('Contribution', 'getvalue', [
+              'id' => $contribution_id,
+              'return' => 'contact_id',
+            ]);
             break;
 
           case 'Contribution':
             $contribution_id = $objectRef->id;
-            $contactID = civicrm_api3('Contribution', 'getvalue', array(
-                'id' => $contribution_id,
-                'return' => 'contact_id',
-            ));
+            $contactID = civicrm_api3('Contribution', 'getvalue', [
+              'id' => $contribution_id,
+              'return' => 'contact_id',
+            ]);
             break;
           case 'Contact':
             $contactID = $objectRef->id;
@@ -162,8 +162,8 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       $pushEnabledStatuses = Civi::settings()->get('account_sync_push_contribution_status');
       //Don't create account invoice for zero contribution.
       //Skip contribution with status not enabled in settings.
-      $contriValues = array();
-      $returnValues = array('contribution_status_id', 'total_amount', 'is_test');
+      $contriValues = [];
+      $returnValues = ['contribution_status_id', 'total_amount', 'is_test'];
       foreach ($returnValues as $key => $val) {
         if (!empty($objectRef->$val)) {
           $contriValues[$val] = $objectRef->$val;
@@ -172,10 +172,10 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       }
       //Get from api if not present in $objectRef.
       if (!empty($returnValues)) {
-        $apiValues = civicrm_api3('Contribution', 'getsingle', array(
+        $apiValues = civicrm_api3('Contribution', 'getsingle', [
           'id' => $contribution_id,
           'return' => $returnValues,
-        ));
+        ]);
         $contriValues = array_merge($contriValues, $apiValues);
       }
       if ($contriValues['is_test'] || empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
@@ -198,9 +198,9 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  * @param int $contribution_id
  * @param string $invoiceDayZero
  *
+ * @return bool
  * @throws \CiviCRM_API3_Exception
  *
- * @return bool
  */
 function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZero) {
   if (empty($invoiceDayZero)) {
@@ -208,10 +208,10 @@ function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZ
   }
   $receive_date = ($objectName == 'Contribution') ? $objectRef->receive_date : NULL;
   if (!$receive_date) {
-    $receive_date = civicrm_api3('Contribution', 'getvalue', array(
+    $receive_date = civicrm_api3('Contribution', 'getvalue', [
       'id' => $contribution_id,
       'return' => 'receive_date',
-    ));
+    ]);
   }
   if (strtotime($receive_date) < strtotime($invoiceDayZero)) {
     return TRUE;
@@ -229,14 +229,14 @@ function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZ
  *   Array of ids from civicrm_connectors or 0 for settings only.
  */
 function _accountsync_get_connectors() {
-  $connectors = array();
+  $connectors = [];
   if (empty($connectors)) {
     try {
-      $result = civicrm_api3('connector_type', 'get', array(
+      $result = civicrm_api3('connector_type', 'get', [
         'module' => 'accountsync',
         'function' => 'credentials',
         'api.connector.get' => 1,
-      ));
+      ]);
 
       if (!$result['count']) {
         throw new Exception('No connector types found. Fallback to settings');
@@ -255,7 +255,7 @@ function _accountsync_get_connectors() {
 
     }
     catch (Exception $e) {
-      $connectors = array(0);
+      $connectors = [0];
     }
   }
   return $connectors;
@@ -277,7 +277,7 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
     return TRUE;
   }
   $accounts_contact_id = _accountsync_get_account_contact_id($connector_id);
-  static $connector_financial_types = array();
+  static $connector_financial_types = [];
   if (!in_array($financial_type_id, $connector_financial_types)) {
     $connector_financial_types[$financial_type_id] = CRM_Accountsync_BAO_AccountInvoice::getAccountsContact($financial_type_id);
   }
@@ -303,7 +303,7 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
  */
 function _accountsync_get_contact_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities, array());
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities, []);
   return $createEntities;
 }
 
@@ -320,7 +320,7 @@ function _accountsync_get_contact_create_entities($connector_id) {
  */
 function _accountsync_get_contact_update_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities, array());
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities, []);
   return $createEntities;
 }
 
@@ -337,7 +337,7 @@ function _accountsync_get_contact_update_entities($connector_id) {
  */
 function _accountsync_get_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities, array());
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities, []);
   return $createEntities;
 }
 
@@ -354,10 +354,10 @@ function _accountsync_get_invoice_create_entities($connector_id) {
  */
 function _accountsync_get_skip_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $skipEntities = CRM_Utils_Array::value('account_sync_skip_inv_by_pymt_processor', $entities, array());
-  if ($skipEntities === array('')) {
+  $skipEntities = CRM_Utils_Array::value('account_sync_skip_inv_by_pymt_processor', $entities, []);
+  if ($skipEntities === ['']) {
     // There is some minor weirdness around the settings format sometimes. Handle.
-    return array();
+    return [];
   }
   return $skipEntities;
 }
@@ -375,7 +375,7 @@ function _accountsync_get_skip_invoice_create_entities($connector_id) {
  */
 function _accountsync_get_invoice_day_zero($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_contribution_day_zero', $entities, array());
+  $createEntities = CRM_Utils_Array::value('account_sync_contribution_day_zero', $entities, []);
   return $createEntities;
 }
 
@@ -392,7 +392,7 @@ function _accountsync_get_invoice_day_zero($connector_id) {
  */
 function _accountsync_get_account_contact_id($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  return CRM_Utils_Array::value('account_sync_account_contact_id', $entities, array());
+  return CRM_Utils_Array::value('account_sync_account_contact_id', $entities, []);
 }
 
 /**
@@ -407,18 +407,18 @@ function _accountsync_get_account_contact_id($connector_id) {
  * @throws \CiviCRM_API3_Exception
  */
 function _accountsync_get_entity_action_settings($connector_id) {
-  static $entities = array();
+  static $entities = [];
   if (empty($entities[$connector_id])) {
-    $result = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
+    $result = civicrm_api3('setting', 'get', ['group' => 'Account Sync']);
     // There appears to be a bug in CiviCRM core whereby sometimes extension
     // setting metadata isn't cached. If we think that is the case we'll flush the caches
     // to fix it. This happens rarely & represents a serious functionality breakage
     // so performance trade off is OK
     if (!isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
-     && !isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
+      && !isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
     ) {
-      civicrm_api3('system', 'flush', array());
-      $result = civicrm_api3('setting', 'get', array('group' => 'Account Sync'));
+      civicrm_api3('system', 'flush', []);
+      $result = civicrm_api3('setting', 'get', ['group' => 'Account Sync']);
     }
 
     $entities[$connector_id] = $result['values'][CRM_Core_Config::domainID()];
@@ -432,12 +432,12 @@ function _accountsync_get_entity_action_settings($connector_id) {
         // be related to account for more than one contact.
         // If we start storing this setting on the connector we can avoid looking
         // for it here.
-        $connector_account_id = civicrm_api3('connector', 'getvalue', array(
+        $connector_account_id = civicrm_api3('connector', 'getvalue', [
           'id' => $connector_id,
           'return' => 'contact_id',
-        ));
+        ]);
         if (!empty($connector_account_id)) {
-          foreach (array('account_sync_queue_contacts', 'account_sync_queue_create_invoice') as $key) {
+          foreach (['account_sync_queue_contacts', 'account_sync_queue_create_invoice'] as $key) {
             foreach ($entities[$connector_id][$key] as $index => $entity) {
               if ($entity == 'Contribution') {
                 $entities[$connector_id][$key][$index] = 'LineItem';
@@ -479,26 +479,27 @@ function accountsync_civicrm_pre($op, $objectName, $id, &$params) {
  */
 function _accountsync_handle_contact_deletion($op, $entity, $id, &$params) {
   if (($op == 'delete' || $op == 'trash' || ($op == 'update' && !empty($params['is_deleted']))) && ($entity == 'Contact')) {
-    foreach(_accountsync_get_enabled_plugins() as $plugin) {
+    foreach (_accountsync_get_enabled_plugins() as $plugin) {
       try {
-        $accountContact = civicrm_api3('account_contact', 'getsingle', array(
-          'contact_id' => $id,
-          'plugin' => $plugin)
+        $accountContact = civicrm_api3('account_contact', 'getsingle', [
+            'contact_id' => $id,
+            'plugin' => $plugin,
+          ]
         );
 
         if (empty($accountContact['accounts_contact_id'])) {
-          civicrm_api3('account_contact', 'delete', array('id' => $accountContact['id']));
+          civicrm_api3('account_contact', 'delete', ['id' => $accountContact['id']]);
         }
         elseif ($op == 'trash' || $op == 'update') {
           CRM_Core_Session::setStatus(ts('You are deleting a contact that has been synced to your accounts system. It is recommended you restore the contact & fix this'));
         }
         else {
-          civicrm_api3('account_contact', 'delete', array('id' => $accountContact['id']));
+          civicrm_api3('account_contact', 'delete', ['id' => $accountContact['id']]);
           CRM_Core_Session::setStatus(ts('You have deleted a contact that has been synced to your accounts system. The sync tracking record has been deleted. Resolution is unclear'));
 
         }
       }
-      catch(Exception $e) {
+      catch (Exception $e) {
         //doesn't exist - move along, nothing to see here
       }
     }
@@ -515,14 +516,15 @@ function _accountsync_handle_contact_deletion($op, $entity, $id, &$params) {
  */
 function _accountsync_handle_contribution_deletion($op, $objectName, $id, &$params) {
   if (($op == 'delete') && ($objectName == 'Contribution')) {
-    foreach(_accountsync_get_enabled_plugins() as $plugin) {
+    foreach (_accountsync_get_enabled_plugins() as $plugin) {
       try {
-        $accountInvoice = civicrm_api3('AccountInvoice', 'getsingle', array(
-          'contribution_id' => $id,
-          'plugin' => $plugin)
+        $accountInvoice = civicrm_api3('AccountInvoice', 'getsingle', [
+            'contribution_id' => $id,
+            'plugin' => $plugin,
+          ]
         );
         if (empty($accountInvoice['accounts_invoice_id'])) {
-          civicrm_api3('AccountInvoice', 'delete', array('id' => $accountInvoice['id']));
+          civicrm_api3('AccountInvoice', 'delete', ['id' => $accountInvoice['id']]);
         }
         else {
           //here we need to create a way to void
@@ -547,7 +549,7 @@ function _accountsync_handle_contribution_deletion($op, $objectName, $id, &$para
  *   Entity name
  */
 function _accountsync_map_object_name_to_entity($objectName) {
-  $contactEntities = array('Contact', 'Individual', 'Organization', 'Household');
+  $contactEntities = ['Contact', 'Individual', 'Organization', 'Household'];
   if (in_array($objectName, $contactEntities)) {
     return 'Contact';
   }
@@ -560,14 +562,15 @@ function _accountsync_map_object_name_to_entity($objectName) {
  * Currently we don't have a mechanism for this & are just returning xero.
  */
 function _accountsync_get_enabled_plugins() {
-  static $plugins = array();
+  static $plugins = [];
 
   if (empty($plugins)) {
     /* Use the CiviCRM hook system to get a list of plugins.
      * This is largely undocumented, so just following the pattern of built-in
      * hooks.
      */
-    CRM_Utils_Hook::singleton()->invoke(1, $plugins, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'civicrm_accountsync_plugins');
+    CRM_Utils_Hook::singleton()
+      ->invoke(1, $plugins, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'civicrm_accountsync_plugins');
   }
 
   return $plugins;
@@ -590,22 +593,23 @@ function _accountsync_get_enabled_plugins() {
  *   Otherwise this will be 0.
  */
 function _accountsync_create_account_contact($contactID, $createNew, $connector_id) {
-  $accountContact = array(
+  $accountContact = [
     'contact_id' => $contactID,
     // Do not rollback on fail.
     'is_transactional' => FALSE,
-  );
+  ];
 
   try {
-    $contact = civicrm_api3("contact", "getsingle", array(
-        "id"     => $contactID,
-        "return" => array("id", "contact_is_deleted"),
-    ));
+    $contact = civicrm_api3("contact", "getsingle", [
+      "id" => $contactID,
+      "return" => ["id", "contact_is_deleted"],
+    ]);
     if ($contact["contact_is_deleted"]) {
-        // Contact is deleted, Skip the sync.
-        return;
+      // Contact is deleted, Skip the sync.
+      return;
     }
-  } catch(CiviCRM_API3_Exception $e) {
+  }
+  catch (CiviCRM_API3_Exception $e) {
     // Contact not found, Skip the sync.
     return;
   }
@@ -614,7 +618,7 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
     $accountContact['plugin'] = $plugin;
     $accountContact['connector_id'] = $connector_id;
     try {
-      $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array_merge($accountContact, array('return' => 'id')));
+      $accountContact['id'] = civicrm_api3('account_contact', 'getvalue', array_merge($accountContact, ['return' => 'id']));
       $accountContact['accounts_needs_update'] = 1;
       civicrm_api3('account_contact', 'create', $accountContact);
     }
@@ -658,24 +662,25 @@ function accountsync_civicrm_angularModules(&$angularModules) {
  *   Otherwise this will be 0.
  */
 function _accountsync_create_account_invoice($contributionID, $createNew, $connector_id) {
-  $accountInvoice = array(
-    'contribution_id' => $contributionID, 'accounts_needs_update' => 1,
+  $accountInvoice = [
+    'contribution_id' => $contributionID,
+    'accounts_needs_update' => 1,
     // Do not rollback on fail.
     'is_transactional' => FALSE,
-  );
-  foreach(_accountsync_get_enabled_plugins() as $plugin) {
+  ];
+  foreach (_accountsync_get_enabled_plugins() as $plugin) {
     unset($accountInvoice['id']); // Ensure id is not set in case of multiple plugins
 
     if ($connector_id) {
       $accountInvoice['connector_id'] = $connector_id;
     }
     try {
-      $accountInvoice['id'] = civicrm_api3('AccountInvoice', 'getvalue', array(
+      $accountInvoice['id'] = civicrm_api3('AccountInvoice', 'getvalue', [
         'plugin' => $plugin,
         'return' => 'id',
         'contribution_id' => $contributionID,
         'connector_id' => $connector_id,
-      ));
+      ]);
     }
     catch (CiviCRM_API3_Exception $e) {
       // new contact
@@ -707,11 +712,11 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
  */
 function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
   if (!empty($new_id) && !empty($old_id) && $type == 'sqls') {
-    foreach(_accountsync_get_enabled_plugins() as $plugin) {
+    foreach (_accountsync_get_enabled_plugins() as $plugin) {
       try {
         //@todo - this will only move old contact ref to the new one - if both have xero accounts
         // then it will fail
-        $accountContact = civicrm_api3('account_contact', 'getsingle', array('plugin' => $plugin, 'contact_id' => $old_id));
+        $accountContact = civicrm_api3('account_contact', 'getsingle', ['plugin' => $plugin, 'contact_id' => $old_id]);
         $accountContact['contact_id'] = $new_id;
         civicrm_api3('account_contact', 'create', $accountContact);
       }
