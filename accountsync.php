@@ -97,6 +97,9 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   $connectors = _accountsync_get_connectors();
   $objectName = _accountsync_map_object_name_to_entity($objectName);
 
+  // Get Status ID for Pending contributions
+  $pendingContributionStatusId = array_search('Pending', CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name'));
+
   foreach ($connectors as $connector_id) {
     $createEntities = _accountsync_get_contact_create_entities($connector_id);
     $updateEntities = _accountsync_get_contact_update_entities($connector_id);
@@ -163,7 +166,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       //Don't create account invoice for zero contribution.
       //Skip contribution with status not enabled in settings.
       $contriValues = [];
-      $returnValues = ['contribution_status_id', 'total_amount', 'is_test'];
+      $returnValues = ['contribution_status_id', 'total_amount', 'is_test', 'is_pay_later'];
       foreach ($returnValues as $key => $val) {
         if (!empty($objectRef->$val)) {
           $contriValues[$val] = $objectRef->$val;
@@ -178,7 +181,9 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         ]);
         $contriValues = array_merge($contriValues, $apiValues);
       }
-      if ($contriValues['is_test'] || empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
+
+      // Skip any Pending (incomplete transactions) which are Pending contributions with Pay Later flag not set
+      if (($pendingContributionStatusId == $contriValues['contribution_status_id'] && $contriValues['is_pay_later'] == 0)|| $contriValues['is_test'] || empty(floatval($contriValues['total_amount'])) || !in_array($contriValues['contribution_status_id'], $pushEnabledStatuses)) {
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
