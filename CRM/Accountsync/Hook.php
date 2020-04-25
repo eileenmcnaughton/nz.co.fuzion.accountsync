@@ -14,25 +14,18 @@ class CRM_Accountsync_Hook {
    * @param bool $save
    *   Save? - set this to false if it should be skipped
    *
+   * @param $params
+   *
    * @return mixed
    *   Ignored value.
    */
   public static function accountPullPreSave($entity, &$data, &$save, &$params) {
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    // if db.ver < code.ver, time to upgrade
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
-        $data, $save, $params, CRM_Core_DAO::$_nullObject,
-        CRM_Core_DAO::$_nullObject,
-        'civicrm_accountPullPreSave'
-      );
-    }
-    else {
-      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
-        $data, $save, $params, CRM_Core_DAO::$_nullObject,
-        'civicrm_accountPullPreSave'
-      );
-    }
+    $null = NULL;
+    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+      $data, $save, $params, $null,
+      $null,
+      'civicrm_accountPullPreSave'
+    );
   }
 
 
@@ -50,22 +43,15 @@ class CRM_Accountsync_Hook {
    *
    * @return mixed
    *   Ignore value.
+   *
    */
   public static function accountPushAlterMapped($entity, &$data, &$save, &$params) {
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
-        $data, $save, $params, CRM_Core_DAO::$_nullObject,
-        CRM_Core_DAO::$_nullObject,
-        'civicrm_accountPushAlterMapped'
-      );
-    }
-    else {
-      return CRM_Utils_Hook::singleton()->invoke(4, $entity,
-        $data, $save, $params, CRM_Core_DAO::$_nullObject,
-        'civicrm_accountPushAlterMapped'
-      );
-    }
+    $null = NULL;
+    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+      $data, $save, $params, $null,
+      $null,
+      'civicrm_accountPushAlterMapped'
+    );
   }
 
   /**
@@ -82,19 +68,11 @@ class CRM_Accountsync_Hook {
    *   Ignore value.
    */
   public static function mapAccountsData(&$accountsData, $entity, $plugin) {
-    $codeVersion = explode('.', CRM_Utils_System::version());
-    if (version_compare($codeVersion[0] . '.' . $codeVersion[1], 4.5) >= 0) {
-      return CRM_Utils_Hook::singleton()->invoke(3, $accountsData, $entity,
-        $plugin, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
-        CRM_Core_DAO::$_nullObject,
-        'civicrm_mapAccountsData'
-      );
-    }
-    else {
-      return CRM_Utils_Hook::singleton()->invoke(3, $accountsData, $entity,
-        $plugin, CRM_Core_DAO::$_nullObject, CRM_Core_DAO::$_nullObject,
-        'civicrm_mapAccountsData'
-      );
-    }
+    $null = NULL;
+    return CRM_Utils_Hook::singleton()->invoke(3, $accountsData, $entity,
+      $plugin, $null, $null,
+      $null,
+      'civicrm_mapAccountsData'
+    );
   }
 }
