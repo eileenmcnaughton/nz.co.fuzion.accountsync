@@ -156,7 +156,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       if (isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZero)) {
         return;
       }
-      if (in_array($objectRef->payment_processor, $skipInvoiceEntities)) {
+      if (isset($objectRef->payment_processor) && in_array($objectRef->payment_processor, $skipInvoiceEntities)) {
         return;
       }
       $pushEnabledStatuses = Civi::settings()->get('account_sync_push_contribution_status');
