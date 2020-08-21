@@ -21,7 +21,7 @@ class CRM_Accountsync_Hook {
    */
   public static function accountPullPreSave($entity, &$data, &$save, &$params) {
     $null = NULL;
-    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+    return CRM_Utils_Hook::singleton()->invoke(['entity', 'data', 'save', 'params'], $entity,
       $data, $save, $params, $null,
       $null,
       'civicrm_accountPullPreSave'
@@ -47,7 +47,7 @@ class CRM_Accountsync_Hook {
    */
   public static function accountPushAlterMapped($entity, &$data, &$save, &$params) {
     $null = NULL;
-    return CRM_Utils_Hook::singleton()->invoke(4, $entity,
+    return CRM_Utils_Hook::singleton()->invoke(['entity', 'data', 'save', 'params'], $entity,
       $data, $save, $params, $null,
       $null,
       'civicrm_accountPushAlterMapped'
@@ -69,7 +69,7 @@ class CRM_Accountsync_Hook {
    */
   public static function mapAccountsData(&$accountsData, $entity, $plugin) {
     $null = NULL;
-    return CRM_Utils_Hook::singleton()->invoke(3, $accountsData, $entity,
+    return CRM_Utils_Hook::singleton()->invoke(['accountsData', 'entity', 'plugin'], $accountsData, $entity,
       $plugin, $null, $null,
       $null,
       'civicrm_mapAccountsData'
