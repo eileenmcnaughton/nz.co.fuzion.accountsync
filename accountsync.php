@@ -710,16 +710,30 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
  * @param null $old_id
  * @param null $tables
  */
-function accountsync_civicrm_merge($type, $data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
+function accountsync_civicrm_merge($type, &$data, $new_id = NULL, $old_id = NULL, $tables = NULL) {
   if (!empty($new_id) && !empty($old_id) && $type == 'sqls') {
+    /*
+     * &$data will include an element that updates rows in the civicrm_activity_contact
+     * table with $old_id to have $new_id. If a row already exists for $new_id then we
+     * don't want to do this update
+     */
     foreach (_accountsync_get_enabled_plugins() as $plugin) {
       try {
-        //@todo - this will only move old contact ref to the new one - if both have xero accounts
-        // then it will fail
-        $accountContact = civicrm_api3('account_contact', 'getsingle', ['plugin' => $plugin, 'contact_id' => $old_id]);
-        $accountContact['contact_id'] = $new_id;
-        $accountContact['is_transactional'] = FALSE;
-        civicrm_api3('account_contact', 'create', $accountContact);
+        $accountContact = civicrm_api3(
+          'account_contact',
+          'getsingle',
+          [
+            'plugin' => $plugin,
+            'contact_id' => $new_id
+          ]);
+        if (!empty($accountContact)) {
+          foreach ($data as $i => $sql) {
+            if (strpos($sql, 'account_contact') !== false) {
+              unset($data[$i]);
+              break;
+            }
+          }
+        }
       }
       catch (Exception $e) {
         //nothing to do here
