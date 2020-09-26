@@ -12,6 +12,19 @@ function civicrm_api3_account_contact_create($params) {
 }
 
 /**
+ * AccountContact.create API specification.
+ *
+ * This is used for documentation and validation.
+ *
+ * @param array $spec description of fields supported by this API call
+ *
+ * @see http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
+ */
+function _civicrm_api3_account_contact_create_spec(&$spec) {
+  $spec['connector_id']['api.default] = 0;
+}
+
+/**
  * AccountContact.delete API
  *
  * @param array $params
