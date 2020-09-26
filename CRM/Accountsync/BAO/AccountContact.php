@@ -13,6 +13,7 @@ class CRM_Accountsync_BAO_AccountContact extends CRM_Accountsync_DAO_AccountCont
     $className = 'CRM_Accountsync_DAO_AccountContact';
     $entityName = 'AccountContact';
     $hook = empty($params['id']) ? 'create' : 'edit';
+    $params['connector_id'] = $params['connector_id'] ?? 0;
 
     CRM_Utils_Hook::pre($hook, $entityName, CRM_Utils_Array::value('id', $params), $params);
     $instance = new $className();
