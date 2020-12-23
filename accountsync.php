@@ -570,7 +570,7 @@ function _accountsync_get_enabled_plugins() {
      * hooks.
      */
     CRM_Utils_Hook::singleton()
-      ->invoke(1, $plugins, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'civicrm_accountsync_plugins');
+      ->invoke(['plugins'], $plugins, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, CRM_Utils_Hook::$_nullObject, 'civicrm_accountsync_plugins');
   }
 
   return $plugins;
