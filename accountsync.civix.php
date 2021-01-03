@@ -7,9 +7,9 @@
  * extension.
  */
 class CRM_Accountsync_ExtensionUtil {
-  const SHORT_NAME = "accountsync";
-  const LONG_NAME = "nz.co.fuzion.accountsync";
-  const CLASS_PREFIX = "CRM_Accountsync";
+  const SHORT_NAME = 'accountsync';
+  const LONG_NAME = 'nz.co.fuzion.accountsync';
+  const CLASS_PREFIX = 'CRM_Accountsync';
 
   /**
    * Translate a string using the extension's domain.
