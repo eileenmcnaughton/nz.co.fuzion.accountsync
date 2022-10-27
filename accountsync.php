@@ -722,3 +722,13 @@ function accountsync_civicrm_entityTypes(&$entityTypes) {
 function accountsync_civicrm_postInstall() {
   _accountsync_civix_civicrm_postInstall();
 }
+
+/**
+ * Implements hook_civicrm_check().
+ *
+ * @throws \CiviCRM_API3_Exception
+ */
+function accountsync_civicrm_check(&$messages) {
+  $checks = new CRM_Accountsync_Check($messages);
+  $messages = $checks->checkRequirements();
+}
