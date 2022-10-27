@@ -10,13 +10,6 @@ function accountsync_civicrm_config(&$config) {
 }
 
 /**
- * Implements hook_civicrm_xmlMenu().
- */
-function accountsync_civicrm_xmlMenu(&$files) {
-  _accountsync_civix_civicrm_xmlMenu($files);
-}
-
-/**
  * Implements hook_civicrm_install().
  */
 function accountsync_civicrm_install() {
@@ -56,23 +49,6 @@ function accountsync_civicrm_disable() {
  */
 function accountsync_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _accountsync_civix_civicrm_upgrade($op, $queue);
-}
-
-/**
- * Implements hook_civicrm_managed().
- *
- * Generate a list of entities to create/deactivate/delete when this module
- * is installed, disabled, uninstalled.
- */
-function accountsync_civicrm_managed(&$entities) {
-  _accountsync_civix_civicrm_managed($entities);
-}
-
-/**
- * Implements hook_civicrm_config().
- */
-function accountsync_civicrm_alterSettingsFolders(&$metaDataFolders) {
-  _accountsync_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
@@ -639,20 +615,6 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
 }
 
 /**
- * Implements hook_civicrm_angularModules().
- *
- * Generate a list of Angular modules.
- *
- * Note: This hook only runs in CiviCRM 4.5+. It may
- * use features only available in v4.6+.
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
- */
-function accountsync_civicrm_angularModules(&$angularModules) {
-  _accountsync_civix_civicrm_angularModules($angularModules);
-}
-
-/**
  * Create account invoice record or set needs_update flag.
  *
  * @param int $contributionID
@@ -750,4 +712,13 @@ function accountsync_civicrm_merge($type, &$data, $new_id = NULL, $old_id = NULL
  */
 function accountsync_civicrm_entityTypes(&$entityTypes) {
   _accountsync_civix_civicrm_entityTypes($entityTypes);
+}
+
+/**
+ * Implements hook_civicrm_postInstall().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
+ */
+function accountsync_civicrm_postInstall() {
+  _accountsync_civix_civicrm_postInstall();
 }
