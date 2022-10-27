@@ -81,4 +81,11 @@ ALTER TABLE `civicrm_account_invoice`
     return TRUE;
   }
 
+  public function upgrade_1301() {
+    $this->ctx->log->info('Set default for connector_id to 0');
+    CRM_Core_DAO::executeQuery('ALTER TABLE civicrm_account_contact ALTER connector_id SET DEFAULT 0');
+    CRM_Core_DAO::executeQuery('ALTER TABLE civicrm_account_invoice ALTER connector_id SET DEFAULT 0');
+    return TRUE;
+  }
+
 }
