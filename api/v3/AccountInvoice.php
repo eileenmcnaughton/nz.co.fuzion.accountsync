@@ -1,19 +1,6 @@
 <?php
 
 /**
- * AccountInvoice.create API specification.
- *
- * This is used for documentation and validation.
- *
- * @param array $spec description of fields supported by this API call
- *
- * @see http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
- */
-function _civicrm_api3_account_invoice_create_spec(&$spec) {
-  // $spec['some_parameter']['api.required'] = 1;
-}
-
-/**
  * AccountInvoice.create API.
  *
  * @param array $params
@@ -52,6 +39,15 @@ function civicrm_api3_account_invoice_delete($params) {
  */
 function civicrm_api3_account_invoice_get($params) {
   return _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountInvoice', $params);
+}
+
+function _civicrm_api3_account_invoice_getderived_spec(&$spec) {
+  $spec['id'] = [
+    'type' => CRM_Utils_Type::T_INT,
+    'api.aliases' => ['contribution_id'],
+    'name' => 'contribution_id',
+    'title' => 'Contribution ID',
+  ];
 }
 
 /**

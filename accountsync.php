@@ -305,13 +305,13 @@ function _accountsync_get_contact_update_entities($connector_id) {
  *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
  *
  * @return array
- *   Entities that result in an invoice being created when the are edited or created.
+ *   Entities that result in an invoice being created when they are edited or created.
  *
  * @throws \CiviCRM_API3_Exception
  */
 function _accountsync_get_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_create_invoice', $entities, []);
+  $createEntities = $entities['account_sync_queue_create_invoice'] ?? [];
   return $createEntities;
 }
 
@@ -328,7 +328,7 @@ function _accountsync_get_invoice_create_entities($connector_id) {
  */
 function _accountsync_get_skip_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $skipEntities = CRM_Utils_Array::value('account_sync_skip_inv_by_pymt_processor', $entities, []);
+  $skipEntities = $entities['account_sync_skip_inv_by_pymt_processor'] ?? [];
   if ($skipEntities === ['']) {
     // There is some minor weirdness around the settings format sometimes. Handle.
     return [];
