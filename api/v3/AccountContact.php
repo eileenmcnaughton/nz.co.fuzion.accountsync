@@ -55,19 +55,35 @@ function civicrm_api3_account_contact_get($params) {
  * @throws API_Exception
  */
 function civicrm_api3_account_contact_getsuggestions($params) {
-  $contacts = civicrm_api3('AccountContact', 'get', array_merge($params, ['sequential' => 0]));
+  $contacts = civicrm_api3('AccountContact', 'get', array_merge($params, [
+      'sequential' => 0,
+      'accounts_display_name' => ['IS NOT NULL' => 1],
+    ]
+  ));
   $suggestions = $contacts['values'];
   foreach ($contacts['values'] as $id => $contact) {
-    $possibles = civicrm_api3('Contact', 'get', ['display_name' => $contact['accounts_display_name']]);
-    if ($possibles['count']) {
-      $accountContacts = civicrm_api3('AccountContact', 'get', array_merge($params, array('contact_id' => array('IN' => array_keys($possibles['values']), 'sequential' => 0))));
-      foreach ($accountContacts['values'] as $accountContact) {
-        if (isset($possibles['values'][$accountContact['contact_id']])) {
-          unset($possibles['values'][$accountContact['contact_id']]);
+    $possibleContacts = \Civi\Api4\Contact::get(FALSE)
+      ->addWhere('display_name', '=', $contact['accounts_display_name'])
+      ->execute()
+      ->indexBy('id');
+    if ($possibleContacts->count()) {
+      // Find and remove any possible contacts that are already synced to accounts
+      $accountContacts = civicrm_api3('AccountContact', 'get',
+        array_merge($params, [
+            'contact_id' => ['IN' => $possibleContacts->column('id')],
+          ]
+        ))['values'];
+      $possibleContacts = $possibleContacts->getArrayCopy();
+      foreach ($accountContacts as $accountContact) {
+        if (isset($possibleContacts[$accountContact['contact_id']])) {
+          unset($possibleContacts[$accountContact['contact_id']]);
         }
       }
-      foreach ($possibles['values'] as $possible) {
-        $suggestions[$id]['suggested_contact_id'] = $possible['id'];
+
+      // If there are multiple found contact select the first one
+      $firstContactID = reset($possibleContacts)['id'];
+      if (!empty($firstContactID)) {
+        $suggestions[$id]['suggested_contact_id'] = $firstContactID;
         $suggestions[$id]['suggestion'] = 'link_contact';
       }
     }
@@ -81,6 +97,39 @@ function civicrm_api3_account_contact_getsuggestions($params) {
     }
   }
   return civicrm_api3_create_success($suggestions, $params);
+}
+
+function _civicrm_api3_account_contact_savesuggestions_spec(&$spec) {
+  $spec['suggestion_type']['title'] = 'Suggestion Type';
+  $spec['suggestion_type']['description'] = 'The type of suggestion - currently only "link_contact" is supported';
+  $spec['suggestion_type']['api.required'] = TRUE;
+}
+
+function civicrm_api3_account_contact_savesuggestions($params) {
+  if ($params['suggestion_type'] !== 'link_contact') {
+    throw new CRM_Core_Exception('Suggestion type must be "link_contact"');
+  }
+
+  $getSuggestionsParams = [];
+  if (isset($params['options'])) {
+    $getSuggestionsParams['options'] = $params['options'];
+  }
+  $suggestions = civicrm_api3('AccountContact', 'getsuggestions', $getSuggestionsParams)['values'];
+  $updated = [];
+  foreach ($suggestions as $suggestion) {
+    if ($suggestion['suggestion'] !== 'link_contact') {
+      continue;
+    }
+
+    $createParams = [
+      'id' => $suggestion['id'],
+      'contact_id' => $suggestion['suggested_contact_id'],
+      'accounts_needs_update' => 1,
+    ];
+    civicrm_api3('AccountContact', 'create', $createParams);
+    $updated[] = $suggestion['id'];
+  }
+  return civicrm_api3_create_success($updated, $params);
 }
 
 /**
