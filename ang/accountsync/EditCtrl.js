@@ -21,7 +21,7 @@
               do_not_sync: 0,
               contact_id: {'IS NULL' : 1},
               'sequential' : 1,
-              'options' : {'limit' : 10}
+              'options' : {'limit' : 25, 'sort' : 'accounts_modified_date DESC'}
             });
           },
           totalCount: function(crmApi, $route) {
