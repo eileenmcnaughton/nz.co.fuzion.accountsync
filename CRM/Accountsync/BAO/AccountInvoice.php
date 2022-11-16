@@ -4,6 +4,10 @@ use CRM_AccountSync_ExtensionUtil as E;
 
 class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvoice {
 
+  public const ACCOUNT_STATUS_ID_COMPLETED = 1;
+  public const ACCOUNT_STATUS_ID_PENDING = 2;
+  public const ACCOUNT_STATUS_ID_CANCELLED = 3;
+
   /**
    * Create a new AccountInvoice based on array-data.
    *
