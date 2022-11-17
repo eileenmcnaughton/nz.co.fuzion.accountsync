@@ -122,7 +122,7 @@
         case 'link_contact':
           success = crmStatus(
             {start: ts('Saving...'), success: ts('Saved')},
-            crmApi('AccountContact', 'create', {
+            crmApi('AccountContact', 'link', {
               'id' : accountContact.id,
               'contact_id' : accountContact.suggested_contact_id,
               'accounts_needs_update' : 1,
