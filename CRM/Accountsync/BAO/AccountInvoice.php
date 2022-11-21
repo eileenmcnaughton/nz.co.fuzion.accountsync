@@ -9,7 +9,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    *
    * @return CRM_Accountsync_DAO_AccountInvoice|NULL
    */
-  public static function create($params) {
+  public static function create(array $params) {
     $className = 'CRM_Accountsync_DAO_AccountInvoice';
     $entityName = 'AccountInvoice';
     $hook = empty($params['id']) ? 'create' : 'edit';
@@ -263,6 +263,19 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       throw new CRM_Core_Exception("No Income Account code configured for financial type $financialTypeID");
     }
     return $codes[$financialTypeID];
+  }
+
+  /**
+   * Get the options for the receipting setting.
+   *
+   * @return string[]
+   */
+  public static function receiptOptions(): array {
+    return [
+      'no_override' => 'No override',
+      'send' => 'Send',
+      'do_not_send' => 'Do not send',
+    ];
   }
 
 }
