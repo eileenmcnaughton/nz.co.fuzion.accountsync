@@ -63,7 +63,7 @@ function accountsync_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * @param int $objectId
  * @param object $objectRef
  */
-function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$objectRef) {
   $whitelistOps = ['update', 'create', 'restore', 'edit'];
 
   if (!in_array($op, $whitelistOps)) {
@@ -79,7 +79,7 @@ function accountsync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     $invoiceEntities = _accountsync_get_invoice_create_entities($connector_id);
     $skipInvoiceEntities = _accountsync_get_skip_invoice_create_entities($connector_id);
     $invoiceDayZero = _accountsync_get_invoice_day_zero($connector_id);
-    if ($objectName == 'LineItem') {
+    if ($objectName === 'LineItem') {
       // If only some financial types apply to this connector and the line
       // item does not have one of them then skip to the next connector.
       $financial_type_id = is_array($objectRef) ? $objectRef['financial_type_id'] : $objectRef->financial_type_id;
@@ -366,9 +366,9 @@ function _accountsync_get_invoice_day_zero($connector_id) {
  *
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_account_contact_id($connector_id) {
+function _accountsync_get_account_contact_id(int $connector_id): array {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  return CRM_Utils_Array::value('account_sync_account_contact_id', $entities, []);
+  return $entities['account_sync_account_contact_id'] ?? [];
 }
 
 /**
@@ -382,7 +382,7 @@ function _accountsync_get_account_contact_id($connector_id) {
  * @return array
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_entity_action_settings($connector_id) {
+function _accountsync_get_entity_action_settings(int $connector_id) {
   static $entities = [];
   if (empty($entities[$connector_id])) {
     $result = civicrm_api3('setting', 'get', ['group' => 'Account Sync']);
@@ -415,7 +415,7 @@ function _accountsync_get_entity_action_settings($connector_id) {
         if (!empty($connector_account_id)) {
           foreach (['account_sync_queue_contacts', 'account_sync_queue_create_invoice'] as $key) {
             foreach ($entities[$connector_id][$key] as $index => $entity) {
-              if ($entity == 'Contribution') {
+              if ($entity === 'Contribution') {
                 $entities[$connector_id][$key][$index] = 'LineItem';
               }
             }
