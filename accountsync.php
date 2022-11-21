@@ -254,7 +254,7 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
   }
   $accounts_contact_id = _accountsync_get_account_contact_id($connector_id);
   static $connector_financial_types = [];
-  if (!in_array($financial_type_id, $connector_financial_types)) {
+  if (!isset($connector_financial_types[$financial_type_id])) {
     $connector_financial_types[$financial_type_id] = CRM_Accountsync_BAO_AccountInvoice::getAccountsContact($financial_type_id);
   }
   if ($accounts_contact_id == CRM_Utils_Array::value($financial_type_id, $connector_financial_types)) {
