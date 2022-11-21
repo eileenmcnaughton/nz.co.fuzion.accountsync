@@ -277,10 +277,8 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
  *
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_contact_create_entities($connector_id) {
-  $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_contacts', $entities, []);
-  return $createEntities;
+function _accountsync_get_contact_create_entities(int $connector_id): array {
+  return _accountsync_get_entity_action_settings($connector_id)['account_sync_queue_contacts'] ?? [];
 }
 
 /**
@@ -344,15 +342,13 @@ function _accountsync_get_skip_invoice_create_entities($connector_id) {
  * @param int $connector_id
  *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
  *
- * @return array
- *   Entities that result in an invoice being created when the are edited or created.
+ * @return ?string
+ *   First date to create contributions from.
  *
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_invoice_day_zero($connector_id) {
-  $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_contribution_day_zero', $entities, []);
-  return $createEntities;
+function _accountsync_get_invoice_day_zero(int $connector_id): ?string {
+  return _accountsync_get_entity_action_settings($connector_id)['account_sync_contribution_day_zero'] ?? NULL;
 }
 
 /**
@@ -361,14 +357,13 @@ function _accountsync_get_invoice_day_zero($connector_id) {
  * @param int $connector_id
  *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
  *
- * @return array
+ * @return ?int
  *   Entities that result in a contact being created when the are edited or created.
  *
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_account_contact_id(int $connector_id): array {
-  $entities = _accountsync_get_entity_action_settings($connector_id);
-  return $entities['account_sync_account_contact_id'] ?? [];
+function _accountsync_get_account_contact_id(int $connector_id): ?int  {
+  return _accountsync_get_entity_action_settings($connector_id)['account_sync_account_contact_id'] ?? NULL;
 }
 
 /**
@@ -382,22 +377,17 @@ function _accountsync_get_account_contact_id(int $connector_id): array {
  * @return array
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_entity_action_settings(int $connector_id) {
+function _accountsync_get_entity_action_settings(int $connector_id): array {
   static $entities = [];
   if (empty($entities[$connector_id])) {
-    $result = civicrm_api3('setting', 'get', ['group' => 'Account Sync']);
-    // There appears to be a bug in CiviCRM core whereby sometimes extension
-    // setting metadata isn't cached. If we think that is the case we'll flush the caches
-    // to fix it. This happens rarely & represents a serious functionality breakage
-    // so performance trade off is OK
-    if (!isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
-      && !isset($result['values'][CRM_Core_Config::domainID()]['account_sync_queue_contacts'])
-    ) {
-      civicrm_api3('system', 'flush', []);
-      $result = civicrm_api3('setting', 'get', ['group' => 'Account Sync']);
-    }
 
-    $entities[$connector_id] = $result['values'][CRM_Core_Config::domainID()];
+    $entities[$connector_id] = [
+      'account_sync_queue_contacts' => Civi::settings()->get('account_sync_queue_contacts'),
+      'account_sync_queue_update_contacts' => Civi::settings()->get('account_sync_queue_update_contacts'),
+      'account_sync_queue_create_invoice' => Civi::settings()->get('account_sync_queue_create_invoice'),
+      'account_sync_skip_inv_by_pymt_processor' => Civi::settings()->get('account_sync_skip_inv_by_pymt_processor'),
+      'account_sync_contribution_day_zero' => Civi::settings()->get('account_sync_contribution_day_zero'),
+    ];
     if (!empty($connector_id)) {
       try {
         // If we have an account contact then we should refer to line items
@@ -423,7 +413,7 @@ function _accountsync_get_entity_action_settings(int $connector_id) {
           $entities[$connector_id]['account_sync_account_contact_id'] = $connector_account_id;
         }
       }
-      catch (Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // No change/
       }
     }

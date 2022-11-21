@@ -167,10 +167,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $dao = CRM_Core_DAO::executeQuery($sql);
 
     // Get send receipt override
-    $isSendReceipt = civicrm_api3('Setting', 'getvalue', array(
-        'domain_id' => CRM_Core_Config::domainID(),
-        'name' => 'account_sync_send_receipt',
-      ));
+    $isSendReceipt = Civi::settings()->get('account_sync_send_receipt');
     switch ($isSendReceipt) {
       case 'send':
         $send_receipt = 1;
