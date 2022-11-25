@@ -7,8 +7,9 @@
 
       <tr ng-repeat="accountContact in accountContacts" ng-class-even="'crm-entity even-row even'" ng-class-odd="'crm-entity odd-row odd'">
         <td>
-          <p ng-show="accountContact.accounts_display_name">{{ ts('%1', {1: accountContact.accounts_display_name}) }}</p>
-          <p ng-show="accountContact.accounts_data.civicrm_formatted.email">({{ ts('%1', {1: accountContact.accounts_data.civicrm_formatted.email}) }})</p>
+          <p ng-show="accountContact.accounts_display_name">{{ accountContact.accounts_display_name }}</p>
+          <p ng-show="accountContact.accounts_data.civicrm_formatted.email">({{ accountContact.accounts_data.civicrm_formatted.email }})</p>
+          <p ng-show="accountContact.accounts_contact_id">{{ accountContact.accounts_contact_id }}</p>
           <p ng-show="!accountContact.accounts_display_name">{{ ts('Name not provided.') }}</p>
         </td>
         <td>
