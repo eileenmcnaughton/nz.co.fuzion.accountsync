@@ -35,7 +35,7 @@ function civicrm_api3_account_contact_link($params) {
       ->execute();
   }
   else {
-    throw new CRM_Core_Exception('Contact ID is already matched to an AccountContact ID');
+    throw new CRM_Core_Exception('Contact ID (' . $params['contact_id'] . ') is already matched to an AccountContact ID: ' . $existingEntry['accounts_contact_id']);
   }
   return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountContact', $params);
 }
