@@ -31,18 +31,19 @@ class CRM_Accountsync_BAO_Config extends CRM_Accountsync_DAO_AccountContact {
   /**
    * Get payment processors.
    *
-   * This differs from the option value in that we append description for disambiguation.
+   * This differs from the option value in that we append description for
+   * disambiguation.
    *
    * @return array
    */
   public static function getPaymentProcessors() {
-    $results = civicrm_api3('PaymentProcessor', 'get', array(
+    $results = civicrm_api3('PaymentProcessor', 'get', [
       'sequential' => 0,
       'is_test' => 0,
       'return' => ['id', 'name', 'description', 'domain_id'],
-    ));
+    ]);
 
-    $processors = array();
+    $processors = [];
     foreach ($results['values'] as $processorID => $details) {
       $processors[$processorID] = $details['name'];
       if (!empty($details['description'])) {

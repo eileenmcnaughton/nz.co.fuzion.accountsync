@@ -4,6 +4,7 @@
  * AccountContact.create API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */
@@ -15,6 +16,7 @@ function civicrm_api3_account_contact_create($params) {
  * AccountContact.delete API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */
@@ -26,11 +28,12 @@ function civicrm_api3_account_contact_delete($params) {
  * AccountContact.get API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */
 function civicrm_api3_account_contact_get($params) {
-  $accountContacts =  _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountContact', $params);
+  $accountContacts = _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountContact', $params);
   if (is_array($accountContacts['values'])) {
     // e.g when we are dealing with 'getcount we skip this.
     foreach ($accountContacts['values'] as $id => $accountContact) {
@@ -47,14 +50,15 @@ function civicrm_api3_account_contact_get($params) {
  * AccountContact.get API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */
 function civicrm_api3_account_contact_getsuggestions($params) {
-  $contacts = civicrm_api3('AccountContact', 'get', array_merge($params, array('sequential' => 0)));
+  $contacts = civicrm_api3('AccountContact', 'get', array_merge($params, ['sequential' => 0]));
   $suggestions = $contacts['values'];
   foreach ($contacts['values'] as $id => $contact) {
-    $possibles = civicrm_api3('Contact', 'get', array('display_name' => $contact['accounts_display_name']));
+    $possibles = civicrm_api3('Contact', 'get', ['display_name' => $contact['accounts_display_name']]);
     if ($possibles['count']) {
       $accountContacts = civicrm_api3('AccountContact', 'get', array_merge($params, array('contact_id' => array('IN' => array_keys($possibles['values']), 'sequential' => 0))));
       foreach ($accountContacts['values'] as $accountContact) {
@@ -101,6 +105,7 @@ function _civicrm_api3_account_contact_getsuggestions_looks_dodgey($contact) {
  * (we can't rely on generic as it won't look at our DAO)
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */

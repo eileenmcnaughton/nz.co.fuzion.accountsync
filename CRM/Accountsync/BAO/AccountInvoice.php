@@ -26,15 +26,16 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
   /**
    * Get a 'complex' invoice.
    *
-   * Only call this via the api... I made it public static because of the move away from 'real' BAO
-   * classes in preparation for doctrine but the api is the way to go.
+   * Only call this via the api... I made it public static because of the move
+   * away from 'real' BAO classes in preparation for doctrine but the api is
+   * the way to go.
    *
    * @param array $params
    *
    * @return array
    */
   public static function getDerived($params) {
-    try{
+    try {
       // ok this chaining is a bit heavy but it would be good to work towards API returning this more efficiently
       // ie. not keen on the fact you can't easily get line items for contributions related to participants
       // & TBH the communication with Xero takes 90% of the script time ...
@@ -42,21 +43,21 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       // @todo at the moment we use getsingle because we are only dealing with 1 but should alter to 'get'
       // as in theory any params could be passed in - resulting in many - there are some api
       // issues around getfields to resolve though - see notes on api
-      $contribution = civicrm_api3('contribution', 'getsingle', array_merge(array(
-        'api.participant_payment.get' => array(
+      $contribution = civicrm_api3('contribution', 'getsingle', array_merge([
+        'api.participant_payment.get' => [
           'return' => 'api.participant., participant_id',
-          'api.participant.get' => array(
+          'api.participant.get' => [
             'api.line_item.get' => 1,
             'return' => 'participant_source, event_id, financial_type_id',
-          ),
-        ),
-      ), $params));
+          ],
+        ],
+      ], $params));
       // There is a chaining bug on line item because chaining passes contribution_id along as entity_id.
       // CRM-16522.
-      $contribution['api.line_item.get'] = civicrm_api3('line_item', 'get', array(
+      $contribution['api.line_item.get'] = civicrm_api3('line_item', 'get', [
         'contribution_id' => $contribution['id'],
         'options' => ['limit' => 0],
-      ));
+      ]);
 
       if ($contribution['api.line_item.get']['count']) {
         $contribution['line_items'] = $contribution['api.line_item.get']['values'];
@@ -88,29 +89,29 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       $contribution['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($contribution['financial_type_id']);
       $contribution['accounts_contact_id'] = array_keys($contributionAccountsContactIDs);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
       // probably shouldn't catch & let calling class catch
     }
 
     // In 4.6 this might be more reliable as Monish did some tidy up on BAO_Search stuff.
     // Relying on it being unique makes me nervous...
     if (empty($contribution['payment_instrument_id'])) {
-      $paymentInstruments = civicrm_api3('contribution', 'getoptions', array('field' => 'payment_instrument_id'));
+      $paymentInstruments = civicrm_api3('contribution', 'getoptions', ['field' => 'payment_instrument_id']);
       $contribution['payment_instrument_id'] = array_search($contribution['payment_instrument'], $paymentInstruments['values']);
     }
 
     try {
       $contribution['payment_instrument_financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($contribution['payment_instrument_id']);
-      $contribution['payment_instrument_accounting_code'] = civicrm_api3('financial_account', 'getvalue', array(
+      $contribution['payment_instrument_accounting_code'] = civicrm_api3('financial_account', 'getvalue', [
         'id' => $contribution['payment_instrument_financial_account_id'],
         'return' => 'accounting_code',
-      ));
+      ]);
     }
-    catch(Exception $e) {
+    catch (Exception $e) {
 
     }
 
-    return array($contribution['id'] => $contribution);
+    return [$contribution['id'] => $contribution];
   }
 
   /**
@@ -127,7 +128,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $rowsTotal = 0;
     if (!is_array($invoice['line_items'])) {
       // this seems to occur when the participant record has been deleted & not the contribution record
-      $invoice['line_items'] = array();
+      $invoice['line_items'] = [];
       return;
     }
     foreach ($invoice['line_items'] as $line_item) {
@@ -141,14 +142,22 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       $sql = "SELECT p.id, contact_id, display_name FROM civicrm_participant p
       LEFT JOIN civicrm_contact c ON c.id = p.contact_id
       WHERE registered_by_id = %1";
-      $dao = CRM_Core_DAO::executeQuery($sql, array(1 => array($invoice['participant']['id'], 'Integer')));
+      $dao = CRM_Core_DAO::executeQuery($sql, [
+        1 => [
+          $invoice['participant']['id'],
+          'Integer',
+        ],
+      ]);
       while ($dao->fetch()) {
-        $lineItems = civicrm_api3('line_item', 'get', array(
+        $lineItems = civicrm_api3('line_item', 'get', [
           'sequential' => 1,
           'entity_id' => $dao->id,
           'entity_table' => 'civicrm_participant',
-        ));
-        $invoice['line_items'][] = array_merge($lineItems['values'][0], array('contact_id' => $dao->contact_id, 'display_name' => $dao->display_name));
+        ]);
+        $invoice['line_items'][] = array_merge($lineItems['values'][0], [
+          'contact_id' => $dao->contact_id,
+          'display_name' => $dao->display_name,
+        ]);
       }
     }
   }
@@ -183,7 +192,10 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     }
 
     while ($dao->fetch()) {
-      $params = array('id' => $dao->contribution_id, 'receive_date' => $dao->receive_date);
+      $params = [
+        'id' => $dao->contribution_id,
+        'receive_date' => $dao->receive_date,
+      ];
       if (is_numeric($send_receipt)) {
         $params['is_email_receipt'] = $send_receipt;
       }
@@ -193,10 +205,10 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       catch (CiviCRM_API3_Exception $e) {
         // CiviCRM failed to complete the contribution.
         $error = 'Contribution:completetransaction API failed, ' . $e->getMessage();
-        civicrm_api3('AccountInvoice', 'create', array(
-          'id'         => $dao->civicrm_account_invoice_id,
+        civicrm_api3('AccountInvoice', 'create', [
+          'id' => $dao->civicrm_account_invoice_id,
           'error_data' => json_encode([$error]),
-        ));
+        ]);
       }
     }
   }
@@ -230,14 +242,14 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    * @return mixed
    */
   public static function getAccountsContact($financialTypeID) {
-    static $contacts = array();
+    static $contacts = [];
     if (empty($contacts[$financialTypeID])) {
       $accountingCode = self::getAccountCode($financialTypeID);
       $contacts[$financialTypeID] = CRM_Core_DAO::singleValueQuery(
         "SELECT contact_id FROM civicrm_financial_account
          WHERE accounting_code = %1
         ",
-        array(1 => array($accountingCode, 'String'))
+        [1 => [$accountingCode, 'String']]
       );
     }
     return $contacts[$financialTypeID];
@@ -252,7 +264,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    * @throws \CRM_Core_Exception
    */
   public static function getAccountCode($financialTypeID) {
-    static $codes = array();
+    static $codes = [];
     if (!in_array($financialTypeID, $codes)) {
       $codes[$financialTypeID] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($financialTypeID);
     }

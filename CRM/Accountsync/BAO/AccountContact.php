@@ -23,4 +23,5 @@ class CRM_Accountsync_BAO_AccountContact extends CRM_Accountsync_DAO_AccountCont
 
     return $instance;
   }
+
 }

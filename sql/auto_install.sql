@@ -15,12 +15,12 @@
 -- *
 -- *******************************************************/
 
-SET FOREIGN_KEY_CHECKS=0;
+SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `civicrm_account_invoice`;
 DROP TABLE IF EXISTS `civicrm_account_contact`;
 
-SET FOREIGN_KEY_CHECKS=1;
+SET FOREIGN_KEY_CHECKS = 1;
 -- /*******************************************************
 -- *
 -- * Create new tables

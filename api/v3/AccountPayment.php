@@ -5,6 +5,7 @@
  * This is used for documentation and validation.
  *
  * @param array $spec description of fields supported by this API call
+ *
  * @return void
  * @see http://wiki.civicrm.org/confluence/display/CRM/API+Architecture+Standards
  */
@@ -16,6 +17,7 @@ function _civicrm_api3_account_payment_create_spec(&$spec) {
  * AccountPayment.create API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */
@@ -27,6 +29,7 @@ function civicrm_api3_account_payment_create($params) {
  * AccountPayment.delete API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */
@@ -38,6 +41,7 @@ function civicrm_api3_account_payment_delete($params) {
  * AccountPayment.get API
  *
  * @param array $params
+ *
  * @return array API result descriptor
  * @throws API_Exception
  */

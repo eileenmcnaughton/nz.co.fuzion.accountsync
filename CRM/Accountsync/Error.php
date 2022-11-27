@@ -11,4 +11,5 @@ class CRM_Accountsync_Error {
   static function handleError($message, $data, $context) {
     //do whatever we are going to do with our errors :-)
   }
+
 }

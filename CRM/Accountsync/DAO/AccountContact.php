@@ -25,7 +25,8 @@ class CRM_Accountsync_DAO_AccountContact extends CRM_Core_DAO {
   public static $_tableName = 'civicrm_account_contact';
 
   /**
-   * Should CiviCRM log any modifications to this table in the civicrm_log table.
+   * Should CiviCRM log any modifications to this table in the civicrm_log
+   * table.
    *
    * @var bool
    */

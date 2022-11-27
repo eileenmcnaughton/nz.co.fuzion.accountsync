@@ -362,7 +362,7 @@ function _accountsync_get_invoice_day_zero(int $connector_id): ?string {
  *
  * @throws \CiviCRM_API3_Exception
  */
-function _accountsync_get_account_contact_id(int $connector_id): ?int  {
+function _accountsync_get_account_contact_id(int $connector_id): ?int {
   return _accountsync_get_entity_action_settings($connector_id)['account_sync_account_contact_id'] ?? NULL;
 }
 
@@ -676,11 +676,11 @@ function accountsync_civicrm_merge($type, &$data, $new_id = NULL, $old_id = NULL
           'getsingle',
           [
             'plugin' => $plugin,
-            'contact_id' => $new_id
+            'contact_id' => $new_id,
           ]);
         if (!empty($accountContact)) {
           foreach ($data as $i => $sql) {
-            if (strpos($sql, 'account_contact') !== false) {
+            if (strpos($sql, 'account_contact') !== FALSE) {
               unset($data[$i]);
               break;
             }
