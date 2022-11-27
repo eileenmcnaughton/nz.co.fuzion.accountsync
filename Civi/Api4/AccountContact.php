@@ -11,5 +11,6 @@ namespace Civi\Api4;
  * @package Civi\Api4
  */
 class AccountContact extends Generic\DAOEntity {
+  use AccountSyncManageTrait;
 
 }
