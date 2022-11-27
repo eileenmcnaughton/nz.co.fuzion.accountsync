@@ -1,6 +1,6 @@
 {
     "type": "search",
-    "title": "Invoice Synchronization Errors",
+    "title": "Contact Synchronization Errors",
     "icon": "fa-list-alt",
     "server_route": "civicrm/accounting/errors/contacts",
     "permission": "administer CiviCRM system",
