@@ -2,14 +2,14 @@
 
 return [
   [
-    'name' => 'SavedSearch_AccountsContact_Synchronization_Errors',
+    'name' => 'SavedSearch_AccountContact_Synchronization_Errors',
     'entity' => 'SavedSearch',
     'cleanup' => 'unused',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
-        'name' => 'AccountsContact_Synchronization_Errors',
+        'name' => 'AccountContact_Synchronization_Errors',
         'label' => 'Contact Synchronization Errors',
         'form_values' => NULL,
         'mapping_id' => NULL,
@@ -42,16 +42,16 @@ return [
     ],
   ],
   [
-    'name' => 'SavedSearch_AccountsContact_Synchronization_Errors_SearchDisplay_AccountsContact_Synchronization_Errors_Table_1',
+    'name' => 'SavedSearch_AccountContact_Synchronization_Errors_SearchDisplay_AccountContact_Synchronization_Errors_Table_1',
     'entity' => 'SearchDisplay',
     'cleanup' => 'unused',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
-        'name' => 'AccountsContact_Synchronization_Errors_display',
+        'name' => 'AccountContact_Synchronization_Errors_display',
         'label' => 'Contact Synchronization Errors',
-        'saved_search_id.name' => 'AccountsContact_Synchronization_Errors',
+        'saved_search_id.name' => 'AccountContact_Synchronization_Errors',
         'type' => 'table',
         'settings' => [
           'actions' => TRUE,
