@@ -1,5 +1,7 @@
 <?php
 
+use CRM_AccountSync_ExtensionUtil as E;
+
 class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvoice {
 
   /**
@@ -284,6 +286,19 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       'no_override' => 'No override',
       'send' => 'Send',
       'do_not_send' => 'Do not send',
+    ];
+  }
+
+  /**
+   * Get the options for the receipting setting.
+   *
+   * @return string[]
+   */
+  public static function getAccountStatuses(): array {
+    return [
+      ['id' => 1, 'name' => 'completed', 'label' => E::ts('Completed')],
+      ['id' => 2, 'name' => 'pending', 'label' => E::ts('Pending')],
+      ['id' => 3, 'name' => 'cancelled', 'label' => E::ts('Cancelled')],
     ];
   }
 

@@ -102,7 +102,7 @@
     <comment>Include in next push to accounts</comment>
     <default>1</default>
     <html>
-      <type>Checkbox</type>
+      <type>CheckBox</type>
     </html>
     <add>4.4</add>
   </field>
@@ -132,7 +132,7 @@
     <type>boolean</type>
     <comment>Do not sync this contact</comment>
     <html>
-      <type>Checkbox</type>
+      <type>CheckBox</type>
     </html>
     <default>0</default>
     <add>4.6</add>
@@ -144,7 +144,7 @@
     <type>boolean</type>
     <comment>Filter out if resolved</comment>
     <html>
-      <type>Checkbox</type>
+      <type>CheckBox</type>
     </html>
     <default>0</default>
     <add>5.56</add>
