@@ -15,12 +15,12 @@
 -- *
 -- *******************************************************/
 
-SET FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS=0;
 
 DROP TABLE IF EXISTS `civicrm_account_invoice`;
 DROP TABLE IF EXISTS `civicrm_account_contact`;
 
-SET FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS=1;
 -- /*******************************************************
 -- *
 -- * Create new tables
@@ -44,7 +44,7 @@ CREATE TABLE `civicrm_account_contact` (
   `accounts_data` text COMMENT 'json array of data as returned from accounts system',
   `error_data` text COMMENT 'json array of error data as returned from accounts system',
   `accounts_needs_update` tinyint DEFAULT 1 COMMENT 'Include in next push to accounts',
-  `connector_id` int unsigned DEFAULT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
+  `connector_id` int unsigned DEFAULT 0 COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
   `plugin` varchar(32) COMMENT 'Name of plugin creating the account',
   `do_not_sync` tinyint DEFAULT 0 COMMENT 'Do not sync this contact',
   PRIMARY KEY (`id`),
@@ -71,7 +71,7 @@ CREATE TABLE `civicrm_account_invoice` (
   `accounts_data` text DEFAULT NULL COMMENT 'json array of data as returned from accounts system',
   `error_data` text DEFAULT NULL COMMENT 'json array of error data as returned from accounts system',
   `accounts_needs_update` tinyint DEFAULT 0 COMMENT 'Include in next push to accounts',
-  `connector_id` int unsigned DEFAULT NULL COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
+  `connector_id` int unsigned DEFAULT 0 COMMENT 'ID of connector. Relevant to connect to more than one account of the same type',
   `plugin` varchar(32) COMMENT 'Name of plugin creating the account',
   PRIMARY KEY (`id`),
   INDEX `index_contribution_invoice`(contribution_id),

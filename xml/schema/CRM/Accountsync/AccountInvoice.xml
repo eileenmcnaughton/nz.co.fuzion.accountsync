@@ -25,6 +25,10 @@
     <title>Contribution ID</title>
     <type>int unsigned</type>
     <default>NULL</default>
+    <readonly>TRUE</readonly>
+    <html>
+      <type>Text</type>
+    </html>
     <comment>FK to contribution table.</comment>
     <add>4.4</add>
   </field>
@@ -46,6 +50,10 @@
     <type>varchar</type>
     <length>128</length>
     <default>NULL</default>
+    <readonly>TRUE</readonly>
+    <html>
+      <type>Text</type>
+    </html>
     <comment>External Reference</comment>
     <add>4.4</add>
   </field>
@@ -54,6 +62,10 @@
     <name>accounts_status_id</name>
     <type>int unsigned</type>
     <default>0</default>
+    <readonly>TRUE</readonly>
+    <html>
+      <type>Text</type>
+    </html>
     <comment>Status in accounts system (mapped to civicrm definition)</comment>
     <add>4.4</add>
   </field>
@@ -62,6 +74,7 @@
     <name>last_sync_date</name>
     <type>timestamp</type>
     <required>true</required>
+    <readonly>TRUE</readonly>
     <comment>When was the contact last synced.</comment>
     <default>CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</default>
     <add>4.4</add>
@@ -70,6 +83,7 @@
   <field>
     <name>accounts_modified_date</name>
     <type>timestamp</type>
+    <readonly>TRUE</readonly>
     <required>false</required>
     <comment>When was the invoice last Altered in the accounts system.</comment>
     <add>4.4</add>
@@ -99,13 +113,19 @@
     <type>boolean</type>
     <comment>Include in next push to accounts</comment>
     <default>0</default>
+    <html>
+      <type>Checkbox</type>
+    </html>
     <add>4.4</add>
   </field>
 
   <field>
     <name>connector_id</name>
     <type>int unsigned</type>
-    <default>NULL</default>
+    <default>0</default>
+    <html>
+      <type>Text</type>
+    </html>
     <comment>ID of connector. Relevant to connect to more than one account of the same type</comment>
     <add>4.4</add>
   </field>
