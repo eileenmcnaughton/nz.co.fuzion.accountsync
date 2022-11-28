@@ -20,7 +20,6 @@ class CRM_Accountsync_ExtensionUtil {
    * @param string $text
    *   Canonical message text (generally en_US).
    * @param array $params
-   *
    * @return string
    *   Translated text.
    * @see ts
@@ -55,7 +54,6 @@ class CRM_Accountsync_ExtensionUtil {
    * @param string|NULL $file
    *   Ex: NULL.
    *   Ex: 'css/foo.css'.
-   *
    * @return string
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo'.
    *   Ex: '/var/www/example.org/sites/default/ext/org.example.foo/css/foo.css'.
@@ -70,7 +68,6 @@ class CRM_Accountsync_ExtensionUtil {
    *
    * @param string $suffix
    *   Ex: 'Page_HelloWorld' or 'Page\\HelloWorld'.
-   *
    * @return string
    *   Ex: 'CRM_Foo_Page_HelloWorld'.
    */

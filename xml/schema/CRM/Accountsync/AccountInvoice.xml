@@ -129,7 +129,17 @@
     <comment>ID of connector. Relevant to connect to more than one account of the same type</comment>
     <add>4.4</add>
   </field>
-
+  <field>
+    <name>is_error_resolved</name>
+    <title>Error Resolved</title>
+    <type>boolean</type>
+    <comment>Filter out if resolved</comment>
+    <html>
+      <type>Checkbox</type>
+    </html>
+    <default>0</default>
+    <add>5.56</add>
+  </field>
   <field>
     <name>plugin</name>
     <title>Account Plugin</title>

@@ -12,9 +12,8 @@ class CRM_Accountsync_Upgrader extends CRM_Accountsync_Upgrader_Base {
    * Example: Run a couple simple queries
    *
    * @return TRUE on success
-   * @throws Exception
    */
-  public function upgrade_1000() {
+  public function upgrade_1000(): bool {
     $this->ctx->log->info('Applying update 1000');
     CRM_Core_DAO::executeQuery("
 ALTER TABLE `civicrm_account_contact`
@@ -40,9 +39,8 @@ ALTER TABLE `civicrm_account_contact`
    * Example: Run a couple simple queries
    *
    * @return TRUE on success
-   * @throws Exception
    */
-  public function upgrade_1100() {
+  public function upgrade_1100(): bool {
     $this->ctx->log->info('Applying update 1100');
     CRM_Core_DAO::executeQuery("
 ALTER TABLE `civicrm_account_contact`
@@ -58,14 +56,13 @@ ALTER TABLE `civicrm_account_contact`
    *  would not get unset rows.
    *
    * @return TRUE on success
-   * @throws Exception
    */
-  public function upgrade_1200() {
+  public function upgrade_1200(): bool {
     $this->ctx->log->info('Applying update 1200');
-    CRM_Core_DAO::executeQuery("
+    CRM_Core_DAO::executeQuery('
 ALTER TABLE `civicrm_account_invoice`
   ALTER COLUMN `accounts_status_id` SET DEFAULT 0
-");
+');
     return TRUE;
   }
 
@@ -75,9 +72,35 @@ ALTER TABLE `civicrm_account_invoice`
    * @return TRUE on success
    * @throws Exception
    */
-  public function upgrade_1300() {
+  public function upgrade_1300(): bool {
     $this->ctx->log->info('Applying update 1300');
-    CRM_Core_DAO::executeQuery("UPDATE `civicrm_account_invoice` SET `accounts_status_id` = 0 WHERE `accounts_status_id` IS NULL");
+    CRM_Core_DAO::executeQuery('UPDATE `civicrm_account_invoice` SET `accounts_status_id` = 0 WHERE `accounts_status_id` IS NULL');
+    return TRUE;
+  }
+
+  /**
+   * Set connector_id default to 0, add is_error_resolved.
+   *
+   * @return TRUE on success
+   * @throws Exception
+   */
+  public function upgrade_1400(): bool {
+    $this->ctx->log->info('Set default for connector_id to 0, add is_error_resolved');
+    CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_account_contact ALTER connector_id SET DEFAULT 0,
+      ADD COLUMN `is_error_resolved` tinyint DEFAULT 0 COMMENT 'Filter out if resolved'"
+    );
+    CRM_Core_DAO::executeQuery(
+      "ALTER TABLE civicrm_account_invoice ALTER connector_id SET DEFAULT 0,
+       ADD COLUMN `is_error_resolved` tinyint DEFAULT 0 COMMENT 'Filter out if resolved'"
+    );
+    CRM_Core_DAO::executeQuery('
+UPDATE `civicrm_account_invoice` main
+  LEFT JOIN civicrm_account_invoice duplicate
+    ON main.contribution_id = duplicate.contribution_id
+      AND main.connector_id IS NULL
+      AND (duplicate.connector_id = 0 OR duplicate.connector_id IS NULL)
+      AND duplicate.id > main.id
+SET main.connector_id = 0 WHERE duplicate.id IS NULL AND main.connector_id IS NULL');
     return TRUE;
   }
 
