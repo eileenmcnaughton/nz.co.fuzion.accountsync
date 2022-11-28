@@ -49,7 +49,7 @@ return [
     'params' => [
       'version' => 4,
       'values' => [
-        'name' => 'AccountContact_Synchronization_Errors_display',
+        'name' => 'AccountContact_Synchronization_Errors_Display',
         'label' => 'Contact Synchronization Errors',
         'saved_search_id.name' => 'AccountContact_Synchronization_Errors',
         'type' => 'table',

@@ -48,7 +48,7 @@ return [
     'params' => [
       'version' => 4,
       'values' => [
-        'name' => 'AccountInvoice_Synchronization_Errors',
+        'name' => 'AccountInvoice_Synchronization_Errors_Display',
         'label' => 'Invoice Synchronization Errors',
         'saved_search_id.name' => 'AccountInvoice_Synchronization_Errors',
         'type' => 'table',
