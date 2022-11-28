@@ -28,9 +28,9 @@ return [
           'orderBy' => [],
           'where' => [
             [
-              'error_data',
-              'NOT LIKE',
-              '%error_cleared%',
+              'is_error_resolved',
+              '=',
+              FALSE,
             ],
           ],
           'groupBy' => [],

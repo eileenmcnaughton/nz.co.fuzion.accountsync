@@ -27,6 +27,16 @@ class SearchKitTasks {
           'errorMsg' => E::ts('An error occurred while attempting to queue the record.'),
         ],
       ];
+      $tasks[$entity]['dismiss'] = [
+        'title' => E::ts('Dismiss error %1', [1 => 'record']),
+        'apiBatch' => [
+          'action' => 'update',
+          'params' => ['values' => ['is_error_resolved' => TRUE]],
+          'runMsg' => E::ts('Dismissing error ...'),
+          'successMsg' => E::ts('Successfully dismissed error for %1 record.'),
+          'errorMsg' => E::ts('An error occurred while attempting to dismiss the error.'),
+        ],
+      ];
     }
   }
 
