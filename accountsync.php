@@ -733,7 +733,7 @@ function accountsync_civicrm_postInstall() {
  *
  * @throws \CiviCRM_API3_Exception
  */
-function accountsync_civicrm_check(&$messages) {
+function accountsync_civicrm_check(array &$messages): void {
   $checks = new CRM_Accountsync_Check($messages);
   $messages = $checks->checkRequirements();
 }

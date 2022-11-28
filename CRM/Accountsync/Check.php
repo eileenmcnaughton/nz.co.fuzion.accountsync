@@ -9,7 +9,10 @@
  +--------------------------------------------------------------------+
  */
 
+use Civi\Api4\AccountContact;
+use Civi\Api4\AccountInvoice;
 use CRM_Accountsync_ExtensionUtil as E;
+use Psr\Log\LogLevel;
 
 class CRM_Accountsync_Check {
 
@@ -28,10 +31,13 @@ class CRM_Accountsync_Check {
   }
 
   /**
+   * Check no rows have NULL for connector_id.
+   *
    * @return array
+   *
    * @throws \CiviCRM_API3_Exception
    */
-  public function checkRequirements() {
+  public function checkRequirements(): array {
     $this->checkNullConnectorID();
     return $this->messages;
   }
@@ -39,42 +45,42 @@ class CRM_Accountsync_Check {
   /**
    * @throws \CiviCRM_API3_Exception
    */
-  private function checkNullConnectorID() {
-    $accountContact = \Civi\Api4\AccountContact::get(FALSE)
+  private function checkNullConnectorID(): void {
+    $accountContact = AccountContact::get(FALSE)
       ->addWhere('connector_id', 'IS NULL')
       ->execute();
     $count = $accountContact->count();
 
     if (!empty($count)) {
       $message = new CRM_Utils_Check_Message(
-        __FUNCTION__ . E::SHORT_NAME . '_accountcontact',
+        __FUNCTION__ . 'account_sync_account_contact',
         E::ts('There are %1 records in the `civicrm_account_contact` table which have a NULL connector_id. These need updating manually to 0 or the connector ID if using the connectors extension.',
           [
             1 => $count,
           ]
         ),
         E::ts('AccountSync: Database issues'),
-        \Psr\Log\LogLevel::ERROR,
+        LogLevel::ERROR,
         'fa-database'
       );
       $this->messages[] = $message;
     }
 
-    $accountInvoice = \Civi\Api4\AccountInvoice::get(FALSE)
+    $accountInvoice = AccountInvoice::get(FALSE)
       ->addWhere('connector_id', 'IS NULL')
       ->execute();
     $count = $accountInvoice->count();
 
     if (!empty($count)) {
       $message = new CRM_Utils_Check_Message(
-        __FUNCTION__ . E::SHORT_NAME . '_accountinvoice',
+        __FUNCTION__ . 'accountsync_account_invoice',
         E::ts('There are %1 records in the `civicrm_account_invoice` table which have a NULL connector_id. These need updating manually to 0 or the connector ID if using the connectors extension.',
           [
             1 => $count,
           ]
         ),
         E::ts('AccountSync: Database issues'),
-        \Psr\Log\LogLevel::ERROR,
+        LogLevel::ERROR,
         'fa-database'
       );
       $this->messages[] = $message;
