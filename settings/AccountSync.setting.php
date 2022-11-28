@@ -103,7 +103,7 @@ return [
     'description' => 'Do not include contributions prior to this date',
     'title' => 'Day zero for contributions (eg. 2014-12-25 for Christmas 2014)',
     'help_text' => 'Earlier contributions are never synced.',
-    'html_type' => 'date',
+    'html_type' => 'datepicker',
     'default' => '1990-01-01',
     'html_attributes' => [
       'formatType' => 'activityDateTime',
