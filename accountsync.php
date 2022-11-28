@@ -1,5 +1,7 @@
 <?php
 
+use Civi\Hooks\SearchKitTasks;
+
 require_once 'accountsync.civix.php';
 
 /**
@@ -540,6 +542,19 @@ function _accountsync_get_enabled_plugins() {
   }
 
   return $plugins;
+}
+
+/**
+ * SearchKitTasks hook.
+ *
+ * @see https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_searchKitTasks/
+ *
+ * @param array $tasks
+ * @param bool $checkPermissions
+ * @param int|null $userID
+ */
+function accountsync_civicrm_searchKitTasks(array &$tasks, bool $checkPermissions, ?int $userID) {
+  (new SearchKitTasks())->run($tasks, $checkPermissions, $userID);
 }
 
 /**
