@@ -44,6 +44,15 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
     return;
   }
 
+  // See https://github.com/eileenmcnaughton/nz.co.fuzion.accountsync/pull/62
+  // If an accounts provider (eg. Xero) creates a Contribution in CiviCRM this post hook will always fire
+  //   which will cause it to create a new AccountsInvoice record before the code has chance to update an existing AccountsInvoice record
+  //   if one already exists but does not yet contain a CiviCRM contribution ID.
+  // By setting this flag to FALSE we can prevent this hook from triggering the AccountsInvoice create action.
+  if (isset(\Civi::$statics['data.accountsync.createcontribution']['createnew']) && (\Civi::$statics['data.accountsync.createcontribution']['createnew'] === FALSE)) {
+    return;
+  }
+
   $connectors = _accountsync_get_connectors();
   $objectName = _accountsync_map_object_name_to_entity($objectName);
 
