@@ -132,7 +132,7 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
-      _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+      _accountsync_create_account_invoice($contribution_id, \Civi::$statics['data.accountsync.createcontribution']['createnew'] ?? TRUE, $connector_id);
     }
   }
 
