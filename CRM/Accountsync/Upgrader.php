@@ -93,8 +93,8 @@ ALTER TABLE `civicrm_account_invoice`
       "ALTER TABLE civicrm_account_invoice ALTER connector_id SET DEFAULT 0,
        ADD COLUMN `is_error_resolved` tinyint DEFAULT 0 COMMENT 'Filter out if resolved'"
     );
-    CRM_Core_DAO::executeQuery('UPDATE civicrm_account_invoice SET is_error_resolved = 1 WHERE error_data LIKE "error_cleared%"');
-    CRM_Core_DAO::executeQuery('UPDATE civicrm_account_contact SET is_error_resolved = 1 WHERE error_data LIKE "error_cleared%"');
+    CRM_Core_DAO::executeQuery('UPDATE civicrm_account_invoice SET is_error_resolved = 1 WHERE error_data LIKE "%error_cleared%" OR error_data IS NULL');
+    CRM_Core_DAO::executeQuery('UPDATE civicrm_account_contact SET is_error_resolved = 1 WHERE error_data LIKE "%error_cleared%" OR error_data IS NULL');
     CRM_Core_DAO::executeQuery('
 UPDATE `civicrm_account_invoice` main
   LEFT JOIN civicrm_account_invoice duplicate
