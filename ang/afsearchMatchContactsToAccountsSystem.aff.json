@@ -1,0 +1,8 @@
+{
+    "type": "search",
+    "title": "Match contacts to Accounts System",
+    "icon": "fa-list-alt",
+    "server_route": "civicrm/admin/accountsync/contactmatch",
+    "permission": "administer CiviCRM data",
+    "navigation": null
+}

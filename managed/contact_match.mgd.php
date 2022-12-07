@@ -1,0 +1,217 @@
+<?php
+
+return [
+  [
+    'name' => 'SavedSearch_Accountsync_Contact_Match',
+    'entity' => 'SavedSearch',
+    'cleanup' => 'unused',
+    'update' => 'unmodified',
+    'params' => [
+      'version' => 4,
+      'values' => [
+        'name' => 'Accountsync_Contact_Match',
+        'label' => 'Accountsync Contact Match',
+        'form_values' => NULL,
+        'mapping_id' => NULL,
+        'search_custom_id' => NULL,
+        'api_entity' => 'AccountContact',
+        'api_params' => [
+          'version' => 4,
+          'select' => [
+            'id',
+            'contact_id',
+            'accounts_contact_id',
+            'do_not_sync',
+            'AccountContact_Contact_contact_id_01.id',
+            'accounts_display_name',
+            'plugin',
+            'accounts_modified_date',
+          ],
+          'orderBy' => [],
+          'where' => [
+            [
+              'OR',
+              [
+                [
+                  'contact_id.display_name',
+                  'IS EMPTY',
+                ],
+                [
+                  'accounts_contact_id',
+                  'IS EMPTY',
+                ],
+              ],
+            ],
+            [
+              'do_not_sync',
+              '=',
+              FALSE,
+            ],
+            [
+              'AccountContact_Contact_contact_id_01.is_deleted',
+              'IS EMPTY',
+            ],
+          ],
+          'groupBy' => [],
+          'join' => [
+            [
+              'Contact AS AccountContact_Contact_contact_id_01',
+              'LEFT',
+              [
+                'contact_id',
+                '=',
+                'AccountContact_Contact_contact_id_01.id',
+              ],
+            ],
+          ],
+          'having' => [],
+        ],
+        'expires_date' => NULL,
+        'description' => NULL,
+      ],
+    ],
+  ],
+  [
+    'name' => 'SavedSearch_Accountsync_Contact_Match_SearchDisplay_Accountsync_Contact_Match_Table_1',
+    'entity' => 'SearchDisplay',
+    'cleanup' => 'unused',
+    'update' => 'unmodified',
+    'params' => [
+      'version' => 4,
+      'values' => [
+        'name' => 'Accountsync_Contact_Match_Table_1',
+        'label' => 'Accountsync Contact Match Table 1',
+        'saved_search_id.name' => 'Accountsync_Contact_Match',
+        'type' => 'table',
+        'settings' => [
+          'actions' => TRUE,
+          'limit' => 50,
+          'classes' => [
+            'table',
+            'table-striped',
+          ],
+          'pager' => [
+            'show_count' => TRUE,
+            'expose_limit' => FALSE,
+          ],
+          'placeholder' => 5,
+          'sort' => [],
+          'columns' => [
+            [
+              'type' => 'field',
+              'key' => 'id',
+              'dataType' => 'Integer',
+              'label' => 'AccountsContact ID',
+              'sortable' => TRUE,
+            ],
+            [
+              'type' => 'field',
+              'key' => 'contact_id',
+              'dataType' => 'Integer',
+              'label' => 'CiviCRM Contact ID',
+              'sortable' => TRUE,
+              'editable' => TRUE,
+              'title' => 'Click to match with an existing contact',
+            ],
+            [
+              'type' => 'field',
+              'key' => 'accounts_contact_id',
+              'dataType' => 'String',
+              'label' => 'Accounts system Contact ID',
+              'sortable' => TRUE,
+              'link' => [
+                'path' => 'https://go.xero.com/Contacts/View/[accounts_contact_id]',
+                'entity' => '',
+                'action' => '',
+                'join' => '',
+                'target' => '_blank',
+              ],
+            ],
+            [
+              'type' => 'field',
+              'key' => 'do_not_sync',
+              'dataType' => 'Boolean',
+              'label' => 'Do Not Sync',
+              'sortable' => TRUE,
+              'editable' => TRUE,
+            ],
+            [
+              'type' => 'field',
+              'key' => 'accounts_display_name',
+              'dataType' => 'String',
+              'label' => 'Accounts Display Name',
+              'sortable' => TRUE,
+            ],
+            [
+              'type' => 'field',
+              'key' => 'plugin',
+              'dataType' => 'String',
+              'label' => 'Account Plugin',
+              'sortable' => TRUE,
+            ],
+            [
+              'type' => 'field',
+              'key' => 'accounts_modified_date',
+              'dataType' => 'Timestamp',
+              'label' => 'Accounts Modified Date',
+              'sortable' => TRUE,
+            ],
+            [
+              'text' => 'Actions',
+              'style' => 'default',
+              'size' => 'btn-sm',
+              'icon' => 'fa-bars',
+              'links' => [
+                [
+                  'entity' => 'Contact',
+                  'action' => 'view',
+                  'join' => 'AccountContact_Contact_contact_id_01',
+                  'target' => '_blank',
+                  'icon' => 'fa-external-link',
+                  'text' => 'View Account Contact contact_id',
+                  'style' => 'default',
+                  'path' => '',
+                  'condition' => [
+                    'contact_id',
+                    'IS NOT EMPTY',
+                  ],
+                ],
+                [
+                  'entity' => 'Contact',
+                  'action' => 'update',
+                  'join' => 'AccountContact_Contact_contact_id_01',
+                  'target' => '_blank',
+                  'icon' => 'fa-pencil',
+                  'text' => 'Edit Account Contact contact_id',
+                  'style' => 'default',
+                  'path' => '',
+                  'condition' => [
+                    'contact_id',
+                    'IS NOT EMPTY',
+                  ],
+                ],
+                [
+                  'entity' => 'Contact',
+                  'action' => 'delete',
+                  'join' => 'AccountContact_Contact_contact_id_01',
+                  'target' => 'crm-popup',
+                  'icon' => 'fa-trash',
+                  'text' => 'Delete Account Contact contact_id',
+                  'style' => 'danger',
+                  'path' => '',
+                  'condition' => [
+                    'contact_id',
+                    'IS NOT EMPTY',
+                  ],
+                ],
+              ],
+              'type' => 'menu',
+              'alignment' => 'text-right',
+            ],
+          ],
+        ],
+        'acl_bypass' => FALSE,
+      ],
+    ],
+  ],
+];
