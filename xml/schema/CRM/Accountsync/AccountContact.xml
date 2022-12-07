@@ -25,7 +25,8 @@
     <type>int unsigned</type>
     <comment>FK to Contact</comment>
     <html>
-      <type>Text</type>
+      <type>EntityRef</type>
+      <label>CiviCRM Contact ID</label>
     </html>
     <add>4.4</add>
   </field>
