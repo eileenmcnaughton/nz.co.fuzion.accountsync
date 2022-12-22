@@ -42,10 +42,12 @@ ALTER TABLE `civicrm_account_contact`
    */
   public function upgrade_1100(): bool {
     $this->ctx->log->info('Applying update 1100');
-    CRM_Core_DAO::executeQuery("
+    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_account_contact', 'do_not_sync')) {
+      CRM_Core_DAO::executeQuery("
 ALTER TABLE `civicrm_account_contact`
   ADD COLUMN `do_not_sync` TINYINT(4) DEFAULT 0 COMMENT 'Do not sync this contact' AFTER `accounts_needs_update`
 ");
+    }
     return TRUE;
   }
 
@@ -86,13 +88,17 @@ ALTER TABLE `civicrm_account_invoice`
    */
   public function upgrade_1400(): bool {
     $this->ctx->log->info('Set default for connector_id to 0, add is_error_resolved');
-    CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_account_contact ALTER connector_id SET DEFAULT 0,
+    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_account_contact', 'is_error_resolved')) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_account_contact ALTER connector_id SET DEFAULT 0,
       ADD COLUMN `is_error_resolved` tinyint DEFAULT 0 COMMENT 'Filter out if resolved'"
-    );
-    CRM_Core_DAO::executeQuery(
-      "ALTER TABLE civicrm_account_invoice ALTER connector_id SET DEFAULT 0,
+      );
+    }
+    if (!CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_account_invoice', 'is_error_resolved')) {
+      CRM_Core_DAO::executeQuery(
+        "ALTER TABLE civicrm_account_invoice ALTER connector_id SET DEFAULT 0,
        ADD COLUMN `is_error_resolved` tinyint DEFAULT 0 COMMENT 'Filter out if resolved'"
-    );
+      );
+    }
     CRM_Core_DAO::executeQuery('UPDATE civicrm_account_invoice SET is_error_resolved = 1 WHERE error_data LIKE "%error_cleared%" OR error_data IS NULL');
     CRM_Core_DAO::executeQuery('UPDATE civicrm_account_contact SET is_error_resolved = 1 WHERE error_data LIKE "%error_cleared%" OR error_data IS NULL');
     CRM_Core_DAO::executeQuery('
