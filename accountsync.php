@@ -553,8 +553,8 @@ function _accountsync_get_enabled_plugins() {
  * @param bool $checkPermissions
  * @param int|null $userID
  */
-function accountsync_civicrm_searchKitTasks(array &$tasks, bool $checkPermissions, ?int $userID) {
-  (new SearchKitTasks())->run($tasks, $checkPermissions, $userID);
+function accountsync_civicrm_searchKitTasks(array &$tasks, bool $checkPermissions, ?int $userID, ?array $search = [], ?array $display = []) {
+  (new SearchKitTasks())->run($tasks, $checkPermissions, $userID, $search, $display);
 }
 
 /**
