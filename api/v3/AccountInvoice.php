@@ -84,14 +84,14 @@ function civicrm_api3_account_invoice_getderived($params) {
  * @throws \Exception
  */
 function civicrm_api3_account_invoice_update_contribution($params) {
-  if ($params['accounts_status_id'] == 1) {
+  if ($params['accounts_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'completed')) {
     CRM_Accountsync_BAO_AccountInvoice::completeContributionFromAccountsStatus($params);
-    return civicrm_api3_create_success();
   }
-  if ($params['accounts_status_id'] == 3) {
+  elseif ($params['accounts_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'cancelled')) {
     CRM_Accountsync_BAO_AccountInvoice::cancelContributionFromAccountsStatus($params);
-    return civicrm_api3_create_success();
   }
-  throw new Exception('Currently only complete is supported');
-  // return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountInvoice', $params);
+  else {
+    throw new Exception('Currently only complete/cancel is supported');
+  }
+  return civicrm_api3_create_success();
 }
