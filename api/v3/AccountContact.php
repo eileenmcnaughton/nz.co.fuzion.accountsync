@@ -99,17 +99,3 @@ function _civicrm_api3_account_contact_getsuggestions_looks_dodgey($contact) {
   }
   return FALSE;
 }
-
-/**
- * AccountContact.getfields API
- * (we can't rely on generic as it won't look at our DAO)
- *
- * @param array $params
- *
- * @return array API result descriptor
- * @throws API_Exception
- */
-function civicrm_api3_account_contact_getfields($params) {
-  $fields = CRM_Accountsync_DAO_AccountContact::fields();
-  return civicrm_api3_create_success($fields);
-}
