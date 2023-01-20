@@ -25,23 +25,33 @@ class SearchKitTasks {
         case 'AccountInvoice_Synchronization_Errors_Display':
           foreach (['AccountContact', 'AccountInvoice'] as $entity) {
             $tasks[$entity]['queue'] = [
-              'title' => E::ts('Re-queue %1', [1 => 'record']),
+              'title' => E::ts('Retry sync'),
               'apiBatch' => [
                 'action' => 'update',
-                'params' => ['values' => ['accounts_needs_update' => TRUE, 'error_data' => '']],
-                'runMsg' => E::ts('Queueing synchronization ...'),
-                'successMsg' => E::ts('Successfully re-queued %1 record.'),
-                'errorMsg' => E::ts('An error occurred while attempting to queue the record.'),
+                'params' => ['values' => ['accounts_needs_update' => TRUE, 'error_data' => '', 'is_error_resolved' => TRUE]],
+                'runMsg' => E::ts('Processing ...'),
+                'successMsg' => E::ts('Successfully marked %1 records to retry next time the sync job runs.'),
+                'errorMsg' => E::ts('An error occurred while attempting to mark %1 records for retry.'),
               ],
             ];
             $tasks[$entity]['dismiss'] = [
-              'title' => E::ts('Dismiss error %1', [1 => 'record']),
+              'title' => E::ts('Mark as resolved'),
               'apiBatch' => [
                 'action' => 'update',
                 'params' => ['values' => ['is_error_resolved' => TRUE]],
-                'runMsg' => E::ts('Dismissing error ...'),
-                'successMsg' => E::ts('Successfully dismissed error for %1 record.'),
-                'errorMsg' => E::ts('An error occurred while attempting to dismiss the error.'),
+                'runMsg' => E::ts('Processing ...'),
+                'successMsg' => E::ts('Successfully marked %1 records as resolved.'),
+                'errorMsg' => E::ts('An error occurred while marking errors as resolved.'),
+              ],
+            ];
+            $tasks[$entity]['donotsync'] = [
+              'title' => E::ts('Do not sync'),
+              'apiBatch' => [
+                'action' => 'update',
+                'params' => ['values' => ['do_not_sync' => TRUE, 'is_error_resolved' => TRUE]],
+                'runMsg' => E::ts('Processing ...'),
+                'successMsg' => E::ts('Successfully marked %1 records as "Do not Sync".'),
+                'errorMsg' => E::ts('An error occurred while marking errors as "Do not Sync".'),
               ],
             ];
           }

@@ -20,11 +20,14 @@ return [
           'select' => [
             'id',
             'contact_id.display_name',
+            'contact_id',
             'accounts_contact_id',
             'error_data',
             'last_sync_date',
           ],
-          'orderBy' => ['id DESC'],
+          'orderBy' => [
+            'id DESC',
+          ],
           'where' => [
             [
               'is_error_resolved',
@@ -42,7 +45,7 @@ return [
     ],
   ],
   [
-    'name' => 'SavedSearch_AccountContact_Synchronization_Errors_SearchDisplay_AccountContact_Synchronization_Errors_Table_1',
+    'name' => 'SavedSearch_AccountContact_Synchronization_Errors_SearchDisplay_AccountContact_Synchronization_Errors_Display',
     'entity' => 'SearchDisplay',
     'cleanup' => 'unused',
     'update' => 'unmodified',
@@ -80,9 +83,24 @@ return [
             ],
             [
               'type' => 'field',
+              'key' => 'contact_id',
+              'dataType' => 'Integer',
+              'label' => 'CiviCRM Contact ID',
+              'sortable' => TRUE,
+              'link' => [
+                'path' => '',
+                'entity' => 'Contact',
+                'action' => 'view',
+                'join' => 'contact_id',
+                'target' => '_blank',
+              ],
+              'title' => 'View CiviCRM Contact',
+            ],
+            [
+              'type' => 'field',
               'key' => 'accounts_contact_id',
               'dataType' => 'String',
-              'label' => 'accounts_contact_id',
+              'label' => 'Accounts Contact ID',
               'sortable' => TRUE,
             ],
             [
@@ -100,6 +118,7 @@ return [
               'sortable' => TRUE,
             ],
           ],
+          'headerCount' => TRUE,
         ],
         'acl_bypass' => FALSE,
       ],
