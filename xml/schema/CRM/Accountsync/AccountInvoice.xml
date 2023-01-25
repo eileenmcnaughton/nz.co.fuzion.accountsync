@@ -50,7 +50,6 @@
     <type>varchar</type>
     <length>128</length>
     <default>NULL</default>
-    <readonly>TRUE</readonly>
     <html>
       <type>Text</type>
     </html>

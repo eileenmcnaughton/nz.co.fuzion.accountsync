@@ -41,7 +41,6 @@
     <name>accounts_contact_id</name>
     <type>varchar</type>
     <length>128</length>
-    <readonly>true</readonly>
     <html>
       <type>Text</type>
     </html>
