@@ -1,0 +1,23 @@
+<div af-fieldset="">
+  <div class="af-markup">
+    <p>This allows you to filter and search a list of all contacts which are &quot;linked&quot; to an accounts contact.</p>
+
+    <p>If you know what you are doing you can also make updates to specific values using the <em>&quot;Actions-&gt;Update Account Contacts&quot;</em>. For example if you need to re-map a contact to another accounts contact you could update the &quot;Accounts Contact ID&quot; and then trigger the &quot;Contact Pull&quot; or &quot;Contact Push&quot; job to update that contact from/to the accounts system - you would also need to change &quot;Accounts needs update&quot; to 1 for the changes to be made.</p>
+
+  </div>
+  <div class="af-container af-layout-inline" af-title="CiviCRM">
+    <af-field name="contact_id" defn="{label: 'Contact ID', input_attrs: {}}" />
+    <af-field name="contact_id.display_name" defn="{label: 'Display Name', input_attrs: {}}" />
+  </div>
+  <div class="af-container af-layout-inline" af-title="Accounts">
+    <af-field name="accounts_contact_id" defn="{label: 'Contact ID', input_attrs: {}}" />
+    <af-field name="accounts_display_name" />
+  </div>
+  <div class="af-container af-layout-inline">
+    <af-field name="do_not_sync" defn="{input_type: 'Select', input_attrs: {multiple: true}}" />
+    <af-field name="is_error_resolved" defn="{input_type: 'Select', input_attrs: {multiple: true}}" />
+    <af-field name="accounts_needs_update" defn="{input_type: 'Select', input_attrs: {multiple: true}}" />
+    <af-field name="connector_id" defn="{afform_default: '0', input_attrs: {}}" />
+  </div>
+  <crm-search-display-table search-name="Accountsync_Contact_list" display-name="Accountsync_Contact_list"></crm-search-display-table>
+</div>
