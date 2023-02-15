@@ -22,8 +22,6 @@ return [
             'accounts_invoice_id',
             'error_data',
             'last_sync_date',
-            'accounts_needs_update',
-            'connector_id',
           ],
           'orderBy' => [],
           'where' => [
@@ -113,23 +111,8 @@ return [
               'label' => E::ts('Last Synchronization Date'),
               'sortable' => TRUE,
             ],
-            [
-              'type' => 'field',
-              'key' => 'accounts_needs_update',
-              'dataType' => 'Boolean',
-              'label' => 'Accounts Needs Update',
-              'sortable' => TRUE,
-              'editable' => TRUE,
-            ],
-            [
-              'type' => 'field',
-              'key' => 'connector_id',
-              'dataType' => 'Integer',
-              'label' => 'connector_id',
-              'sortable' => TRUE,
-              'editable' => TRUE,
-            ],
           ],
+          'headerCount' => TRUE,
         ],
       ],
       'match' => [
