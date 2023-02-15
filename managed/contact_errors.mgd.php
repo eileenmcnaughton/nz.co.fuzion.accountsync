@@ -1,5 +1,4 @@
 <?php
-
 return [
   [
     'name' => 'SavedSearch_AccountContact_Synchronization_Errors',
@@ -34,6 +33,10 @@ return [
               '=',
               FALSE,
             ],
+            [
+              'error_data',
+              'IS NOT EMPTY',
+            ],
           ],
           'groupBy' => [],
           'join' => [],
@@ -41,6 +44,9 @@ return [
         ],
         'expires_date' => NULL,
         'description' => NULL,
+      ],
+      'match' => [
+        'name',
       ],
     ],
   ],
@@ -121,6 +127,9 @@ return [
           'headerCount' => TRUE,
         ],
         'acl_bypass' => FALSE,
+      ],
+      'match' => [
+        'name',
       ],
     ],
   ],
