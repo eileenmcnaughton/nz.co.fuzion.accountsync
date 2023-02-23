@@ -19,38 +19,10 @@ function accountsync_civicrm_install() {
 }
 
 /**
- * Implements hook_civicrm_uninstall().
- */
-function accountsync_civicrm_uninstall() {
-  _accountsync_civix_civicrm_uninstall();
-}
-
-/**
  * Implements hook_civicrm_enable().
  */
 function accountsync_civicrm_enable() {
   _accountsync_civix_civicrm_enable();
-}
-
-/**
- * Implements hook_civicrm_disable().
- */
-function accountsync_civicrm_disable() {
-  _accountsync_civix_civicrm_disable();
-}
-
-/**
- * Implements hook_civicrm_upgrade().
- *
- * @param string $op The type of operation being performed; 'check' or 'enqueue'
- * @param CRM_Queue_Queue $queue for 'enqueue') the modifiable list of pending up upgrade tasks
- *
- * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
- */
-function accountsync_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _accountsync_civix_civicrm_upgrade($op, $queue);
 }
 
 /**
@@ -707,25 +679,6 @@ function accountsync_civicrm_merge($type, &$data, $new_id = NULL, $old_id = NULL
       }
     }
   }
-}
-
-/**
- * Implements hook_civicrm_entityTypes.
- *
- * @param array $entityTypes
- *   Registered entity types.
- */
-function accountsync_civicrm_entityTypes(&$entityTypes) {
-  _accountsync_civix_civicrm_entityTypes($entityTypes);
-}
-
-/**
- * Implements hook_civicrm_postInstall().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_postInstall
- */
-function accountsync_civicrm_postInstall() {
-  _accountsync_civix_civicrm_postInstall();
 }
 
 /**
