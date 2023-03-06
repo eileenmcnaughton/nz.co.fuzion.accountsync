@@ -32,6 +32,10 @@ return [
               '=',
               FALSE,
             ],
+            [
+              'error_data',
+              'IS NOT EMPTY',
+            ],
           ],
           'groupBy' => [],
           'join' => [],
@@ -39,6 +43,9 @@ return [
         ],
         'expires_date' => NULL,
         'description' => NULL,
+      ],
+      'match' => [
+        'name',
       ],
     ],
   ],
@@ -78,12 +85,20 @@ return [
               'dataType' => 'Integer',
               'label' => 'Contribution ID',
               'sortable' => TRUE,
+              'link' => [
+                'path' => '',
+                'entity' => 'Contribution',
+                'action' => 'view',
+                'join' => 'contribution_id',
+                'target' => 'crm-popup',
+              ],
+              'title' => 'View Contribution',
             ],
             [
               'type' => 'field',
               'key' => 'accounts_invoice_id',
               'dataType' => 'String',
-              'label' => 'accounts_invoice_id',
+              'label' => 'Accounts Invoice ID',
               'sortable' => TRUE,
             ],
             [
@@ -119,6 +134,9 @@ return [
           ],
         ],
         'acl_bypass' => FALSE,
+      ],
+      'match' => [
+        'name',
       ],
     ],
   ],
