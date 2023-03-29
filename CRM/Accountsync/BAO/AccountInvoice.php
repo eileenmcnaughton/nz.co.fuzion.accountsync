@@ -169,47 +169,57 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    */
   public static function completeContributionFromAccountsStatus() {
     $sql = "
-      SELECT cas.id civicrm_account_invoice_id, contribution_id, receive_date
+      SELECT cas.id civicrm_account_invoice_id, cas.contribution_id, cc.receive_date, cc.total_amount
       FROM civicrm_account_invoice cas
-      LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
-      WHERE civi.contribution_status_id =2
-      AND accounts_status_id = 1
+      LEFT JOIN civicrm_contribution cc ON cas.contribution_id = cc.id
+      WHERE cc.contribution_status_id = %1
+      AND accounts_status_id = %2
       ";
-    $dao = CRM_Core_DAO::executeQuery($sql);
 
+    $queryParams = [
+      1 => [
+        CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending'),
+        'Integer',
+      ],
+      2 => [
+        CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'completed'),
+        'Integer',
+      ]
+    ];
+    $dao = CRM_Core_DAO::executeQuery($sql, $queryParams);
+
+    $paymentParams = [];
     // Get send receipt override
-    $isSendReceipt = Civi::settings()->get('account_sync_send_receipt');
-    switch ($isSendReceipt) {
+    switch (Civi::settings()->get('account_sync_send_receipt')) {
       case 'send':
-        $send_receipt = 1;
+        $paymentParams['is_send_contribution_notification'] = 1;
         break;
 
       case 'do_not_send':
-        $send_receipt = 0;
+        $paymentParams['is_send_contribution_notification'] = 0;
         break;
 
+      case 'no_override':
       default:
-        $send_receipt = NULL;
         break;
     }
 
     while ($dao->fetch()) {
-      $params = [
-        'id' => $dao->contribution_id,
-        'receive_date' => $dao->receive_date,
-      ];
-      if (is_numeric($send_receipt)) {
-        $params['is_email_receipt'] = $send_receipt;
-      }
+      $paymentParams['contribution_id'] = $dao->contribution_id;
+      // @fixme receive_date/total amount should be retrieved from accounts_data otherwise they may not be accurate.
+      //   But this requires plugin specific parsing? eg. accounts_data is different for Xero and Quickbooks?
+      $paymentParams['trxn_date'] = $dao->receive_date;
+      $paymentParams['total_amount'] = $dao->total_amount;
       try {
-        civicrm_api3('contribution', 'completetransaction', $params);
+        civicrm_api3('Payment', 'create', $paymentParams);
       }
       catch (CiviCRM_API3_Exception $e) {
         // CiviCRM failed to complete the contribution.
-        $error = 'Contribution:completetransaction API failed, ' . $e->getMessage();
+        $error = 'AccountSync completeContributionFromAccountsStatus failed: ' . $e->getMessage();
         civicrm_api3('AccountInvoice', 'create', [
           'id' => $dao->civicrm_account_invoice_id,
           'error_data' => json_encode([$error]),
+          'is_error_resolved' => 0,
         ]);
       }
     }
@@ -225,12 +235,24 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $sql = "SELECT  cas.contribution_id
       FROM civicrm_account_invoice cas
       LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
-      WHERE accounts_status_id =3 AND contribution_status_id != 3
+      WHERE contribution_status_id != %1 AND accounts_status_id = %2
     ";
-    $dao = CRM_Core_DAO::executeQuery($sql);
+
+    $cancelledContributionStatus = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Cancelled');
+    $queryParams = [
+      1 => [
+        $cancelledContributionStatus,
+        'Integer',
+      ],
+      2 => [
+        CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'cancelled'),
+        'Integer',
+      ]
+    ];
+    $dao = CRM_Core_DAO::executeQuery($sql, $queryParams);
 
     while ($dao->fetch()) {
-      $params['contribution_status_id'] = 3;
+      $params['contribution_status_id'] = $cancelledContributionStatus;
       $params['id'] = $dao->contribution_id;
       civicrm_api3('Contribution', 'Create', $params);
     }
