@@ -189,6 +189,8 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $dao = CRM_Core_DAO::executeQuery($sql, $queryParams);
 
     $paymentParams = [];
+    // We are receiving directly from contribution table so it will be well formatted.
+    $paymentParams['skipCleanMoney'] = TRUE;
     // Get send receipt override
     switch (Civi::settings()->get('account_sync_send_receipt')) {
       case 'send':
