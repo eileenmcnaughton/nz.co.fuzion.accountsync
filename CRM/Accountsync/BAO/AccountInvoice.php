@@ -98,6 +98,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     }
     catch (Exception $e) {
       // probably shouldn't catch & let calling class catch
+      \Civi::log()->error('AccountInvoice.Getderived: ' . $e->getMessage());
     }
 
     // In 4.6 this might be more reliable as Monish did some tidy up on BAO_Search stuff.
@@ -115,7 +116,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       ]);
     }
     catch (Exception $e) {
-
+      \Civi::log()->error('AccountInvoice.Getderived: ' . $e->getMessage());
     }
 
     return [$contribution['id'] => $contribution];
