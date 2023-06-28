@@ -326,6 +326,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    */
   public static function getAccountStatuses(): array {
     return [
+      ['id' => 0, 'name' => 'unknown', 'label' => E::ts('Unknown')],
       ['id' => 1, 'name' => 'completed', 'label' => E::ts('Completed')],
       ['id' => 2, 'name' => 'pending', 'label' => E::ts('Pending')],
       ['id' => 3, 'name' => 'cancelled', 'label' => E::ts('Cancelled')],
