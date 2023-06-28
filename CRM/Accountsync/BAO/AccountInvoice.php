@@ -84,7 +84,6 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       foreach ($contribution['line_items'] as &$lineItem) {
         $lineItem['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($lineItem['financial_type_id']);
         $lineItem['accounts_contact_id'] = self::getAccountsContact($lineItem['financial_type_id']);
-        $contributionAccountsContactIDs[$lineItem['accounts_contact_id']] = TRUE;
         if (!isset($lineItem['contact_id'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
           // for conformity & ease downstream
@@ -96,9 +95,6 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           $lineItem['display_name'] = $contribution['display_name'];
         }
       }
-      //@todo move the getAccountingCode to a fn that caches it
-      $contribution['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($contribution['financial_type_id']);
-      $contribution['accounts_contact_id'] = array_keys($contributionAccountsContactIDs);
     }
     catch (Exception $e) {
       // probably shouldn't catch & let calling class catch
