@@ -247,7 +247,7 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
  *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
  *
  * @return array
- *   Entities that result in a contact being created when the are edited or created.
+ *   Entities that result in a contact being created when they are edited or created.
  *
  * @throws \CiviCRM_API3_Exception
  */
