@@ -54,6 +54,15 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           ],
         ],
       ], $params));
+      $accountContact = \Civi\Api4\AccountContact::get(FALSE)
+        ->addSelect('accounts_contact_id')
+        ->addWhere('contact_id', '=', $contribution['contact_id'])
+        ->execute()
+        ->first();
+      if (!empty($accountContact['accounts_contact_id'])) {
+        $contribution['accounts_contact_id'] = $accountContact['accounts_contact_id'];
+      }
+
       // There is a chaining bug on line item because chaining passes contribution_id along as entity_id.
       // CRM-16522.
       $contribution['api.line_item.get'] = civicrm_api3('line_item', 'get', [
