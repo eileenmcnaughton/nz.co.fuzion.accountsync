@@ -132,7 +132,7 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
-      _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+      _accountsync_create_account_invoice($contribution_id, \Civi::$statics['data.accountsync.createcontribution']['createnew'] ?? TRUE, $connector_id);
     }
   }
 
@@ -247,7 +247,7 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
  *   Connector ID if nz.co.fuzion.connectors is installed, else 0.
  *
  * @return array
- *   Entities that result in a contact being created when the are edited or created.
+ *   Entities that result in a contact being created when they are edited or created.
  *
  * @throws \CiviCRM_API3_Exception
  */

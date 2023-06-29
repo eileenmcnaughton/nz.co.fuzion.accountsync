@@ -54,6 +54,15 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           ],
         ],
       ], $params));
+      $accountContact = \Civi\Api4\AccountContact::get(FALSE)
+        ->addSelect('accounts_contact_id')
+        ->addWhere('contact_id', '=', $contribution['contact_id'])
+        ->execute()
+        ->first();
+      if (!empty($accountContact['accounts_contact_id'])) {
+        $contribution['accounts_contact_id'] = $accountContact['accounts_contact_id'];
+      }
+
       // There is a chaining bug on line item because chaining passes contribution_id along as entity_id.
       // CRM-16522.
       $contribution['api.line_item.get'] = civicrm_api3('line_item', 'get', [
@@ -75,7 +84,6 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       foreach ($contribution['line_items'] as &$lineItem) {
         $lineItem['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($lineItem['financial_type_id']);
         $lineItem['accounts_contact_id'] = self::getAccountsContact($lineItem['financial_type_id']);
-        $contributionAccountsContactIDs[$lineItem['accounts_contact_id']] = TRUE;
         if (!isset($lineItem['contact_id'])) {
           //this would have been set for a secondary participant above so we are ensuring primary ones have it
           // for conformity & ease downstream
@@ -87,12 +95,10 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           $lineItem['display_name'] = $contribution['display_name'];
         }
       }
-      //@todo move the getAccountingCode to a fn that caches it
-      $contribution['accounting_code'] = CRM_Financial_BAO_FinancialAccount::getAccountingCode($contribution['financial_type_id']);
-      $contribution['accounts_contact_id'] = array_keys($contributionAccountsContactIDs);
     }
     catch (Exception $e) {
       // probably shouldn't catch & let calling class catch
+      \Civi::log()->error('AccountInvoice.Getderived: ' . $e->getMessage());
     }
 
     // In 4.6 this might be more reliable as Monish did some tidy up on BAO_Search stuff.
@@ -110,7 +116,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       ]);
     }
     catch (Exception $e) {
-
+      \Civi::log()->error('AccountInvoice.Getderived: ' . $e->getMessage());
     }
 
     return [$contribution['id'] => $contribution];
@@ -189,6 +195,8 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
     $dao = CRM_Core_DAO::executeQuery($sql, $queryParams);
 
     $paymentParams = [];
+    // We are receiving directly from contribution table so it will be well formatted.
+    $paymentParams['skipCleanMoney'] = TRUE;
     // Get send receipt override
     switch (Civi::settings()->get('account_sync_send_receipt')) {
       case 'send':
@@ -318,6 +326,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    */
   public static function getAccountStatuses(): array {
     return [
+      ['id' => 0, 'name' => 'unknown', 'label' => E::ts('Unknown')],
       ['id' => 1, 'name' => 'completed', 'label' => E::ts('Completed')],
       ['id' => 2, 'name' => 'pending', 'label' => E::ts('Pending')],
       ['id' => 3, 'name' => 'cancelled', 'label' => E::ts('Cancelled')],

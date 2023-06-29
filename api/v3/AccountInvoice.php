@@ -73,6 +73,18 @@ function civicrm_api3_account_invoice_getderived($params) {
   return civicrm_api3_create_success(CRM_Accountsync_BAO_AccountInvoice::getDerived($params));
 }
 
+function _civicrm_api3_account_invoice_update_contribution_spec(&$spec) {
+  $spec['accounts_status_id'] = [
+    'type' => CRM_Utils_Type::T_INT,
+    'name' => 'accounts_status_id',
+    'title' => 'Accounts Status ID',
+    'description' => 'Status in accounts system (mapped to CiviCRM definition)',
+    'pseudoconstant' => [
+      'callback' => 'CRM_Accountsync_BAO_AccountInvoice::getAccountStatuses',
+    ],
+  ];
+}
+
 /**
  * AccountInvoice.create API.
  *
@@ -91,7 +103,7 @@ function civicrm_api3_account_invoice_update_contribution($params) {
     CRM_Accountsync_BAO_AccountInvoice::cancelContributionFromAccountsStatus($params);
   }
   else {
-    throw new Exception('Currently only complete/cancel is supported');
+    throw new Exception('Currently only completed/cancelled is supported');
   }
   return civicrm_api3_create_success();
 }
