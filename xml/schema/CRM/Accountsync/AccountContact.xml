@@ -14,6 +14,7 @@
     <required>true</required>
     <comment>Unique AccountContact ID</comment>
     <add>4.4</add>
+    <readonly>true</readonly>
   </field>
   <primaryKey>
     <name>id</name>
@@ -85,6 +86,10 @@
     <type>text</type>
     <comment>json array of data as returned from accounts system</comment>
     <add>4.4</add>
+    <html>
+      <type>Text</type>
+    </html>
+    <readonly>true</readonly>
   </field>
 
   <field>
@@ -93,6 +98,10 @@
     <type>text</type>
     <comment>json array of error data as returned from accounts system</comment>
     <add>4.4</add>
+    <html>
+      <type>Text</type>
+    </html>
+    <readonly>true</readonly>
   </field>
 
   <field>
@@ -114,6 +123,7 @@
     <html>
       <type>Text</type>
     </html>
+    <readonly>true</readonly>
     <comment>ID of connector. Relevant to connect to more than one account of the same type</comment>
     <add>4.4</add>
   </field>
@@ -125,6 +135,7 @@
     <length>32</length>
     <comment>Name of plugin creating the account</comment>
     <add>4.4</add>
+    <readonly>true</readonly>
   </field>
   <field>
     <name>do_not_sync</name>

@@ -17,12 +17,12 @@
   <version>1.5</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.56</ver>
+    <ver>5.58</ver>
   </compatibility>
   <comments>This module does nothing without an extension (CiviXero) - see ReadMe for more</comments>
   <civix>
     <namespace>CRM/Accountsync</namespace>
-    <format>23.02.0</format>
+    <format>23.02.1</format>
   </civix>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>
