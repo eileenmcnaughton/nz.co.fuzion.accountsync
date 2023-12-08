@@ -8,7 +8,7 @@ class api_v3_AccountContactTest extends CiviUnitTestCase {
 
   protected $_individualID;
 
-  function setUp() {
+  function setUp(): void {
     // If your test manipulates any SQL tables, then you should truncate
     // them to ensure a consisting starting point for all tests
     // $this->quickCleanup(array('example_table_name'));
@@ -16,7 +16,7 @@ class api_v3_AccountContactTest extends CiviUnitTestCase {
     $this->_individualID = $this->individualCreate();
   }
 
-  function tearDown() {
+  function tearDown(): void {
     $this->quickCleanup([
       'civicrm_account_contact',
     ]);

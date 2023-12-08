@@ -1,5 +1,7 @@
 <?php
 
+use Civi\Api4\AccountInvoice;
+use Civi\Api4\Contribution;
 use CRM_AccountSync_ExtensionUtil as E;
 
 class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvoice {
@@ -174,26 +176,6 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    * Update contributions in civicrm based on their status in Xero.
    */
   public static function completeContributionFromAccountsStatus() {
-    $sql = "
-      SELECT cas.id civicrm_account_invoice_id, cas.contribution_id, cc.receive_date, cc.total_amount
-      FROM civicrm_account_invoice cas
-      LEFT JOIN civicrm_contribution cc ON cas.contribution_id = cc.id
-      WHERE cc.contribution_status_id = %1
-      AND accounts_status_id = %2
-      ";
-
-    $queryParams = [
-      1 => [
-        CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending'),
-        'Integer',
-      ],
-      2 => [
-        CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'completed'),
-        'Integer',
-      ]
-    ];
-    $dao = CRM_Core_DAO::executeQuery($sql, $queryParams);
-
     $paymentParams = [];
     // We are receiving directly from contribution table so it will be well formatted.
     $paymentParams['skipCleanMoney'] = TRUE;
@@ -212,23 +194,33 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
         break;
     }
 
-    while ($dao->fetch()) {
-      $paymentParams['contribution_id'] = $dao->contribution_id;
+    $pendingContributionStatus = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending');
+
+    $completedAccountInvoices = AccountInvoice::get(FALSE)
+      ->addSelect('id', 'contribution_id', 'contribution_id.receive_date', 'contribution_id.total_amount')
+      ->addJoin('Contribution AS contribution', 'LEFT')
+      ->addWhere('accounts_status_id:name', '=', 'completed')
+      ->addWhere('contribution_id.contribution_status_id', '=', $pendingContributionStatus)
+      ->execute()
+      ->indexBy('id');
+
+    foreach ($completedAccountInvoices as $completedAccountInvoice) {
+      $paymentParams['contribution_id'] = $completedAccountInvoice['contribution_id'];
       // @fixme receive_date/total amount should be retrieved from accounts_data otherwise they may not be accurate.
       //   But this requires plugin specific parsing? eg. accounts_data is different for Xero and Quickbooks?
-      $paymentParams['trxn_date'] = $dao->receive_date;
-      $paymentParams['total_amount'] = $dao->total_amount;
+      $paymentParams['trxn_date'] = $completedAccountInvoice['contribution_id.receive_date'];
+      $paymentParams['total_amount'] = $completedAccountInvoice['contribution_id.total_amount'];
       try {
         civicrm_api3('Payment', 'create', $paymentParams);
       }
       catch (CiviCRM_API3_Exception $e) {
         // CiviCRM failed to complete the contribution.
         $error = 'AccountSync completeContributionFromAccountsStatus failed: ' . $e->getMessage();
-        civicrm_api3('AccountInvoice', 'create', [
-          'id' => $dao->civicrm_account_invoice_id,
-          'error_data' => json_encode([$error]),
-          'is_error_resolved' => 0,
-        ]);
+        AccountInvoice::update(FALSE)
+          ->addValue('error_data', json_encode([$error]))
+          ->addValue('is_error_resolved', FALSE)
+          ->addWhere('id', '=', $completedAccountInvoice['id'])
+          ->execute();
       }
     }
   }
@@ -238,32 +230,23 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    *
    * @todo - I don't believe this will adequately cancel related entities
    */
-  public static function cancelContributionFromAccountsStatus($params) {
-    //get pending registrations
-    $sql = "SELECT  cas.contribution_id
-      FROM civicrm_account_invoice cas
-      LEFT JOIN civicrm_contribution  civi ON cas.contribution_id = civi.id
-      WHERE contribution_status_id != %1 AND accounts_status_id = %2
-    ";
-
+  public static function cancelContributionFromAccountsStatus() {
     $cancelledContributionStatus = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Cancelled');
-    $queryParams = [
-      1 => [
-        $cancelledContributionStatus,
-        'Integer',
-      ],
-      2 => [
-        CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'cancelled'),
-        'Integer',
-      ]
-    ];
-    $dao = CRM_Core_DAO::executeQuery($sql, $queryParams);
 
-    while ($dao->fetch()) {
-      $params['contribution_status_id'] = $cancelledContributionStatus;
-      $params['id'] = $dao->contribution_id;
-      civicrm_api3('Contribution', 'Create', $params);
-    }
+    $cancelledAccountInvoices = AccountInvoice::get(FALSE)
+      ->addSelect('contribution_id', 'contribution_id.contribution_status_id:name')
+      ->addJoin('Contribution AS contribution', 'LEFT')
+      ->addWhere('contribution_id', 'IS NOT EMPTY')
+      ->addWhere('contribution_id.contribution_status_id', '!=', $cancelledContributionStatus)
+      ->addWhere('accounts_status_id:name', '=', 'cancelled')
+      ->execute()
+      ->indexBy('id')
+      ->column('contribution_id');
+
+    Contribution::update(FALSE)
+      ->addValue('contribution_status_id:name', 'Cancelled')
+      ->addWhere('id', 'IN', $cancelledAccountInvoices)
+      ->execute();
   }
 
   /**

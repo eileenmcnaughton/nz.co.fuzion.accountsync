@@ -100,7 +100,7 @@ function civicrm_api3_account_invoice_update_contribution($params) {
     CRM_Accountsync_BAO_AccountInvoice::completeContributionFromAccountsStatus();
   }
   elseif ($params['accounts_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'cancelled')) {
-    CRM_Accountsync_BAO_AccountInvoice::cancelContributionFromAccountsStatus($params);
+    CRM_Accountsync_BAO_AccountInvoice::cancelContributionFromAccountsStatus();
   }
   else {
     throw new Exception('Currently only completed/cancelled is supported');
