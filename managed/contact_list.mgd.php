@@ -1,19 +1,18 @@
 <?php
 
+use CRM_Accountsync_ExtensionUtil as E;
+
 return [
   [
     'name' => 'SavedSearch_Accountsync_Contact_list',
     'entity' => 'SavedSearch',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'Accountsync_Contact_list',
-        'label' => 'Accountsync Contact list',
-        'form_values' => NULL,
-        'mapping_id' => NULL,
-        'search_custom_id' => NULL,
+        'label' => E::ts('Accountsync Contact list'),
         'api_entity' => 'AccountContact',
         'api_params' => [
           'version' => 4,
@@ -34,21 +33,22 @@ return [
           'join' => [],
           'having' => [],
         ],
-        'expires_date' => NULL,
-        'description' => NULL,
+      ],
+      'match' => [
+        'name',
       ],
     ],
   ],
   [
     'name' => 'SavedSearch_Accountsync_Contact_list_SearchDisplay_Accountsync_Contact_list',
     'entity' => 'SearchDisplay',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'Accountsync_Contact_list',
-        'label' => 'Accountsync Contact list',
+        'label' => E::ts('Accountsync Contact list'),
         'saved_search_id.name' => 'Accountsync_Contact_list',
         'type' => 'table',
         'settings' => [
@@ -65,14 +65,14 @@ return [
               'type' => 'field',
               'key' => 'id',
               'dataType' => 'Integer',
-              'label' => 'ID',
+              'label' => E::ts('ID'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'contact_id',
               'dataType' => 'Integer',
-              'label' => 'CiviCRM Contact ID',
+              'label' => E::ts('CiviCRM Contact ID'),
               'sortable' => TRUE,
               'link' => [
                 'path' => '',
@@ -81,20 +81,20 @@ return [
                 'join' => 'contact_id',
                 'target' => '_blank',
               ],
-              'title' => 'View CiviCRM Contact ID',
+              'title' => E::ts('View CiviCRM Contact ID'),
             ],
             [
               'type' => 'field',
               'key' => 'accounts_contact_id',
               'dataType' => 'String',
-              'label' => 'Accounts Contact ID',
+              'label' => E::ts('Accounts Contact ID'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'contact_id.display_name',
               'dataType' => 'String',
-              'label' => 'CiviCRM Display Name',
+              'label' => E::ts('CiviCRM Display Name'),
               'sortable' => TRUE,
               'link' => [
                 'path' => '',
@@ -103,41 +103,41 @@ return [
                 'join' => 'contact_id',
                 'target' => '_blank',
               ],
-              'title' => 'View CiviCRM Contact ID',
+              'title' => E::ts('View CiviCRM Contact ID'),
             ],
             [
               'type' => 'field',
               'key' => 'accounts_display_name',
               'dataType' => 'String',
-              'label' => 'Accounts Display Name',
+              'label' => E::ts('Accounts Display Name'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'plugin',
               'dataType' => 'String',
-              'label' => 'Accounts',
+              'label' => E::ts('Accounts'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'do_not_sync',
               'dataType' => 'Boolean',
-              'label' => 'Do Not Sync',
+              'label' => E::ts('Do Not Sync'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'is_error_resolved',
               'dataType' => 'Boolean',
-              'label' => 'Error Resolved',
+              'label' => E::ts('Error Resolved'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'accounts_needs_update',
               'dataType' => 'Boolean',
-              'label' => 'Accounts Needs Update',
+              'label' => E::ts('Accounts Needs Update'),
               'sortable' => TRUE,
             ],
           ],
@@ -148,7 +148,10 @@ return [
           ],
           'headerCount' => TRUE,
         ],
-        'acl_bypass' => FALSE,
+      ],
+      'match' => [
+        'saved_search_id',
+        'name',
       ],
     ],
   ],

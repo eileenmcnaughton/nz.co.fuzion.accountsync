@@ -1,19 +1,18 @@
 <?php
 
+use CRM_Accountsync_ExtensionUtil as E;
+
 return [
   [
     'name' => 'SavedSearch_Accountsync_Contact_Match',
     'entity' => 'SavedSearch',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'Accountsync_Contact_Match',
-        'label' => 'Accountsync Contact Match',
-        'form_values' => NULL,
-        'mapping_id' => NULL,
-        'search_custom_id' => NULL,
+        'label' => E::ts('Accountsync Contact Match'),
         'api_entity' => 'AccountContact',
         'api_params' => [
           'version' => 4,
@@ -66,21 +65,22 @@ return [
           ],
           'having' => [],
         ],
-        'expires_date' => NULL,
-        'description' => NULL,
+      ],
+      'match' => [
+        'name',
       ],
     ],
   ],
   [
     'name' => 'SavedSearch_Accountsync_Contact_Match_SearchDisplay_Accountsync_Contact_Match_Table_1',
     'entity' => 'SearchDisplay',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'Accountsync_Contact_Match_Table_1',
-        'label' => 'Accountsync Contact Match Table 1',
+        'label' => E::ts('Accountsync Contact Match Table 1'),
         'saved_search_id.name' => 'Accountsync_Contact_Match',
         'type' => 'table',
         'settings' => [
@@ -101,23 +101,23 @@ return [
               'type' => 'field',
               'key' => 'id',
               'dataType' => 'Integer',
-              'label' => 'AccountsContact ID',
+              'label' => E::ts('AccountsContact ID'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'contact_id',
               'dataType' => 'Integer',
-              'label' => 'CiviCRM Contact ID',
+              'label' => E::ts('CiviCRM Contact ID'),
               'sortable' => TRUE,
               'editable' => TRUE,
-              'title' => 'Click to match with an existing contact',
+              'title' => E::ts('Click to match with an existing contact'),
             ],
             [
               'type' => 'field',
               'key' => 'accounts_contact_id',
               'dataType' => 'String',
-              'label' => 'Accounts system Contact ID',
+              'label' => E::ts('Accounts system Contact ID'),
               'sortable' => TRUE,
               'link' => [
                 'path' => 'https://go.xero.com/Contacts/View/[accounts_contact_id]',
@@ -131,7 +131,7 @@ return [
               'type' => 'field',
               'key' => 'do_not_sync',
               'dataType' => 'Boolean',
-              'label' => 'Do Not Sync',
+              'label' => E::ts('Do Not Sync'),
               'sortable' => TRUE,
               'editable' => TRUE,
             ],
@@ -139,25 +139,25 @@ return [
               'type' => 'field',
               'key' => 'accounts_display_name',
               'dataType' => 'String',
-              'label' => 'Accounts Display Name',
+              'label' => E::ts('Accounts Display Name'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'plugin',
               'dataType' => 'String',
-              'label' => 'Account Plugin',
+              'label' => E::ts('Account Plugin'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'accounts_modified_date',
               'dataType' => 'Timestamp',
-              'label' => 'Accounts Modified Date',
+              'label' => E::ts('Accounts Modified Date'),
               'sortable' => TRUE,
             ],
             [
-              'text' => 'Actions',
+              'text' => E::ts('Actions'),
               'style' => 'default',
               'size' => 'btn-sm',
               'icon' => 'fa-bars',
@@ -168,7 +168,7 @@ return [
                   'join' => 'AccountContact_Contact_contact_id_01',
                   'target' => '_blank',
                   'icon' => 'fa-external-link',
-                  'text' => 'View Account Contact contact_id',
+                  'text' => E::ts('View Account Contact contact_id'),
                   'style' => 'default',
                   'path' => '',
                   'condition' => [
@@ -182,7 +182,7 @@ return [
                   'join' => 'AccountContact_Contact_contact_id_01',
                   'target' => '_blank',
                   'icon' => 'fa-pencil',
-                  'text' => 'Edit Account Contact contact_id',
+                  'text' => E::ts('Edit Account Contact contact_id'),
                   'style' => 'default',
                   'path' => '',
                   'condition' => [
@@ -196,7 +196,7 @@ return [
                   'join' => 'AccountContact_Contact_contact_id_01',
                   'target' => 'crm-popup',
                   'icon' => 'fa-trash',
-                  'text' => 'Delete Account Contact contact_id',
+                  'text' => E::ts('Delete Account Contact contact_id'),
                   'style' => 'danger',
                   'path' => '',
                   'condition' => [
@@ -210,7 +210,10 @@ return [
             ],
           ],
         ],
-        'acl_bypass' => FALSE,
+      ],
+      'match' => [
+        'saved_search_id',
+        'name',
       ],
     ],
   ],

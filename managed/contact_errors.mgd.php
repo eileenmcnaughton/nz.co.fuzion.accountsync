@@ -1,18 +1,18 @@
 <?php
+
+use CRM_Accountsync_ExtensionUtil as E;
+
 return [
   [
     'name' => 'SavedSearch_AccountContact_Synchronization_Errors',
     'entity' => 'SavedSearch',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'AccountContact_Synchronization_Errors',
-        'label' => 'Contact Synchronization Errors',
-        'form_values' => NULL,
-        'mapping_id' => NULL,
-        'search_custom_id' => NULL,
+        'label' => E::ts('Contact Synchronization Errors'),
         'api_entity' => 'AccountContact',
         'api_params' => [
           'version' => 4,
@@ -42,8 +42,6 @@ return [
           'join' => [],
           'having' => [],
         ],
-        'expires_date' => NULL,
-        'description' => NULL,
       ],
       'match' => [
         'name',
@@ -53,13 +51,13 @@ return [
   [
     'name' => 'SavedSearch_AccountContact_Synchronization_Errors_SearchDisplay_AccountContact_Synchronization_Errors_Display',
     'entity' => 'SearchDisplay',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'AccountContact_Synchronization_Errors_Display',
-        'label' => 'Contact Synchronization Errors',
+        'label' => E::ts('Contact Synchronization Errors'),
         'saved_search_id.name' => 'AccountContact_Synchronization_Errors',
         'type' => 'table',
         'settings' => [
@@ -77,21 +75,21 @@ return [
               'type' => 'field',
               'key' => 'id',
               'dataType' => 'Integer',
-              'label' => 'id',
+              'label' => E::ts('id'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'contact_id.display_name',
               'dataType' => 'String',
-              'label' => 'Contact',
+              'label' => E::ts('Contact'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'contact_id',
               'dataType' => 'Integer',
-              'label' => 'CiviCRM Contact ID',
+              'label' => E::ts('CiviCRM Contact ID'),
               'sortable' => TRUE,
               'link' => [
                 'path' => '',
@@ -100,35 +98,35 @@ return [
                 'join' => 'contact_id',
                 'target' => '_blank',
               ],
-              'title' => 'View CiviCRM Contact',
+              'title' => E::ts('View CiviCRM Contact'),
             ],
             [
               'type' => 'field',
               'key' => 'accounts_contact_id',
               'dataType' => 'String',
-              'label' => 'Accounts Contact ID',
+              'label' => E::ts('Accounts Contact ID'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'error_data',
               'dataType' => 'Text',
-              'label' => 'Account Error Data',
+              'label' => E::ts('Account Error Data'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'last_sync_date',
               'dataType' => 'Timestamp',
-              'label' => 'Last Synchronization Date',
+              'label' => E::ts('Last Synchronization Date'),
               'sortable' => TRUE,
             ],
           ],
           'headerCount' => TRUE,
         ],
-        'acl_bypass' => FALSE,
       ],
       'match' => [
+        'saved_search_id',
         'name',
       ],
     ],

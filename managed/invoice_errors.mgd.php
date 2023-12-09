@@ -1,18 +1,18 @@
 <?php
+
+use CRM_Accountsync_ExtensionUtil as E;
+
 return [
   [
     'name' => 'SavedSearch_AccountInvoice_Synchronization_Errors',
     'entity' => 'SavedSearch',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'AccountInvoice_Synchronization_Errors',
-        'label' => 'Invoice Synchronization Errors',
-        'form_values' => NULL,
-        'mapping_id' => NULL,
-        'search_custom_id' => NULL,
+        'label' => E::ts('Invoice Synchronization Errors'),
         'api_entity' => 'AccountInvoice',
         'api_params' => [
           'version' => 4,
@@ -41,8 +41,6 @@ return [
           'join' => [],
           'having' => [],
         ],
-        'expires_date' => NULL,
-        'description' => NULL,
       ],
       'match' => [
         'name',
@@ -52,13 +50,13 @@ return [
   [
     'name' => 'SavedSearch_AccountInvoice_Synchronization_Errors_SearchDisplay_AccountInvoice_Synchronization_Errors_Display',
     'entity' => 'SearchDisplay',
-    'cleanup' => 'unused',
+    'cleanup' => 'always',
     'update' => 'unmodified',
     'params' => [
       'version' => 4,
       'values' => [
         'name' => 'AccountInvoice_Synchronization_Errors_Display',
-        'label' => 'Invoice Synchronization Errors',
+        'label' => E::ts('Invoice Synchronization Errors'),
         'saved_search_id.name' => 'AccountInvoice_Synchronization_Errors',
         'type' => 'table',
         'settings' => [
@@ -76,14 +74,14 @@ return [
               'type' => 'field',
               'key' => 'id',
               'dataType' => 'Integer',
-              'label' => 'id',
+              'label' => E::ts('id'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'contribution_id',
               'dataType' => 'Integer',
-              'label' => 'Contribution ID',
+              'label' => E::ts('Contribution ID'),
               'sortable' => TRUE,
               'link' => [
                 'path' => '',
@@ -92,27 +90,27 @@ return [
                 'join' => 'contribution_id',
                 'target' => 'crm-popup',
               ],
-              'title' => 'View Contribution',
+              'title' => E::ts('View Contribution'),
             ],
             [
               'type' => 'field',
               'key' => 'accounts_invoice_id',
               'dataType' => 'String',
-              'label' => 'Accounts Invoice ID',
+              'label' => E::ts('Accounts Invoice ID'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'error_data',
               'dataType' => 'Text',
-              'label' => 'Account Error Data',
+              'label' => E::ts('Account Error Data'),
               'sortable' => TRUE,
             ],
             [
               'type' => 'field',
               'key' => 'last_sync_date',
               'dataType' => 'Timestamp',
-              'label' => 'Last Synchronization Date',
+              'label' => E::ts('Last Synchronization Date'),
               'sortable' => TRUE,
             ],
             [
@@ -133,9 +131,9 @@ return [
             ],
           ],
         ],
-        'acl_bypass' => FALSE,
       ],
       'match' => [
+        'saved_search_id',
         'name',
       ],
     ],
