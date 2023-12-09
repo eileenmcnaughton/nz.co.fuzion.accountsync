@@ -1,4 +1,14 @@
-<div class="af-container"></div>
 <div af-fieldset="">
-  <crm-search-display-table search-name="Accountsync_Contact_Match" display-name="Accountsync_Contact_Match_Table_1"></crm-search-display-table>
+  <div class="af-markup">
+    <div class="help">
+To match a contact with an existing contact in the accounts system search for the name. Then click in the "CiviCRM Contact ID" field to search for a contact in CiviCRM
+    </div>
+  </div>
+  <fieldset class="af-container af-collapsible af-layout-inline" af-title="Filters">
+    <af-field name="contact_id" defn="{input_attrs: {multiple: true}}" />
+    <af-field name="accounts_display_name" defn="{label: 'Accounts Display Name', input_attrs: {}}" />
+  </fieldset>
+  <fieldset class="af-container">
+    <crm-search-display-table search-name="Accountsync_Contact_Match" display-name="Accountsync_Contact_Match_Table_1"></crm-search-display-table>
+  </fieldset>
 </div>
