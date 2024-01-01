@@ -171,5 +171,29 @@ $entities = [
       ],
     ],
   ],
+  [
+    'name' => 'Navigation_Accountsync_Non_Queued_Contributions',
+    'entity' => 'Navigation',
+    'cleanup' => 'always',
+    'update' => 'unmodified',
+    'params' => [
+      'version' => 4,
+      'values' => [
+        'domain_id' => 'current_domain',
+        'label' => E::ts('Non-Queued Contributions'),
+        'name' => 'Accountsync Non-Queued Contributions',
+        'url' => 'civicrm/admin/accountsync/contributionlist',
+        'icon' => NULL,
+        'permission' => [
+          'administer CiviCRM system',
+        ],
+        'permission_operator' => 'AND',
+        'parent_id.name' => 'Accounts_System',
+        'is_active' => TRUE,
+        'has_separator' => 0,
+        'weight' => 1,
+      ],
+    ],
+  ],
 ];
 return $entities;
