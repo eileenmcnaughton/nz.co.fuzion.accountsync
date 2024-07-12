@@ -13,6 +13,34 @@ function civicrm_api3_account_contact_create($params) {
 }
 
 /**
+ * Synchronise contacts does not like it if there is an existing entry in the account_contact table that is not linked to an accounts_contact_id
+ *
+ * @param array $params
+ *
+ * @return array
+ * @throws \CRM_Core_Exception
+ * @throws \Civi\API\Exception\UnauthorizedException
+ */
+function civicrm_api3_account_contact_link($params) {
+  if (empty($params['id']) || empty($params['contact_id'])) {
+    throw new CRM_Core_Exception('Missing mandatory parameters');
+  }
+  $existingEntry = \Civi\Api4\AccountContact::get(FALSE)
+    ->addWhere('contact_id', '=', $params['contact_id'])
+    ->execute()
+    ->first();
+  if (empty($existingEntry['accounts_contact_id'])) {
+    \Civi\Api4\AccountContact::delete(FALSE)
+      ->addWhere('id', '=', $existingEntry['id'])
+      ->execute();
+  }
+  else {
+    throw new CRM_Core_Exception('Contact ID (' . $params['contact_id'] . ') is already matched to an AccountContact ID: ' . $existingEntry['accounts_contact_id']);
+  }
+  return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountContact', $params);
+}
+
+/**
  * AccountContact.delete API
  *
  * @param array $params
