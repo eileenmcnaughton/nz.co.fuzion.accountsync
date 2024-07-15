@@ -2,7 +2,64 @@
 
 use CRM_Accountsync_ExtensionUtil as E;
 
-return [
+$columns = [
+  [
+    'type' => 'field',
+    'key' => 'id',
+    'dataType' => 'Integer',
+    'label' => E::ts('id'),
+    'sortable' => TRUE,
+  ],
+  [
+    'type' => 'field',
+    'key' => 'contribution_id',
+    'dataType' => 'Integer',
+    'label' => E::ts('Contribution ID'),
+    'sortable' => TRUE,
+    'link' => [
+      'path' => '',
+      'entity' => 'Contribution',
+      'action' => 'view',
+      'join' => 'contribution_id',
+      'target' => 'crm-popup',
+    ],
+    'title' => E::ts('View Contribution'),
+  ],
+  [
+    'type' => 'field',
+    'key' => 'accounts_invoice_id',
+    'dataType' => 'String',
+    'label' => E::ts('Accounts Invoice ID'),
+    'sortable' => TRUE,
+  ],
+  [
+    'type' => 'field',
+    'key' => 'error_data',
+    'dataType' => 'Text',
+    'label' => E::ts('Account Error Data'),
+    'sortable' => TRUE,
+  ],
+  [
+    'type' => 'field',
+    'key' => 'last_sync_date',
+    'dataType' => 'Timestamp',
+    'label' => E::ts('Last Synchronization Date'),
+    'sortable' => TRUE,
+  ],
+];
+$connectors = _accountsync_get_connectors();
+if (count($connectors) > 1) {
+  $columns[] = [
+    'type' => 'field',
+    'key' => 'connector_id',
+    'dataType' => 'Integer',
+    'label' => 'connector_id',
+    'sortable' => TRUE,
+    'editable' => TRUE,
+  ];
+}
+
+$searches = [
   [
     'name' => 'SavedSearch_AccountInvoice_Synchronization_Errors',
     'entity' => 'SavedSearch',
@@ -69,67 +126,7 @@ return [
           'pager' => [],
           'placeholder' => 5,
           'sort' => [],
-          'columns' => [
-            [
-              'type' => 'field',
-              'key' => 'id',
-              'dataType' => 'Integer',
-              'label' => E::ts('id'),
-              'sortable' => TRUE,
-            ],
-            [
-              'type' => 'field',
-              'key' => 'contribution_id',
-              'dataType' => 'Integer',
-              'label' => E::ts('Contribution ID'),
-              'sortable' => TRUE,
-              'link' => [
-                'path' => '',
-                'entity' => 'Contribution',
-                'action' => 'view',
-                'join' => 'contribution_id',
-                'target' => 'crm-popup',
-              ],
-              'title' => E::ts('View Contribution'),
-            ],
-            [
-              'type' => 'field',
-              'key' => 'accounts_invoice_id',
-              'dataType' => 'String',
-              'label' => E::ts('Accounts Invoice ID'),
-              'sortable' => TRUE,
-            ],
-            [
-              'type' => 'field',
-              'key' => 'error_data',
-              'dataType' => 'Text',
-              'label' => E::ts('Account Error Data'),
-              'sortable' => TRUE,
-            ],
-            [
-              'type' => 'field',
-              'key' => 'last_sync_date',
-              'dataType' => 'Timestamp',
-              'label' => E::ts('Last Synchronization Date'),
-              'sortable' => TRUE,
-            ],
-            [
-              'type' => 'field',
-              'key' => 'accounts_needs_update',
-              'dataType' => 'Boolean',
-              'label' => 'Accounts Needs Update',
-              'sortable' => TRUE,
-              'editable' => TRUE,
-            ],
-            [
-              'type' => 'field',
-              'key' => 'connector_id',
-              'dataType' => 'Integer',
-              'label' => 'connector_id',
-              'sortable' => TRUE,
-              'editable' => TRUE,
-            ],
-          ],
+          'columns' => $columns,
         ],
       ],
       'match' => [
@@ -139,3 +136,5 @@ return [
     ],
   ],
 ];
+
+return $searches;
