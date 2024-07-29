@@ -180,6 +180,10 @@ function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZ
  */
 function _accountsync_get_connectors() {
   $connectors = [];
+  $entities = civicrm_api3('Entity', 'get')['values'];
+  if (!in_array('ConnectorType', $entities, TRUE)) {
+    return [0];
+  }
   if (empty($connectors)) {
     try {
       $result = civicrm_api3('connector_type', 'get', [
