@@ -1,7 +1,11 @@
 <div af-fieldset="">
-  <div class="af-container af-layout-inline">
+  <fieldset class="af-container af-layout-inline af-collapsible" af-title="Filters">
+    <af-field name="accounts_display_name" defn="{label: 'Contact', input_attrs: {}}" />
     <af-field name="contact_id" />
     <af-field name="accounts_contact_id" />
-  </div>
-  <crm-search-display-table search-name="AccountContact_Synchronization_Errors" display-name="AccountContact_Synchronization_Errors_Display"></crm-search-display-table>
+    <af-field name="error_data" />
+  </fieldset>
+  <fieldset class="af-container">
+    <crm-search-display-table search-name="AccountContact_Synchronization_Errors" display-name="AccountContact_Synchronization_Errors_Display"></crm-search-display-table>
+  </fieldset>
 </div>
