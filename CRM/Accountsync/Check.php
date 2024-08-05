@@ -35,7 +35,7 @@ class CRM_Accountsync_Check {
    *
    * @return array
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function checkRequirements(): array {
     $this->checkNullConnectorID();
@@ -43,7 +43,7 @@ class CRM_Accountsync_Check {
   }
 
   /**
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   private function checkNullConnectorID(): void {
     $accountContact = AccountContact::get(FALSE)
