@@ -213,7 +213,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       try {
         civicrm_api3('Payment', 'create', $paymentParams);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // CiviCRM failed to complete the contribution.
         $error = 'AccountSync completeContributionFromAccountsStatus failed: ' . $e->getMessage();
         AccountInvoice::update(FALSE)

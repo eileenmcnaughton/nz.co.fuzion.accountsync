@@ -144,12 +144,12 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
  * We only sync contributions afer the day zero date.
  *
  * @param string $objectName
- * @param CRM_Contribute_BAO_Contribution| CRM_Financial_BAO_LineItem $objectRef
+ * @param CRM_Contribute_BAO_Contribution|CRM_Price_BAO_LineItem $objectRef
  * @param int $contribution_id
  * @param string $invoiceDayZero
  *
  * @return bool
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  *
  */
 function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZero) {
@@ -253,7 +253,7 @@ function _accountsync_validate_for_connector($connector_id, $financial_type_id) 
  * @return array
  *   Entities that result in a contact being created when they are edited or created.
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_contact_create_entities(int $connector_id): array {
   return _accountsync_get_entity_action_settings($connector_id)['account_sync_queue_contacts'] ?? [];
@@ -268,7 +268,7 @@ function _accountsync_get_contact_create_entities(int $connector_id): array {
  * @return array
  *   Entities that result in a contact being created when the are edited or created.
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_contact_update_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
@@ -285,7 +285,7 @@ function _accountsync_get_contact_update_entities($connector_id) {
  * @return array
  *   Entities that result in an invoice being created when they are edited or created.
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
@@ -302,7 +302,7 @@ function _accountsync_get_invoice_create_entities($connector_id) {
  * @return array
  *   Payment processor entities that result in an invoice *not* being created when they are edited or created.
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_skip_invoice_create_entities($connector_id) {
   $entities = _accountsync_get_entity_action_settings($connector_id);
@@ -323,7 +323,7 @@ function _accountsync_get_skip_invoice_create_entities($connector_id) {
  * @return ?string
  *   First date to create contributions from.
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_invoice_day_zero(int $connector_id): ?string {
   return _accountsync_get_entity_action_settings($connector_id)['account_sync_contribution_day_zero'] ?? NULL;
@@ -338,7 +338,7 @@ function _accountsync_get_invoice_day_zero(int $connector_id): ?string {
  * @return ?int
  *   Entities that result in a contact being created when the are edited or created.
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_account_contact_id(int $connector_id): ?int {
   return _accountsync_get_entity_action_settings($connector_id)['account_sync_account_contact_id'] ?? NULL;
@@ -353,7 +353,7 @@ function _accountsync_get_account_contact_id(int $connector_id): ?int {
  * @param int $connector_id
  *
  * @return array
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _accountsync_get_entity_action_settings(int $connector_id): array {
   static $entities = [];
@@ -566,7 +566,7 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
       return;
     }
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     // Contact not found, Skip the sync.
     return;
   }
@@ -579,7 +579,7 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
       $accountContact['accounts_needs_update'] = 1;
       civicrm_api3('account_contact', 'create', $accountContact);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       // new contact
       if (!$createNew) {
         continue;
@@ -588,7 +588,7 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
         $accountContact['accounts_needs_update'] = 1;
         civicrm_api3('account_contact', 'create', $accountContact);
       }
-      catch (CiviCRM_API3_Exception $e) {
+      catch (CRM_Core_Exception $e) {
         // unknown failure
       }
     }
@@ -625,8 +625,8 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
         'connector_id' => $connector_id,
       ]);
     }
-    catch (CiviCRM_API3_Exception $e) {
-      // new contact
+    catch (CRM_Core_Exception $e) {
+      // new invoice
       if (!$createNew) {
         continue;
       }
@@ -635,7 +635,7 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
     try {
       civicrm_api3('AccountInvoice', 'create', $accountInvoice);
     }
-    catch (CiviCRM_API3_Exception $e) {
+    catch (CRM_Core_Exception $e) {
       // Unknown failure.
     }
   }
@@ -688,7 +688,7 @@ function accountsync_civicrm_merge($type, &$data, $new_id = NULL, $old_id = NULL
 /**
  * Implements hook_civicrm_check().
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function accountsync_civicrm_check(array &$messages): void {
   $checks = new CRM_Accountsync_Check($messages);
