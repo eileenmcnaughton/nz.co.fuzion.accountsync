@@ -97,31 +97,27 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
           $lineItem['display_name'] = $contribution['display_name'];
         }
       }
-    }
-    catch (Exception $e) {
-      // probably shouldn't catch & let calling class catch
-      \Civi::log()->error('AccountInvoice.Getderived: ' . $e->getMessage());
-    }
 
-    // In 4.6 this might be more reliable as Monish did some tidy up on BAO_Search stuff.
-    // Relying on it being unique makes me nervous...
-    if (empty($contribution['payment_instrument_id'])) {
-      $paymentInstruments = civicrm_api3('contribution', 'getoptions', ['field' => 'payment_instrument_id']);
-      $contribution['payment_instrument_id'] = array_search($contribution['payment_instrument'], $paymentInstruments['values']);
-    }
+      // In 4.6 this might be more reliable as Monish did some tidy up on BAO_Search stuff.
+      // Relying on it being unique makes me nervous...
+      if (empty($contribution['payment_instrument_id'])) {
+        $paymentInstruments = civicrm_api3('contribution', 'getoptions', ['field' => 'payment_instrument_id']);
+        $contribution['payment_instrument_id'] = array_search($contribution['payment_instrument'], $paymentInstruments['values']);
+      }
 
-    try {
       $contribution['payment_instrument_financial_account_id'] = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($contribution['payment_instrument_id']);
       $contribution['payment_instrument_accounting_code'] = civicrm_api3('financial_account', 'getvalue', [
         'id' => $contribution['payment_instrument_financial_account_id'],
         'return' => 'accounting_code',
       ]);
+
+      return [$contribution['id'] => $contribution];
     }
     catch (Exception $e) {
-      \Civi::log('account_sync')->error('AccountInvoice.Getderived: retrieving financial account code failed for payment instrument ' . $contribution['payment_instrument_id'] . " " . $e->getMessage());
+      // probably shouldn't catch & let calling class catch
+      \Civi::log()->error('AccountInvoice.Getderived: for ' . print_r($params, TRUE) . $e->getMessage());
+      return [];
     }
-
-    return [$contribution['id'] => $contribution];
   }
 
   /**
