@@ -118,7 +118,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       ]);
     }
     catch (Exception $e) {
-      \Civi::log()->error('AccountInvoice.Getderived: ' . $e->getMessage());
+      \Civi::log('account_sync')->error('AccountInvoice.Getderived: retrieving financial account code failed for payment instrument ' . $contribution['payment_instrument_id'] . " " . $e->getMessage());
     }
 
     return [$contribution['id'] => $contribution];
