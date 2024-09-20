@@ -279,9 +279,9 @@ function _accountsync_get_contact_create_entities(int $connector_id): array {
  *
  * @throws \CRM_Core_Exception
  */
-function _accountsync_get_contact_update_entities($connector_id) {
+function _accountsync_get_contact_update_entities($connector_id): array {
   $entities = _accountsync_get_entity_action_settings($connector_id);
-  $createEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities, []);
+  $createEntities = CRM_Utils_Array::value('account_sync_queue_update_contacts', $entities, []) ?? [];
   return $createEntities;
 }
 
@@ -313,7 +313,7 @@ function _accountsync_get_invoice_create_entities($connector_id) {
  *
  * @throws \CRM_Core_Exception
  */
-function _accountsync_get_skip_invoice_create_entities($connector_id) {
+function _accountsync_get_skip_invoice_create_entities($connector_id): array {
   $entities = _accountsync_get_entity_action_settings($connector_id);
   $skipEntities = $entities['account_sync_skip_inv_by_pymt_processor'] ?? [];
   if ($skipEntities === ['']) {
