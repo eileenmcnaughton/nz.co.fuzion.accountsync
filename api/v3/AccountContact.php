@@ -67,7 +67,10 @@ function civicrm_api3_account_contact_get($params) {
     foreach ($accountContacts['values'] as $id => $accountContact) {
       if (!empty($accountContacts['values'][$id]['accounts_data'])) {
         $accountContacts['values'][$id]['accounts_data'] = json_decode($accountContacts['values'][$id]['accounts_data'], TRUE);
-        CRM_Accountsync_Hook::mapAccountsData($accountContacts['values'][$id]['accounts_data'], 'contact', $params['plugin']);
+        if ($accountContacts['values'][$id]['accounts_data']) {
+          // Call hook, but not if data was null.
+          CRM_Accountsync_Hook::mapAccountsData($accountContacts['values'][$id]['accounts_data'], 'contact', $params['plugin']);
+        }
       }
     }
   }
