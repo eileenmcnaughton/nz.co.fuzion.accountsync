@@ -95,11 +95,12 @@ function _civicrm_api3_account_invoice_update_contribution_spec(&$spec) {
  *
  * @throws \Exception
  */
-function civicrm_api3_account_invoice_update_contribution($params) {
-  if ($params['accounts_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'completed')) {
+function civicrm_api3_account_invoice_update_contribution(array $params): array {
+  $accountsStatus = CRM_Core_PseudoConstant::getName('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', $params['accounts_status_id'] ?? '');
+  if ($accountsStatus === 'completed') {
     CRM_Accountsync_BAO_AccountInvoice::completeContributionFromAccountsStatus();
   }
-  elseif ($params['accounts_status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Accountsync_BAO_AccountInvoice', 'accounts_status_id', 'cancelled')) {
+  elseif ($accountsStatus === 'cancelled') {
     CRM_Accountsync_BAO_AccountInvoice::cancelContributionFromAccountsStatus();
   }
   else {
