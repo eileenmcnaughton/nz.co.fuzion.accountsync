@@ -647,6 +647,7 @@ function _accountsync_create_account_invoice($contributionID, $createNew, $conne
     }
     catch (CRM_Core_Exception $e) {
       // Unknown failure.
+      \Civi::log('account_sync')->info('issue creating account invoice' . $e->getMessage());
     }
   }
 }
