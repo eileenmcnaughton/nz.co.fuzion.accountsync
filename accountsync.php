@@ -190,40 +190,43 @@ function isBeforeDayZero($objectName, $objectRef, $contribution_id, $invoiceDayZ
  *   Array of ids from civicrm_connectors or 0 for settings only.
  */
 function _accountsync_get_connectors() {
-  $connectors = [];
-  $entities = civicrm_api3('Entity', 'get')['values'];
-  if (!in_array('ConnectorType', $entities, TRUE)) {
-    return [0];
-  }
-  if (empty($connectors)) {
-    try {
-      $result = civicrm_api3('connector_type', 'get', [
-        'module' => 'accountsync',
-        'function' => 'credentials',
-        'api.connector.get' => 1,
-      ]);
+  if (!isset(\Civi::$statics[__FUNCTION__])) {
+    $connectors = [];
+    $entities = civicrm_api3('Entity', 'get')['values'];
+    if (!in_array('ConnectorType', $entities, TRUE)) {
+      \Civi::$statics[__FUNCTION__] = [0];
+      return \Civi::$statics[__FUNCTION__];
+    }
+    if (empty($connectors)) {
+      try {
+        $result = civicrm_api3('connector_type', 'get', [
+          'module' => 'accountsync',
+          'function' => 'credentials',
+          'api.connector.get' => 1,
+        ]);
 
-      if (!$result['count']) {
-        throw new Exception('No connector types found. Fallback to settings');
-      }
-      foreach ($result['values'] as $id => $connector_type) {
-        $connectorResults = $connector_type['api.connector.get'];
-        if (!empty($connectorResults['count'])) {
-          foreach ($connectorResults['values'] as $connectorResult) {
-            $connectors[] = $connectorResult['id'];
+        if (!$result['count']) {
+          throw new Exception('No connector types found. Fallback to settings');
+        }
+        foreach ($result['values'] as $id => $connector_type) {
+          $connectorResults = $connector_type['api.connector.get'];
+          if (!empty($connectorResults['count'])) {
+            foreach ($connectorResults['values'] as $connectorResult) {
+              $connectors[] = $connectorResult['id'];
+            }
           }
         }
+        if (empty($connectors)) {
+          throw new Exception('No connectors found. Fallback to settings');
+        }
       }
-      if (empty($connectors)) {
-        throw new Exception('No connectors found. Fallback to settings');
+      catch (Exception $e) {
+        $connectors = [0];
       }
-
     }
-    catch (Exception $e) {
-      $connectors = [0];
-    }
+    \Civi::$statics[__FUNCTION__] = $connectors;
   }
-  return $connectors;
+  return \Civi::$statics[__FUNCTION__];
 }
 
 /**
