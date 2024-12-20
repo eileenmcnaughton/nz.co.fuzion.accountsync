@@ -1,5 +1,6 @@
 <?php
 
+use Civi\Api4\Contribution;
 use Civi\Hooks\SearchKitTasks;
 
 require_once 'accountsync.civix.php';
@@ -86,10 +87,11 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
               // @todo refine when we return early in case of odd cases where we DO want to know.
               return;
             }
-            $contactID = civicrm_api3('Contribution', 'getvalue', [
-              'id' => $contribution_id,
-              'return' => 'contact_id',
-            ]);
+            $contactID = Contribution::get(FALSE)
+              ->addSelect('contact_id')
+              ->addWhere('id', '=', $contribution_id)
+              ->execute()->single()['contact_id'];
+
             break;
 
           case 'Contribution':
