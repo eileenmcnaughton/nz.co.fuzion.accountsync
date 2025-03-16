@@ -96,10 +96,11 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
 
           case 'Contribution':
             $contribution_id = $objectRef->id;
-            $contactID = civicrm_api3('Contribution', 'getvalue', [
-              'id' => $contribution_id,
-              'return' => 'contact_id',
-            ]);
+            $contactID = Contribution::get(FALSE)
+              ->addSelect('contact_id')
+              ->addWhere('id', '=', $contribution_id)
+              ->execute()->single()['contact_id'];
+
             break;
           case 'Contact':
             $contactID = $objectRef->id;
