@@ -133,7 +133,9 @@ $searches = [
           ],
           'pager' => [],
           'placeholder' => 5,
-          'sort' => [],
+          'sort' => [
+            ['last_sync_date', 'DESC'],
+          ],
           'columns' => $columns,
         ],
       ],
