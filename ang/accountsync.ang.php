@@ -18,5 +18,4 @@ return [
     [
       0 => 'ang/accountsync',
     ],
-  'settings' => [],
 ];
