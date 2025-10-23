@@ -6,7 +6,7 @@
  * @param array $params
  *
  * @return array API result descriptor
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_contact_create($params) {
   return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountContact', $params);
@@ -46,7 +46,7 @@ function civicrm_api3_account_contact_link($params) {
  * @param array $params
  *
  * @return array API result descriptor
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_contact_delete($params) {
   return _civicrm_api3_basic_delete('CRM_Accountsync_BAO_AccountContact', $params);
@@ -58,7 +58,7 @@ function civicrm_api3_account_contact_delete($params) {
  * @param array $params
  *
  * @return array API result descriptor
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_contact_get($params) {
   $accountContacts = _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountContact', $params);
@@ -83,7 +83,7 @@ function civicrm_api3_account_contact_get($params) {
  * @param array $params
  *
  * @return array API result descriptor
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_contact_getsuggestions($params) {
   $contacts = civicrm_api3('AccountContact', 'get', array_merge($params, [
