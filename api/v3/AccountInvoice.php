@@ -7,7 +7,7 @@
  *
  * @return array
  *   API result descriptor
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_invoice_create($params) {
   return _civicrm_api3_basic_create('CRM_Accountsync_BAO_AccountInvoice', $params);
@@ -21,7 +21,7 @@ function civicrm_api3_account_invoice_create($params) {
  * @return array
  *   API result descriptor
  *
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_invoice_delete($params) {
   return _civicrm_api3_basic_delete('CRM_Accountsync_BAO_AccountInvoice', $params);
@@ -35,7 +35,7 @@ function civicrm_api3_account_invoice_delete($params) {
  * @return array
  *   API result descriptor
  *
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_invoice_get($params) {
   return _civicrm_api3_basic_get('CRM_Accountsync_BAO_AccountInvoice', $params);
@@ -67,7 +67,7 @@ function _civicrm_api3_account_invoice_getderived_spec(&$spec) {
  *
  * @return array
  *   API result descriptor
- * @throws API_Exception
+ * @throws CRM_Core_Exception
  */
 function civicrm_api3_account_invoice_getderived($params) {
   return civicrm_api3_create_success(CRM_Accountsync_BAO_AccountInvoice::getDerived($params));
