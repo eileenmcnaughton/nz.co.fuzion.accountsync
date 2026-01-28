@@ -2,6 +2,7 @@
 
 use Civi\Api4\AccountInvoice;
 use Civi\Api4\Contribution;
+use Civi\Api4\Payment;
 use CRM_AccountSync_ExtensionUtil as E;
 
 class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvoice {
@@ -170,19 +171,22 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
 
   /**
    * Update contributions in civicrm based on their status in Xero.
+   *
+   * @return void
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\NotImplementedException
+   * @throws \Civi\API\Exception\UnauthorizedException
    */
-  public static function completeContributionFromAccountsStatus() {
-    $paymentParams = [];
-    // We are receiving directly from contribution table so it will be well formatted.
-    $paymentParams['skipCleanMoney'] = TRUE;
+  public static function completeContributionFromAccountsStatus(): void {
+    $paymentCreateParams = [];
     // Get send receipt override
     switch (Civi::settings()->get('account_sync_send_receipt')) {
       case 'send':
-        $paymentParams['is_send_contribution_notification'] = 1;
+        $paymentCreateParams['notificationForCompleteOrder'] = TRUE;
         break;
 
       case 'do_not_send':
-        $paymentParams['is_send_contribution_notification'] = 0;
+        $paymentCreateParams['notificationForCompleteOrder'] = FALSE;
         break;
 
       case 'no_override':
@@ -190,24 +194,66 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
         break;
     }
 
-    $pendingContributionStatus = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending');
-
     $completedAccountInvoices = AccountInvoice::get(FALSE)
-      ->addSelect('id', 'contribution_id', 'contribution_id.receive_date', 'contribution_id.total_amount')
+      ->addSelect('id', 'plugin', 'contribution_id', 'contribution_id.receive_date', 'contribution_id.total_amount')
       ->addJoin('Contribution AS contribution', 'LEFT')
       ->addWhere('accounts_status_id:name', '=', 'completed')
-      ->addWhere('contribution_id.contribution_status_id', '=', $pendingContributionStatus)
+      ->addWhere('contribution_id.contribution_status_id:name', '=', 'Pending')
       ->execute()
       ->indexBy('id');
 
+    $accountsDataParamsToMap = [
+      'paid_date' => 'trxn_date',
+      'total_amount' => 'total_amount',
+      'invoice_id' => 'order_reference',
+    ];
     foreach ($completedAccountInvoices as $completedAccountInvoice) {
-      $paymentParams['contribution_id'] = $completedAccountInvoice['contribution_id'];
+      // First, set default/generic payment params
+      $paymentCreateParams['contribution_id'] = $completedAccountInvoice['contribution_id'];
       // @fixme receive_date/total amount should be retrieved from accounts_data otherwise they may not be accurate.
       //   But this requires plugin specific parsing? eg. accounts_data is different for Xero and Quickbooks?
-      $paymentParams['trxn_date'] = $completedAccountInvoice['contribution_id.receive_date'];
-      $paymentParams['total_amount'] = $completedAccountInvoice['contribution_id.total_amount'];
+      $paymentCreateParams['trxn_date'] = $completedAccountInvoice['contribution_id.receive_date'];
+      $paymentCreateParams['total_amount'] = $completedAccountInvoice['contribution_id.total_amount'];
+
+      // Now try to retrieve the actual params from the accounts data
+      $accountsDataActionName = 'getAccountsData' . ucfirst($completedAccountInvoice['plugin']);
+      if (class_exists('\Civi\Api4\Action\AccountInvoice\GetAccountsData' . ucfirst($completedAccountInvoice['plugin']))) {
+        $accountsData = civicrm_api4('AccountInvoice', $accountsDataActionName, [
+          'where' => [
+            ['id', '=', $completedAccountInvoice['id']]
+          ]], 0);
+        foreach ($accountsDataParamsToMap as $accountsDataParam => $paymentParam) {
+          if (!empty($accountsData[$accountsDataParam])) {
+            $paymentCreateParams[$paymentParam] = $accountsData[$accountsDataParam];
+            $paymentGetWhereParams[] = [$paymentParam, '=', $accountsData[$accountsDataParam]];
+          }
+        }
+      }
+      else {
+        // We should retrieve this from accounts data. But accounts extension has not implemented
+        //   AccountInvoice::getAccountsData{plugin} so we have to assume it is completed.
+        $accountsData['invoice_contribution_status_name'] = 'Completed';
+        $paymentGetWhereParams = [];
+      }
+
       try {
-        civicrm_api3('Payment', 'create', $paymentParams);
+        if ($accountsData['invoice_contribution_status_name'] === 'Completed') {
+          // Check we don't already have an existing payment recorded (or we don't have any params to check with)
+          if (empty($paymentGetWhereParams)
+            || empty(Payment::get(FALSE)
+              ->setWhere($paymentGetWhereParams)
+              ->execute()
+              ->first()
+            )) {
+            // We don't have an existing payment recorded, so record one.
+            Payment::create(FALSE)
+              ->setValues($paymentCreateParams)
+              ->execute();
+          }
+          else {
+            \Civi::log()->warning('AccountInvoice::completeContributionFromAccountsStatus: Contribution ID: ' . $paymentCreateParams['contribution_id'] . ' is not Completed but payment has been recorded!');
+          }
+        }
       }
       catch (CRM_Core_Exception $e) {
         // CiviCRM failed to complete the contribution.
@@ -225,15 +271,17 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
    * Cancel contribution in Civi based on Xero Status.
    *
    * @todo - I don't believe this will adequately cancel related entities
+   *
+   * @return void
+   * @throws \CRM_Core_Exception
+   * @throws \Civi\API\Exception\UnauthorizedException
    */
-  public static function cancelContributionFromAccountsStatus() {
-    $cancelledContributionStatus = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Cancelled');
-
+  public static function cancelContributionFromAccountsStatus(): void {
     $cancelledAccountInvoices = AccountInvoice::get(FALSE)
       ->addSelect('contribution_id', 'contribution_id.contribution_status_id:name')
       ->addJoin('Contribution AS contribution', 'LEFT')
       ->addWhere('contribution_id', 'IS NOT EMPTY')
-      ->addWhere('contribution_id.contribution_status_id', '!=', $cancelledContributionStatus)
+      ->addWhere('contribution_id.contribution_status_id:name', '=', 'Cancelled')
       ->addWhere('accounts_status_id:name', '=', 'cancelled')
       ->execute()
       ->indexBy('id')
