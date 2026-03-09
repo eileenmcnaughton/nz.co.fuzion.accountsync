@@ -647,11 +647,18 @@ function _accountsync_create_account_invoice(int $contributionID, int $connector
     }
     else {
       // We have an existing AccountInvoice record
-      // Flag existing AccountInvoice as needing sync with accounts system.
-      \Civi\Api4\AccountInvoice::update(FALSE)
-        ->setWhere($existingAccountInvoiceWheres)
-        ->addValue('accounts_needs_update', TRUE)
-        ->execute();
+      // We can't update if we have an existing accounts_invoice_id the accounts status is "completed"
+      //   because we (the code) don't know how to update a completed invoice at the accounts system.
+      if (!empty($existingAccountInvoice['accounts_invoice_id'])
+        && ($existingAccountInvoice['account_status_id:name'] !== 'completed')) {
+        // Our AccountInvoice is not marked completed in the accounts system so we can update it.
+        // (If accounts_invoice_id is empty then it doesn't exist in the accounts system)
+        // Flag existing AccountInvoice as needing sync with accounts system.
+        \Civi\Api4\AccountInvoice::update(FALSE)
+          ->setWhere($existingAccountInvoiceWheres)
+          ->addValue('accounts_needs_update', TRUE)
+          ->execute();
+      }
     }
   }
 }
