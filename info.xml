@@ -13,16 +13,25 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2024-08-21</releaseDate>
-  <version>1.6</version>
+  <releaseDate>2026-08-24</releaseDate>
+  <version>1.7</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.75</ver>
+    <ver>6.11</ver>
   </compatibility>
+  <php_compatibility>
+    <ver>8.2</ver>
+    <ver>8.3</ver>
+    <ver>8.4</ver>
+    <ver>8.5</ver>
+  </php_compatibility>
+  <smarty_compatibility>
+    <ver>5</ver>
+  </smarty_compatibility>
   <comments>This module does nothing without an extension (CiviXero) - see ReadMe for more</comments>
   <civix>
     <namespace>CRM/Accountsync</namespace>
-    <format>25.01.1</format>
+    <format>25.10.2</format>
   </civix>
   <classloader>
     <psr4 prefix="Civi\" path="Civi"/>
@@ -30,7 +39,7 @@
   </classloader>
   <mixins>
     <mixin>ang-php@1.0.0</mixin>
-    <mixin>mgd-php@1.0.0</mixin>
+    <mixin>mgd-php@2.0.0</mixin>
     <mixin>setting-php@1.0.0</mixin>
     <mixin>entity-types-php@2.0.0</mixin>
     <mixin>scan-classes@1.0.0</mixin>
