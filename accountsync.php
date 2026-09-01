@@ -62,6 +62,11 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
   // accounts sync every time, regardless of whether there is anything new
   // to push.
   $hasRelevantChange = _accountsync_entity_has_relevant_change($op, $objectName, $objectId, $objectRef);
+  // Same "did anything actually change" problem, but for the separate
+  // invoice-creation trigger below - a no-op resave of a Contribution
+  // (e.g. by an unrelated scheduled job) would otherwise re-queue its
+  // invoice for push every time, indistinguishably from a real edit.
+  $hasInvoiceRelevantChange = _accountsync_invoice_entity_has_relevant_change($op, $objectName, $objectId, $objectRef);
 
   foreach ($connectors as $connector_id) {
     $createEntities = _accountsync_get_contact_create_entities($connector_id);
@@ -150,7 +155,9 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
-      _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+      if ($hasInvoiceRelevantChange) {
+        _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+      }
     }
   }
 
@@ -433,6 +440,7 @@ function accountsync_civicrm_pre($op, $objectName, $id, &$params) {
   _accountsync_handle_contact_deletion($op, $objectName, $id, $params);
   _accountsync_handle_contribution_deletion($op, $objectName, $id, $params);
   _accountsync_capture_pre_save_values($op, $objectName, $id, $params);
+  _accountsync_capture_invoice_pre_save_values($op, $objectName, $id, $params);
 }
 
 /**
@@ -629,6 +637,119 @@ function _accountsync_entity_has_relevant_change($op, $objectName, $objectId, $o
   }
   $before = \Civi::$statics['accountsync_pre_save_values'][$objectName][$objectId] ?? NULL;
   unset(\Civi::$statics['accountsync_pre_save_values'][$objectName][$objectId]);
+  if ($before === NULL) {
+    return TRUE;
+  }
+  foreach ($relevantFields as $field) {
+    $newValue = is_array($objectRef) ? ($objectRef[$field] ?? NULL) : ($objectRef->$field ?? NULL);
+    if ((string) ($before[$field] ?? '') !== (string) ($newValue ?? '')) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Fields, per entity, whose value actually affects what gets synced to an
+ * accounts package's INVOICE (as opposed to _accountsync_get_sync_relevant_fields(),
+ * which is about the linked CONTACT). Only 'Contribution' is covered - it's
+ * the only entity actually selectable in the "Entities to trigger invoice
+ * create" setting; 'LineItem' only appears via an internal per-connector
+ * substitution and is deliberately left out, so it always falls through to
+ * "treat as changed" like any other unrecognised entity.
+ *
+ * @return array
+ */
+function _accountsync_get_invoice_sync_relevant_fields(): array {
+  return [
+    'Contribution' => [
+      'total_amount', 'contribution_status_id', 'receive_date',
+      'financial_type_id', 'trxn_id', 'currency', 'source',
+    ],
+  ];
+}
+
+/**
+ * Is $objectName configured, for any connector, to trigger an invoice
+ * create? Used to avoid the extra "before" lookup in
+ * _accountsync_capture_invoice_pre_save_values() for entities accountsync
+ * isn't even watching for this purpose.
+ *
+ * @param string $objectName
+ *
+ * @return bool
+ */
+function _accountsync_entity_triggers_invoice_creation(string $objectName): bool {
+  foreach (_accountsync_get_connectors() as $connector_id) {
+    if (in_array($objectName, _accountsync_get_invoice_create_entities($connector_id), TRUE)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Capture the current (pre-save) values of any invoice-sync-relevant
+ * fields for a Contribution that hook_civicrm_post might otherwise
+ * unconditionally queue for invoice creation.
+ *
+ * Mirrors _accountsync_capture_pre_save_values() but for the separate
+ * invoice-creation trigger, which has its own relevant-field semantics for
+ * the same entity name (e.g. a Contribution's 'source' matters here but is
+ * irrelevant to whether the linked contact needs re-syncing).
+ *
+ * @param string $op
+ * @param string $objectName
+ * @param int $id
+ * @param array $params
+ */
+function _accountsync_capture_invoice_pre_save_values($op, $objectName, $id, &$params) {
+  if (!in_array($op, ['edit', 'update'], TRUE) || empty($id)) {
+    return;
+  }
+  $relevantFields = _accountsync_get_invoice_sync_relevant_fields()[$objectName] ?? NULL;
+  if ($relevantFields === NULL || !_accountsync_entity_triggers_invoice_creation($objectName)) {
+    return;
+  }
+  try {
+    $before = civicrm_api3($objectName, 'getsingle', [
+      'id' => $id,
+      'return' => $relevantFields,
+    ]);
+    \Civi::$statics['accountsync_invoice_pre_save_values'][$objectName][$id] = $before;
+  }
+  catch (Exception $e) {
+    // No snapshot means _accountsync_invoice_entity_has_relevant_change()
+    // will fail safe below and treat this save as a real change.
+  }
+}
+
+/**
+ * Did a just-saved entity actually change in a way relevant to invoice
+ * sync, compared with the snapshot captured in
+ * _accountsync_capture_invoice_pre_save_values()?
+ *
+ * Fails "open" (returns TRUE, i.e. assume changed) whenever we cannot be
+ * sure, exactly like _accountsync_entity_has_relevant_change() - it can
+ * only ever suppress an unnecessary invoice queue, never miss a real one.
+ *
+ * @param string $op
+ * @param string $objectName
+ * @param int $objectId
+ * @param object|array $objectRef
+ *
+ * @return bool
+ */
+function _accountsync_invoice_entity_has_relevant_change($op, $objectName, $objectId, $objectRef): bool {
+  if (!in_array($op, ['edit', 'update'], TRUE)) {
+    return TRUE;
+  }
+  $relevantFields = _accountsync_get_invoice_sync_relevant_fields()[$objectName] ?? NULL;
+  if ($relevantFields === NULL) {
+    return TRUE;
+  }
+  $before = \Civi::$statics['accountsync_invoice_pre_save_values'][$objectName][$objectId] ?? NULL;
+  unset(\Civi::$statics['accountsync_invoice_pre_save_values'][$objectName][$objectId]);
   if ($before === NULL) {
     return TRUE;
   }

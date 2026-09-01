@@ -12,16 +12,24 @@ use PHPUnit\Framework\TestCase;
  * Characterization tests for the "did anything actually change" guard in
  * accountsync_civicrm_post()/accountsync_civicrm_pre().
  *
- * Background: CiviCRM's hook_civicrm_post fires whenever a Contact/Email/
- * Phone/Address record is saved, even if the save didn't change any field
- * value (e.g. a routine resave by an unrelated scheduled job, such as
- * address geocoding retries or CiviMail bounce processing touching an
- * Email record). Without a real-change check, accountsync would flag the
- * linked contact's AccountContact row (accounts_needs_update = 1) on every
- * such resave, regardless of whether there's anything new to push to the
- * accounts package - which is what caused a stable set of already-synced
- * contacts to be silently re-queued for push every day with no user-visible
- * edit ever having happened.
+ * Background: CiviCRM's hook_civicrm_post fires whenever a tracked entity
+ * is saved, even if the save didn't change any field value (e.g. a routine
+ * resave by an unrelated scheduled job, such as address geocoding retries
+ * or CiviMail bounce processing touching an Email record). Without a
+ * real-change check, accountsync would flag the linked contact's
+ * AccountContact row (accounts_needs_update = 1) - or, for a Contribution,
+ * its AccountInvoice row - on every such resave, regardless of whether
+ * there's anything new to push to the accounts package. This is what
+ * caused a stable set of already-synced contacts/invoices to be silently
+ * re-queued for push every day with no user-visible edit ever having
+ * happened.
+ *
+ * There are two structurally separate trigger points in
+ * accountsync_civicrm_post() with the same defect, covered here
+ * separately: the Contact/Email/Phone/Address -> AccountContact trigger
+ * (the testEmail, testAddress and testContact methods below), and the
+ * Contribution -> AccountInvoice trigger (the testContribution methods
+ * below).
  *
  * @group headless
  */
@@ -267,6 +275,139 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   public function testChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
       _accountsync_entity_has_relevant_change('edit', 'Contribution', 999999, (object) ['total_amount' => 100])
+    );
+  }
+
+  /**
+   * Create a Contribution eligible for invoice creation (per the default
+   * account_sync_push_contribution_status setting: Completed/Pending,
+   * non-test, non-zero amount).
+   *
+   * @param int $contactID
+   * @param array $overrides
+   *
+   * @return array
+   *   The created Contribution.
+   */
+  private function createEligibleContribution(int $contactID, array $overrides = []): array {
+    return $this->callAPISuccess('Contribution', 'create', array_merge([
+      'contact_id' => $contactID,
+      'financial_type_id' => 'Donation',
+      'contribution_status_id' => 'Completed',
+      'total_amount' => 100,
+      'receive_date' => '2024-01-01 00:00:00',
+      'trxn_id' => 'TXN-1',
+      'source' => 'Test Source',
+    ], $overrides));
+  }
+
+  /**
+   * Create an AccountInvoice row representing a contribution that has
+   * already been synced and is not currently queued for update. Updates
+   * any row accountsync's own post hook may already have auto-created for
+   * this contribution, rather than colliding with the unique index on
+   * (contribution_id, connector_id, plugin).
+   *
+   * @param int $contributionID
+   *
+   * @return int
+   *   The AccountInvoice id.
+   */
+  private function createSyncedAccountInvoice(int $contributionID): int {
+    $existing = \Civi\Api4\AccountInvoice::get(FALSE)
+      ->addWhere('contribution_id', '=', $contributionID)
+      ->addWhere('connector_id', '=', 0)
+      ->addWhere('plugin', '=', 'xero')
+      ->execute();
+    $params = [
+      'contribution_id' => $contributionID,
+      'plugin' => 'xero',
+      'connector_id' => 0,
+      'accounts_invoice_id' => 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      'accounts_needs_update' => 0,
+    ];
+    if ($existing->count() > 0) {
+      $params['id'] = $existing->first()['id'];
+    }
+    $accountInvoice = $this->callAPISuccess('AccountInvoice', 'create', $params);
+    return (int) $accountInvoice['id'];
+  }
+
+  private function getInvoiceAccountsNeedsUpdate(int $accountInvoiceID): int {
+    $accountInvoice = $this->callAPISuccessGetSingle('AccountInvoice', ['id' => $accountInvoiceID]);
+    return (int) $accountInvoice['accounts_needs_update'];
+  }
+
+  /**
+   * A no-op resave of a Contribution (identical field values, as a
+   * background job doing an unconditional resave would produce) must NOT
+   * re-flag an already-synced invoice for update. This is the invoice-side
+   * counterpart of testEmailNoOpResaveDoesNotFlagContactForUpdate() - a
+   * structurally separate code path in accountsync_civicrm_post() that had
+   * the same "flags on every save, not just real changes" defect.
+   */
+  public function testContributionNoOpResaveDoesNotFlagInvoiceForUpdate(): void {
+    $contactID = $this->individualCreate();
+    $contribution = $this->createEligibleContribution($contactID);
+    $accountInvoiceID = $this->createSyncedAccountInvoice((int) $contribution['id']);
+
+    $this->createEligibleContribution($contactID, ['id' => $contribution['id']]);
+
+    $this->assertEquals(0, $this->getInvoiceAccountsNeedsUpdate($accountInvoiceID));
+  }
+
+  /**
+   * A real change to a Contribution's amount must still flag its invoice
+   * for update, exactly as before this fix.
+   */
+  public function testContributionRealChangeFlagsInvoiceForUpdate(): void {
+    $contactID = $this->individualCreate();
+    $contribution = $this->createEligibleContribution($contactID);
+    $accountInvoiceID = $this->createSyncedAccountInvoice((int) $contribution['id']);
+
+    $this->createEligibleContribution($contactID, ['id' => $contribution['id'], 'total_amount' => 150]);
+
+    $this->assertEquals(1, $this->getInvoiceAccountsNeedsUpdate($accountInvoiceID));
+  }
+
+  /**
+   * Creating a brand new, eligible Contribution must still queue its
+   * invoice for creation (an 'edit' op does not apply - there is no
+   * "before" state to compare against), same as before this fix.
+   */
+  public function testNewContributionCreationStillQueuesInvoice(): void {
+    $contactID = $this->individualCreate();
+    $contribution = $this->createEligibleContribution($contactID);
+
+    $accountInvoice = $this->callAPISuccessGetSingle('AccountInvoice', [
+      'contribution_id' => $contribution['id'],
+      'plugin' => 'xero',
+    ]);
+
+    $this->assertEquals(1, $accountInvoice['accounts_needs_update']);
+  }
+
+  /**
+   * _accountsync_invoice_entity_has_relevant_change() must fail "open"
+   * (assume changed) when no pre-save snapshot was captured - mirrors
+   * testChangeDetectionFailsSafeWithNoCapturedSnapshot() for the invoice
+   * side.
+   */
+  public function testInvoiceChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
+    $this->assertTrue(
+      _accountsync_invoice_entity_has_relevant_change('edit', 'Contribution', 999999, (object) ['total_amount' => 100])
+    );
+  }
+
+  /**
+   * LineItem is deliberately not covered by the invoice-side "did it
+   * change" field list (see _accountsync_get_invoice_sync_relevant_fields())
+   * - it only appears via an internal per-connector substitution, so it's
+   * always treated as changed, same as before this fix.
+   */
+  public function testInvoiceChangeDetectionAlwaysTrueForUnknownEntityType(): void {
+    $this->assertTrue(
+      _accountsync_invoice_entity_has_relevant_change('edit', 'LineItem', 999999, ['contribution_id' => 1])
     );
   }
 
