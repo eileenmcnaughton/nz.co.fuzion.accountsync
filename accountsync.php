@@ -144,7 +144,7 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
         continue;
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
-      _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+      _accountsync_create_account_invoice($contribution_id, $connector_id);
     }
   }
 
@@ -153,7 +153,7 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
 /**
  * Is the invoice before the day zero.
  *
- * We only sync contributions afer the day zero date.
+ * We only sync contributions after the day zero date.
  *
  * @param string $objectName
  * @param CRM_Contribute_BAO_Contribution|CRM_Price_BAO_LineItem $objectRef
@@ -615,45 +615,50 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
  * Create account invoice record or set needs_update flag.
  *
  * @param int $contributionID
- * @param bool $createNew
  * @param int $connector_id
  *   ID of connector for civicrm_connector if nz.co.fuzion.connectors enabled.
  *   Otherwise this will be 0.
+ *
+ * @return void
+ * @throws \CRM_Core_Exception
+ * @throws \Civi\API\Exception\UnauthorizedException
  */
-function _accountsync_create_account_invoice($contributionID, $createNew, $connector_id) {
-  $accountInvoice = [
-    'contribution_id' => $contributionID,
-    'accounts_needs_update' => 1,
-    // Do not rollback on fail.
-    'is_transactional' => FALSE,
-  ];
+function _accountsync_create_account_invoice(int $contributionID, int $connector_id): void {
   foreach (_accountsync_get_enabled_plugins() as $plugin) {
-    unset($accountInvoice['id']); // Ensure id is not set in case of multiple plugins
-
-    if ($connector_id) {
-      $accountInvoice['connector_id'] = $connector_id;
+    // Check for existing AccountInvoice
+    $existingAccountInvoiceWheres = [
+      ['plugin', '=', $plugin],
+      ['connector_id', '=', $connector_id],
+      ['contribution_id', '=', $contributionID],
+    ];
+    $existingAccountInvoice = \Civi\Api4\AccountInvoice::get(FALSE)
+      ->addSelect('id', 'accounts_invoice_id', 'accounts_status_id:name')
+      ->setWhere($existingAccountInvoiceWheres)
+      ->execute()
+      ->first();
+    if (empty($existingAccountInvoice)) {
+      // Create new AccountInvoice record and flag as needing sync with accounts system
+      \Civi\Api4\AccountInvoice::create(FALSE)
+        ->addValue('plugin', $plugin)
+        ->addValue('connector_id', $connector_id)
+        ->addValue('contribution_id', $contributionID)
+        ->addValue('accounts_needs_update', TRUE)
+        ->execute();
     }
-    try {
-      $accountInvoice['id'] = civicrm_api3('AccountInvoice', 'getvalue', [
-        'plugin' => $plugin,
-        'return' => 'id',
-        'contribution_id' => $contributionID,
-        'connector_id' => $connector_id,
-      ]);
-    }
-    catch (CRM_Core_Exception $e) {
-      // new invoice
-      if (!$createNew) {
-        continue;
+    else {
+      // We have an existing AccountInvoice record
+      // We can't update if we have an existing accounts_invoice_id the accounts status is "completed"
+      //   because we (the code) don't know how to update a completed invoice at the accounts system.
+      if (!empty($existingAccountInvoice['accounts_invoice_id'])
+        && ($existingAccountInvoice['account_status_id:name'] !== 'completed')) {
+        // Our AccountInvoice is not marked completed in the accounts system so we can update it.
+        // (If accounts_invoice_id is empty then it doesn't exist in the accounts system)
+        // Flag existing AccountInvoice as needing sync with accounts system.
+        \Civi\Api4\AccountInvoice::update(FALSE)
+          ->setWhere($existingAccountInvoiceWheres)
+          ->addValue('accounts_needs_update', TRUE)
+          ->execute();
       }
-    }
-    $accountInvoice['plugin'] = $plugin;
-    try {
-      civicrm_api3('AccountInvoice', 'create', $accountInvoice);
-    }
-    catch (CRM_Core_Exception $e) {
-      // Unknown failure.
-      \Civi::log('account_sync')->info('issue creating account invoice' . $e->getMessage());
     }
   }
 }
