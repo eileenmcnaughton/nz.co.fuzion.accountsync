@@ -88,7 +88,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.id',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'readonly' => TRUE,
         'add' => '4.4',
@@ -110,7 +110,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.contact_id',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'EntityRef',
@@ -121,6 +121,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'add' => '4.4',
         'is_core_field' => TRUE,
         'FKApiName' => 'Contact',
+        'FKColumnName' => 'id',
       ],
 
       'accounts_contact_id' => [
@@ -139,7 +140,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.accounts_contact_id',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'Text',
@@ -165,7 +166,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.last_sync_date',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'readonly' => TRUE,
         'add' => '4.4',
@@ -177,7 +178,6 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'type' => 256,
         'title' => 'Accounts Modified Date',
         'description' => 'When was the invoice last Altered in the accounts system.',
-        'required' => FALSE,
         'usage' => [
           'import' => FALSE,
           'export' => FALSE,
@@ -187,7 +187,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.accounts_modified_date',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'readonly' => TRUE,
         'add' => '4.4',
@@ -209,7 +209,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.accounts_display_name',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'Text',
@@ -235,7 +235,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.accounts_data',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'Text',
@@ -263,7 +263,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.plugin',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'readonly' => TRUE,
         'add' => '4.4',
@@ -283,7 +283,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'where' => 'civicrm_account_contact.error_data',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'Text',
@@ -309,7 +309,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'default' => '1',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'CheckBox',
@@ -332,7 +332,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'default' => '0',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'Text',
@@ -358,7 +358,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'default' => '0',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'CheckBox',
@@ -381,7 +381,7 @@ class AccountContactTest extends TestCase implements HeadlessInterface, HookInte
         'default' => '0',
         'table_name' => 'civicrm_account_contact',
         'entity' => 'AccountContact',
-        'bao' => 'CRM_Accountsync_DAO_AccountContact',
+        'bao' => 'CRM_Accountsync_BAO_AccountContact',
         'localizable' => 0,
         'html' => [
           'type' => 'CheckBox',
