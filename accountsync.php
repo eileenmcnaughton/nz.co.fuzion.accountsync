@@ -598,13 +598,14 @@ function _accountsync_capture_pre_save_values($op, $objectName, $id, &$params) {
     return;
   }
   try {
-    $before = civicrm_api3($objectName, 'getsingle', [
-      'id' => $id,
-      'return' => $relevantFields,
-    ]);
+    $before = civicrm_api4($objectName, 'get', [
+      'checkPermissions' => FALSE,
+      'select' => $relevantFields,
+      'where' => [['id', '=', $id]],
+    ])->single();
     \Civi::$statics['accountsync_pre_save_values'][$objectName][$id] = $before;
   }
-  catch (Exception $e) {
+  catch (CRM_Core_Exception $e) {
     // No snapshot means _accountsync_entity_has_relevant_change() will fail
     // safe below and treat this save as a real change.
   }
@@ -712,13 +713,14 @@ function _accountsync_capture_invoice_pre_save_values($op, $objectName, $id, &$p
     return;
   }
   try {
-    $before = civicrm_api3($objectName, 'getsingle', [
-      'id' => $id,
-      'return' => $relevantFields,
-    ]);
+    $before = civicrm_api4($objectName, 'get', [
+      'checkPermissions' => FALSE,
+      'select' => $relevantFields,
+      'where' => [['id', '=', $id]],
+    ])->single();
     \Civi::$statics['accountsync_invoice_pre_save_values'][$objectName][$id] = $before;
   }
-  catch (Exception $e) {
+  catch (CRM_Core_Exception $e) {
     // No snapshot means _accountsync_invoice_entity_has_relevant_change()
     // will fail safe below and treat this save as a real change.
   }
