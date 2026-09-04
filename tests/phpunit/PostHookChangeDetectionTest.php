@@ -238,20 +238,52 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   }
 
   /**
-   * Creating a brand new Contact (an 'edit' op does not apply - there is
-   * no "before" state to compare against) must still flag it for update,
-   * same as before this fix. This guards against the "did it change"
-   * check accidentally suppressing legitimate creates.
+   * A no-op resave of an Email that OMITS one of the tracked fields (here,
+   * is_primary) from its own params must still not be misread as a real
+   * change. Regression test for a bug caught in CI review: the "after"
+   * value used to be read straight off hook_civicrm_post's $objectRef,
+   * which only carries whatever fields were present in that save's own
+   * params - not a full row - so an omitted field read as NULL there and
+   * was wrongly compared against its real (non-empty) "before" value.
+   * Fixed by re-fetching the saved record via API instead of trusting
+   * $objectRef. See testContributionNoOpResaveOmittingATrackedFieldDoesNotFlagInvoiceForUpdate()
+   * for the invoice-side counterpart, which is what CI actually caught.
    */
-  public function testNewContactCreationStillFlagsForUpdate(): void {
+  public function testEmailNoOpResaveOmittingATrackedFieldDoesNotFlagContactForUpdate(): void {
     $contactID = $this->individualCreate();
-
-    $accountContact = $this->callAPISuccessGetSingle('AccountContact', [
+    $email = $this->callAPISuccess('Email', 'create', [
       'contact_id' => $contactID,
-      'plugin' => 'xero',
+      'email' => 'unchanged@example.org',
+      'location_type_id' => 1,
+      'is_primary' => 1,
+    ]);
+    $accountContactID = $this->createSyncedAccountContact($contactID);
+
+    // Deliberately omit is_primary and location_type_id here - a partial
+    // update that doesn't touch them, not a change to them.
+    $this->callAPISuccess('Email', 'create', [
+      'id' => $email['id'],
+      'contact_id' => $contactID,
+      'email' => 'unchanged@example.org',
     ]);
 
-    $this->assertEquals(1, $accountContact['accounts_needs_update']);
+    $this->assertEquals(0, $this->getAccountsNeedsUpdate($accountContactID));
+  }
+
+  /**
+   * Creating a brand new Contact, Email, Phone or Address (an 'edit'/
+   * 'update' op does not apply - there is no "before" state to compare
+   * against) must always be treated as a real change. This guards against
+   * the "did it change" check accidentally suppressing legitimate creates.
+   * Tested directly against the function rather than end-to-end: whether
+   * a plain new Contact actually gets auto-queued for sync also depends on
+   * the (separately configurable, and cached per test run)
+   * account_sync_queue_contacts setting, which isn't what this guard is
+   * about.
+   */
+  public function testNewEntityCreationAlwaysReportsChanged(): void {
+    $this->assertTrue(_accountsync_entity_has_relevant_change('create', 'Contact', 999999));
+    $this->assertTrue(_accountsync_entity_has_relevant_change('restore', 'Contact', 999999));
   }
 
   /**
@@ -263,7 +295,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
     $this->assertTrue(
-      _accountsync_entity_has_relevant_change('edit', 'Email', 999999, (object) ['email' => 'x@example.org'])
+      _accountsync_entity_has_relevant_change('edit', 'Email', 999999)
     );
   }
 
@@ -274,7 +306,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
-      _accountsync_entity_has_relevant_change('edit', 'Contribution', 999999, (object) ['total_amount' => 100])
+      _accountsync_entity_has_relevant_change('edit', 'Contribution', 999999)
     );
   }
 
@@ -357,6 +389,33 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   }
 
   /**
+   * A no-op resave of a Contribution that OMITS one of the tracked fields
+   * (here, currency) from its own params must still not be misread as a
+   * real change. This is the exact bug caught in CI: the "after" value
+   * used to be read straight off hook_civicrm_post's $objectRef, which
+   * only carries whatever fields were present in that save's own params -
+   * not a full row - so the omitted currency read as NULL there and was
+   * wrongly compared against its real (non-empty) "before" value, making
+   * every partial update look like a change. Fixed by re-fetching the
+   * saved record via API instead of trusting $objectRef.
+   */
+  public function testContributionNoOpResaveOmittingATrackedFieldDoesNotFlagInvoiceForUpdate(): void {
+    $contactID = $this->individualCreate();
+    $contribution = $this->createEligibleContribution($contactID, ['currency' => 'AUD']);
+    $accountInvoiceID = $this->createSyncedAccountInvoice((int) $contribution['id']);
+
+    // Deliberately omit currency (and everything else not being asserted
+    // on) here - a partial update that doesn't touch it, not a change to it.
+    $this->callAPISuccess('Contribution', 'create', [
+      'id' => $contribution['id'],
+      'contact_id' => $contactID,
+      'total_amount' => 100,
+    ]);
+
+    $this->assertEquals(0, $this->getInvoiceAccountsNeedsUpdate($accountInvoiceID));
+  }
+
+  /**
    * A real change to a Contribution's amount must still flag its invoice
    * for update, exactly as before this fix.
    */
@@ -395,7 +454,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testInvoiceChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
     $this->assertTrue(
-      _accountsync_invoice_entity_has_relevant_change('edit', 'Contribution', 999999, (object) ['total_amount' => 100])
+      _accountsync_invoice_entity_has_relevant_change('edit', 'Contribution', 999999)
     );
   }
 
@@ -407,7 +466,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testInvoiceChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
-      _accountsync_invoice_entity_has_relevant_change('edit', 'LineItem', 999999, ['contribution_id' => 1])
+      _accountsync_invoice_entity_has_relevant_change('edit', 'LineItem', 999999)
     );
   }
 

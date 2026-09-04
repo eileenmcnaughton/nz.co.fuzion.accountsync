@@ -61,12 +61,12 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
   // scheduled job). Without this check we would flag the contact for
   // accounts sync every time, regardless of whether there is anything new
   // to push.
-  $hasRelevantChange = _accountsync_entity_has_relevant_change($op, $objectName, $objectId, $objectRef);
+  $hasRelevantChange = _accountsync_entity_has_relevant_change($op, $objectName, $objectId);
   // Same "did anything actually change" problem, but for the separate
   // invoice-creation trigger below - a no-op resave of a Contribution
   // (e.g. by an unrelated scheduled job) would otherwise re-queue its
   // invoice for push every time, indistinguishably from a real edit.
-  $hasInvoiceRelevantChange = _accountsync_invoice_entity_has_relevant_change($op, $objectName, $objectId, $objectRef);
+  $hasInvoiceRelevantChange = _accountsync_invoice_entity_has_relevant_change($op, $objectName, $objectId);
 
   foreach ($connectors as $connector_id) {
     $createEntities = _accountsync_get_contact_create_entities($connector_id);
@@ -616,19 +616,25 @@ function _accountsync_capture_pre_save_values($op, $objectName, $id, &$params) {
  * sync, compared with the snapshot captured in
  * _accountsync_capture_pre_save_values()?
  *
+ * Deliberately re-fetches the saved record via API rather than reading
+ * fields off hook_civicrm_post's $objectRef: $objectRef only carries
+ * properties for whatever fields happened to be present in that save's
+ * own params, not a full row. A partial update that omits one of our
+ * tracked fields would otherwise read as NULL there and be misread as
+ * "changed" even when nothing was touched.
+ *
  * This fails "open" (returns TRUE, i.e. assume changed) whenever we cannot
  * be sure - no snapshot was captured, the entity type isn't one we know how
- * to diff, or the op is create/restore - so it can only ever suppress an
- * unnecessary sync flag, never miss a real one.
+ * to diff, the op is create/restore, or the post-save fetch fails - so it
+ * can only ever suppress an unnecessary sync flag, never miss a real one.
  *
  * @param string $op
  * @param string $objectName
  * @param int $objectId
- * @param object|array $objectRef
  *
  * @return bool
  */
-function _accountsync_entity_has_relevant_change($op, $objectName, $objectId, $objectRef): bool {
+function _accountsync_entity_has_relevant_change($op, $objectName, $objectId): bool {
   if (!in_array($op, ['edit', 'update'], TRUE)) {
     return TRUE;
   }
@@ -641,9 +647,19 @@ function _accountsync_entity_has_relevant_change($op, $objectName, $objectId, $o
   if ($before === NULL) {
     return TRUE;
   }
+  try {
+    $after = civicrm_api4($objectName, 'get', [
+      'checkPermissions' => FALSE,
+      'select' => $relevantFields,
+      'where' => [['id', '=', $objectId]],
+    ])->single();
+  }
+  catch (CRM_Core_Exception $e) {
+    // Can't confirm the saved state - fail safe and treat as changed.
+    return TRUE;
+  }
   foreach ($relevantFields as $field) {
-    $newValue = is_array($objectRef) ? ($objectRef[$field] ?? NULL) : ($objectRef->$field ?? NULL);
-    if ((string) ($before[$field] ?? '') !== (string) ($newValue ?? '')) {
+    if ((string) ($before[$field] ?? '') !== (string) ($after[$field] ?? '')) {
       return TRUE;
     }
   }
@@ -731,6 +747,13 @@ function _accountsync_capture_invoice_pre_save_values($op, $objectName, $id, &$p
  * sync, compared with the snapshot captured in
  * _accountsync_capture_invoice_pre_save_values()?
  *
+ * Deliberately re-fetches the saved record via API rather than reading
+ * fields off hook_civicrm_post's $objectRef - see
+ * _accountsync_entity_has_relevant_change() for why: $objectRef only
+ * carries whatever fields were present in that save's own params, so a
+ * partial update omitting one of our tracked fields would otherwise read
+ * as NULL there and be misread as "changed".
+ *
  * Fails "open" (returns TRUE, i.e. assume changed) whenever we cannot be
  * sure, exactly like _accountsync_entity_has_relevant_change() - it can
  * only ever suppress an unnecessary invoice queue, never miss a real one.
@@ -738,11 +761,10 @@ function _accountsync_capture_invoice_pre_save_values($op, $objectName, $id, &$p
  * @param string $op
  * @param string $objectName
  * @param int $objectId
- * @param object|array $objectRef
  *
  * @return bool
  */
-function _accountsync_invoice_entity_has_relevant_change($op, $objectName, $objectId, $objectRef): bool {
+function _accountsync_invoice_entity_has_relevant_change($op, $objectName, $objectId): bool {
   if (!in_array($op, ['edit', 'update'], TRUE)) {
     return TRUE;
   }
@@ -755,9 +777,19 @@ function _accountsync_invoice_entity_has_relevant_change($op, $objectName, $obje
   if ($before === NULL) {
     return TRUE;
   }
+  try {
+    $after = civicrm_api4($objectName, 'get', [
+      'checkPermissions' => FALSE,
+      'select' => $relevantFields,
+      'where' => [['id', '=', $objectId]],
+    ])->single();
+  }
+  catch (CRM_Core_Exception $e) {
+    // Can't confirm the saved state - fail safe and treat as changed.
+    return TRUE;
+  }
   foreach ($relevantFields as $field) {
-    $newValue = is_array($objectRef) ? ($objectRef[$field] ?? NULL) : ($objectRef->$field ?? NULL);
-    if ((string) ($before[$field] ?? '') !== (string) ($newValue ?? '')) {
+    if ((string) ($before[$field] ?? '') !== (string) ($after[$field] ?? '')) {
       return TRUE;
     }
   }
