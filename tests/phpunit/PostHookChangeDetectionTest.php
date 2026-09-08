@@ -282,8 +282,8 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    * about.
    */
   public function testNewEntityCreationAlwaysReportsChanged(): void {
-    $this->assertTrue(_accountsync_entity_has_relevant_change('create', 'Contact', 999999));
-    $this->assertTrue(_accountsync_entity_has_relevant_change('restore', 'Contact', 999999));
+    $this->assertTrue(_accountsync_entity_has_relevant_change('contact', 'create', 'Contact', 999999));
+    $this->assertTrue(_accountsync_entity_has_relevant_change('contact', 'restore', 'Contact', 999999));
   }
 
   /**
@@ -295,7 +295,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
     $this->assertTrue(
-      _accountsync_entity_has_relevant_change('edit', 'Email', 999999)
+      _accountsync_entity_has_relevant_change('contact', 'edit', 'Email', 999999)
     );
   }
 
@@ -306,7 +306,45 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
-      _accountsync_entity_has_relevant_change('edit', 'Contribution', 999999)
+      _accountsync_entity_has_relevant_change('contact', 'edit', 'Contribution', 999999)
+    );
+  }
+
+  /**
+   * Regression test for a bug flagged in review: the pre-save snapshot
+   * used to be stored in a single slot keyed by purpose+entity+id, so a
+   * reentrant save of the same entity id (a nested save starting, and
+   * finishing, while an outer save's own hook_civicrm_post is still
+   * pending) would let the second hook_civicrm_pre capture silently
+   * overwrite the first - corrupting the diff baseline whichever save's
+   * hook_civicrm_post reads it second. Fixed by pushing each snapshot onto
+   * a per-id stack instead, so each read pops its own matching entry.
+   *
+   * This checks the actual stack depth directly, rather than only the
+   * public pass/fail outcome of _accountsync_entity_has_relevant_change():
+   * because that function fails "open" when no snapshot is found, the
+   * old, buggy single-slot behaviour and the new stack-based behaviour can
+   * both end up returning the same (safe) answer for many inputs, so the
+   * pass/fail outcome alone doesn't reliably distinguish them.
+   */
+  public function testCapturedSnapshotsAreStackedNotOverwritten(): void {
+    $contactID = $this->individualCreate();
+    $email = $this->callAPISuccess('Email', 'create', [
+      'contact_id' => $contactID,
+      'email' => 'first@example.org',
+      'location_type_id' => 1,
+      'is_primary' => 1,
+    ]);
+    $emailID = (int) $email['id'];
+    $ignoredParams = [];
+
+    _accountsync_capture_pre_save_values('contact', 'edit', 'Email', $emailID, $ignoredParams);
+    _accountsync_capture_pre_save_values('contact', 'edit', 'Email', $emailID, $ignoredParams);
+
+    $this->assertCount(
+      2,
+      \Civi::$statics['accountsync_pre_save_values']['contact']['Email'][$emailID],
+      'A second capture for the same entity id must be pushed alongside the first, not overwrite it.'
     );
   }
 
@@ -430,6 +468,28 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   }
 
   /**
+   * Reassigning a Contribution to a different contact, with no other
+   * field changed, must still flag its invoice for update. Regression
+   * test flagged in review: contact_id was missing from the invoice-side
+   * relevant-fields list, so this exact case (amount/status/date/etc. all
+   * unchanged, only contact_id different) would silently fail to queue the
+   * invoice, leaving the accounts package pointing at the wrong contact.
+   */
+  public function testContributionContactReassignmentFlagsInvoiceForUpdate(): void {
+    $originalContactID = $this->individualCreate();
+    $newContactID = $this->individualCreate();
+    $contribution = $this->createEligibleContribution($originalContactID);
+    $accountInvoiceID = $this->createSyncedAccountInvoice((int) $contribution['id']);
+
+    $this->callAPISuccess('Contribution', 'create', [
+      'id' => $contribution['id'],
+      'contact_id' => $newContactID,
+    ]);
+
+    $this->assertEquals(1, $this->getInvoiceAccountsNeedsUpdate($accountInvoiceID));
+  }
+
+  /**
    * Creating a brand new, eligible Contribution must still queue its
    * invoice for creation (an 'edit' op does not apply - there is no
    * "before" state to compare against), same as before this fix.
@@ -447,26 +507,26 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   }
 
   /**
-   * _accountsync_invoice_entity_has_relevant_change() must fail "open"
-   * (assume changed) when no pre-save snapshot was captured - mirrors
-   * testChangeDetectionFailsSafeWithNoCapturedSnapshot() for the invoice
-   * side.
+   * _accountsync_entity_has_relevant_change('invoice', ...) must fail
+   * "open" (assume changed) when no pre-save snapshot was captured -
+   * mirrors testChangeDetectionFailsSafeWithNoCapturedSnapshot() for the
+   * invoice side.
    */
   public function testInvoiceChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
     $this->assertTrue(
-      _accountsync_invoice_entity_has_relevant_change('edit', 'Contribution', 999999)
+      _accountsync_entity_has_relevant_change('invoice', 'edit', 'Contribution', 999999)
     );
   }
 
   /**
    * LineItem is deliberately not covered by the invoice-side "did it
-   * change" field list (see _accountsync_get_invoice_sync_relevant_fields())
-   * - it only appears via an internal per-connector substitution, so it's
+   * change" field list (see _accountsync_get_sync_relevant_fields()) - it
+   * only appears via an internal per-connector substitution, so it's
    * always treated as changed, same as before this fix.
    */
   public function testInvoiceChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
-      _accountsync_invoice_entity_has_relevant_change('edit', 'LineItem', 999999)
+      _accountsync_entity_has_relevant_change('invoice', 'edit', 'LineItem', 999999)
     );
   }
 
