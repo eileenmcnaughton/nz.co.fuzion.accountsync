@@ -34,51 +34,58 @@ class CRM_Accountsync_Check {
    * Check no rows have NULL for connector_id.
    *
    * @return array
-   *
-   * @throws \CRM_Core_Exception
    */
   public function checkRequirements(): array {
     $this->checkNullConnectorID();
     return $this->messages;
   }
 
-  /**
-   * @throws \CRM_Core_Exception
-   */
   private function checkNullConnectorID(): void {
-    $accountContact = AccountContact::get(FALSE)
-      ->addWhere('connector_id', 'IS NULL')
-      ->execute();
-    $count = $accountContact->count();
+    try {
+      $accountContact = AccountContact::get(FALSE)
+        ->addWhere('connector_id', 'IS NULL')
+        ->execute();
+      $count = $accountContact->count();
 
-    if (!empty($count)) {
-      $message = new CRM_Utils_Check_Message(
-        __FUNCTION__ . 'account_sync_account_contact',
-        E::ts('There are %1 records in the `civicrm_account_contact` table which have a NULL connector_id. These need updating manually to 0 or the connector ID if using the connectors extension.',
-          [
-            1 => $count,
-          ]
-        ),
-        E::ts('AccountSync: Database issues'),
-        LogLevel::ERROR,
-        'fa-database'
-      );
-      $this->messages[] = $message;
+      if (!empty($count)) {
+        $message = new CRM_Utils_Check_Message(
+          __FUNCTION__ . 'account_sync_account_contact',
+          E::ts('There are %1 records in the `civicrm_account_contact` table which have a NULL connector_id. These need updating manually to 0 or the connector ID if using the connectors extension.',
+            [
+              1 => $count,
+            ]
+          ),
+          E::ts('AccountSync: Database issues'),
+          LogLevel::ERROR,
+          'fa-database'
+        );
+        $this->messages[] = $message;
+      }
+
+      $accountInvoice = AccountInvoice::get(FALSE)
+        ->addWhere('connector_id', 'IS NULL')
+        ->execute();
+      $count = $accountInvoice->count();
+
+      if (!empty($count)) {
+        $message = new CRM_Utils_Check_Message(
+          __FUNCTION__ . 'accountsync_account_invoice',
+          E::ts('There are %1 records in the `civicrm_account_invoice` table which have a NULL connector_id. These need updating manually to 0 or the connector ID if using the connectors extension.',
+            [
+              1 => $count,
+            ]
+          ),
+          E::ts('AccountSync: Database issues'),
+          LogLevel::ERROR,
+          'fa-database'
+        );
+        $this->messages[] = $message;
+      }
     }
-
-    $accountInvoice = AccountInvoice::get(FALSE)
-      ->addWhere('connector_id', 'IS NULL')
-      ->execute();
-    $count = $accountInvoice->count();
-
-    if (!empty($count)) {
+    catch (\Throwable $e) {
       $message = new CRM_Utils_Check_Message(
-        __FUNCTION__ . 'accountsync_account_invoice',
-        E::ts('There are %1 records in the `civicrm_account_invoice` table which have a NULL connector_id. These need updating manually to 0 or the connector ID if using the connectors extension.',
-          [
-            1 => $count,
-          ]
-        ),
+        __FUNCTION__ . '_exception',
+        E::ts('Unable to run checks on account sync entries - cache clearing may help'),
         E::ts('AccountSync: Database issues'),
         LogLevel::ERROR,
         'fa-database'
