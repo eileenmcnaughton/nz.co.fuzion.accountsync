@@ -156,7 +156,7 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
       }
       // we won't do updates as the invoices get 'locked' in the accounts system
       if ($hasInvoiceRelevantChange) {
-        _accountsync_create_account_invoice($contribution_id, TRUE, $connector_id);
+        _accountsync_create_account_invoice($contribution_id, $connector_id);
       }
     }
   }
@@ -166,7 +166,7 @@ function accountsync_civicrm_post(string $op, string $objectName, $objectId, &$o
 /**
  * Is the invoice before the day zero.
  *
- * We only sync contributions afer the day zero date.
+ * We only sync contributions after the day zero date.
  *
  * @param string $objectName
  * @param CRM_Contribute_BAO_Contribution|CRM_Price_BAO_LineItem $objectRef
@@ -896,45 +896,52 @@ function _accountsync_create_account_contact($contactID, $createNew, $connector_
  * Create account invoice record or set needs_update flag.
  *
  * @param int $contributionID
- * @param bool $createNew
  * @param int $connector_id
  *   ID of connector for civicrm_connector if nz.co.fuzion.connectors enabled.
  *   Otherwise this will be 0.
+ *
+ * @return void
  */
-function _accountsync_create_account_invoice($contributionID, $createNew, $connector_id) {
-  $accountInvoice = [
-    'contribution_id' => $contributionID,
-    'accounts_needs_update' => 1,
-    // Do not rollback on fail.
-    'is_transactional' => FALSE,
-  ];
+function _accountsync_create_account_invoice(int $contributionID, int $connector_id): void {
   foreach (_accountsync_get_enabled_plugins() as $plugin) {
-    unset($accountInvoice['id']); // Ensure id is not set in case of multiple plugins
-
-    if ($connector_id) {
-      $accountInvoice['connector_id'] = $connector_id;
-    }
+    // Check for existing AccountInvoice
+    $existingAccountInvoiceWheres = [
+      ['plugin', '=', $plugin],
+      ['connector_id', '=', $connector_id],
+      ['contribution_id', '=', $contributionID],
+    ];
     try {
-      $accountInvoice['id'] = civicrm_api3('AccountInvoice', 'getvalue', [
-        'plugin' => $plugin,
-        'return' => 'id',
-        'contribution_id' => $contributionID,
-        'connector_id' => $connector_id,
-      ]);
-    }
-    catch (CRM_Core_Exception $e) {
-      // new invoice
-      if (!$createNew) {
-        continue;
+      $existingAccountInvoice = \Civi\Api4\AccountInvoice::get(FALSE)
+        ->addSelect('id')
+        ->setWhere($existingAccountInvoiceWheres)
+        ->execute()
+        ->first();
+      if (empty($existingAccountInvoice)) {
+        // Create new AccountInvoice record and flag as needing sync with accounts system
+        \Civi\Api4\AccountInvoice::create(FALSE)
+          ->addValue('plugin', $plugin)
+          ->addValue('connector_id', $connector_id)
+          ->addValue('contribution_id', $contributionID)
+          ->addValue('accounts_needs_update', TRUE)
+          ->execute();
+      }
+      else {
+        // We have an existing AccountInvoice record
+        // Flag existing AccountInvoice as needing sync with accounts system.
+        \Civi\Api4\AccountInvoice::update(FALSE)
+          ->setWhere($existingAccountInvoiceWheres)
+          ->addValue('accounts_needs_update', TRUE)
+          ->execute();
       }
     }
-    $accountInvoice['plugin'] = $plugin;
-    try {
-      civicrm_api3('AccountInvoice', 'create', $accountInvoice);
-    }
-    catch (CRM_Core_Exception $e) {
-      // Unknown failure.
-      \Civi::log('account_sync')->info('issue creating account invoice' . $e->getMessage());
+    catch (Throwable $e) {
+      // We are in hook_civicrm_post for the contribution, so anything thrown here would
+      // propagate out and roll back the contribution/payment the user just made. Failing
+      // to flag for accounts sync must never do that - log it and carry on.
+      \Civi::log('account_sync')->error('issue creating account invoice for contributionID {contributionID}: {message}', [
+        'contributionID' => $contributionID,
+        'message' => $e->getMessage(),
+      ]);
     }
   }
 }
