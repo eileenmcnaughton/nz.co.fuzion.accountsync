@@ -282,8 +282,8 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    * about.
    */
   public function testNewEntityCreationAlwaysReportsChanged(): void {
-    $this->assertTrue(_accountsync_entity_has_relevant_change('create', 'Contact', 999999));
-    $this->assertTrue(_accountsync_entity_has_relevant_change('restore', 'Contact', 999999));
+    $this->assertTrue(_accountsync_entity_has_relevant_change('contact', 'create', 'Contact', 999999));
+    $this->assertTrue(_accountsync_entity_has_relevant_change('contact', 'restore', 'Contact', 999999));
   }
 
   /**
@@ -295,7 +295,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
     $this->assertTrue(
-      _accountsync_entity_has_relevant_change('edit', 'Email', 999999)
+      _accountsync_entity_has_relevant_change('contact', 'edit', 'Email', 999999)
     );
   }
 
@@ -306,8 +306,107 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
    */
   public function testChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
-      _accountsync_entity_has_relevant_change('edit', 'Contribution', 999999)
+      _accountsync_entity_has_relevant_change('contact', 'edit', 'Contribution', 999999)
     );
+  }
+
+  /**
+   * Regression test for a bug flagged in review: an unrecognised $purpose
+   * used to fall through to indexing a missing array key, which is a
+   * silent NULL (with only a PHP warning) in production but a hard failure
+   * under PHPUnit's convertWarningsToExceptions. Fixed by validating
+   * $purpose explicitly and throwing a clear, immediately-attributed
+   * exception - every real call site only ever passes a literal 'contact'
+   * or 'invoice', so this can only fire on a future typo, and should fail
+   * loudly and obviously when it does rather than silently misbehaving.
+   */
+  public function testGetSyncRelevantFieldsThrowsOnUnrecognisedPurpose(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    _accountsync_get_sync_relevant_fields('not-a-real-purpose');
+  }
+
+  /**
+   * Regression test for a bug flagged in review: the pre-save snapshot
+   * used to be stored in a static registry keyed by purpose+entity+id.
+   * Two overlapping saves of the same entity id (e.g. a nested save
+   * starting and finishing while an outer save's own hook_civicrm_post is
+   * still pending) would then either clobber each other's snapshot (the
+   * original single-slot version) or, once fixed with a stack, silently
+   * assume the pre/post pairs are always strictly nested (LIFO) - which
+   * isn't guaranteed and was flagged again in a later review pass.
+   *
+   * Fixed by stashing the snapshot directly on the same $params array
+   * hook_civicrm_pre() received, which CiviCRM threads through unchanged to
+   * hook_civicrm_post()'s 5th argument for every entity accountsync tracks.
+   * That leaves no shared state at all to clobber or mis-pair: this test
+   * captures into two independent $params arrays for the same entity id and
+   * confirms each reads back its own value regardless of the other, with no
+   * ordering assumption involved.
+   */
+  public function testCaptureAndCheckAreScopedToTheirOwnParamsArrayNotSharedState(): void {
+    $contactID = $this->individualCreate();
+    $email = $this->callAPISuccess('Email', 'create', [
+      'contact_id' => $contactID,
+      'email' => 'first@example.org',
+      'location_type_id' => 1,
+      'is_primary' => 1,
+    ]);
+    $emailID = (int) $email['id'];
+
+    // Two "saves" of the same email id capture into their OWN $params
+    // array, exactly as two real overlapping saves each get their own.
+    $paramsA = [];
+    _accountsync_capture_pre_save_values('contact', 'edit', 'Email', $emailID, $paramsA);
+    $paramsB = [];
+    _accountsync_capture_pre_save_values('contact', 'edit', 'Email', $emailID, $paramsB);
+
+    $this->assertEquals('first@example.org', $paramsA['_accountsync_before']['contact']['email']);
+    $this->assertEquals('first@example.org', $paramsB['_accountsync_before']['contact']['email']);
+
+    $this->callAPISuccess('Email', 'create', [
+      'id' => $emailID,
+      'contact_id' => $contactID,
+      'email' => 'second@example.org',
+    ]);
+
+    // Reading back via either $params array reports the same (real)
+    // change, in whichever order they're checked - neither read consumes
+    // or disturbs the other's snapshot.
+    $this->assertTrue(_accountsync_entity_has_relevant_change('contact', 'edit', 'Email', $emailID, $paramsB));
+    $this->assertTrue(_accountsync_entity_has_relevant_change('contact', 'edit', 'Email', $emailID, $paramsA));
+  }
+
+  /**
+   * Regression test for a bug flagged in review: hook_civicrm_pre() used to
+   * unconditionally capture a "before" snapshot even when
+   * accountsync_civicrm_post() was about to bail out before ever reading it
+   * (the PR #62 case: an accounts provider creating a Contribution in
+   * CiviCRM). With the snapshot stored in a static registry, that capture
+   * was never cleaned up - a leak for the lifetime of the request. Now that
+   * the snapshot lives on $params itself, a stray capture can no longer
+   * leak (it dies with that array), but the capture is still pointless
+   * work, so accountsync_civicrm_pre() skips it outright when it can tell
+   * accountsync_civicrm_post() won't read it.
+   */
+  public function testPreHookSkipsCaptureWhenPostHookIsSuppressed(): void {
+    $contactID = $this->individualCreate();
+    $email = $this->callAPISuccess('Email', 'create', [
+      'contact_id' => $contactID,
+      'email' => 'first@example.org',
+      'location_type_id' => 1,
+      'is_primary' => 1,
+    ]);
+
+    \Civi::$statics['data.accountsync.createcontribution']['createnew'] = FALSE;
+    try {
+      $params = ['id' => $email['id'], 'contact_id' => $contactID, 'email' => 'second@example.org'];
+      accountsync_civicrm_pre('edit', 'Email', $email['id'], $params);
+    }
+    finally {
+      unset(\Civi::$statics['data.accountsync.createcontribution']);
+    }
+
+    $this->assertArrayNotHasKey('_accountsync_before', $params);
   }
 
   /**
@@ -430,6 +529,28 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   }
 
   /**
+   * Reassigning a Contribution to a different contact, with no other
+   * field changed, must still flag its invoice for update. Regression
+   * test flagged in review: contact_id was missing from the invoice-side
+   * relevant-fields list, so this exact case (amount/status/date/etc. all
+   * unchanged, only contact_id different) would silently fail to queue the
+   * invoice, leaving the accounts package pointing at the wrong contact.
+   */
+  public function testContributionContactReassignmentFlagsInvoiceForUpdate(): void {
+    $originalContactID = $this->individualCreate();
+    $newContactID = $this->individualCreate();
+    $contribution = $this->createEligibleContribution($originalContactID);
+    $accountInvoiceID = $this->createSyncedAccountInvoice((int) $contribution['id']);
+
+    $this->callAPISuccess('Contribution', 'create', [
+      'id' => $contribution['id'],
+      'contact_id' => $newContactID,
+    ]);
+
+    $this->assertEquals(1, $this->getInvoiceAccountsNeedsUpdate($accountInvoiceID));
+  }
+
+  /**
    * Creating a brand new, eligible Contribution must still queue its
    * invoice for creation (an 'edit' op does not apply - there is no
    * "before" state to compare against), same as before this fix.
@@ -447,26 +568,26 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
   }
 
   /**
-   * _accountsync_invoice_entity_has_relevant_change() must fail "open"
-   * (assume changed) when no pre-save snapshot was captured - mirrors
-   * testChangeDetectionFailsSafeWithNoCapturedSnapshot() for the invoice
-   * side.
+   * _accountsync_entity_has_relevant_change('invoice', ...) must fail
+   * "open" (assume changed) when no pre-save snapshot was captured -
+   * mirrors testChangeDetectionFailsSafeWithNoCapturedSnapshot() for the
+   * invoice side.
    */
   public function testInvoiceChangeDetectionFailsSafeWithNoCapturedSnapshot(): void {
     $this->assertTrue(
-      _accountsync_invoice_entity_has_relevant_change('edit', 'Contribution', 999999)
+      _accountsync_entity_has_relevant_change('invoice', 'edit', 'Contribution', 999999)
     );
   }
 
   /**
    * LineItem is deliberately not covered by the invoice-side "did it
-   * change" field list (see _accountsync_get_invoice_sync_relevant_fields())
-   * - it only appears via an internal per-connector substitution, so it's
+   * change" field list (see _accountsync_get_sync_relevant_fields()) - it
+   * only appears via an internal per-connector substitution, so it's
    * always treated as changed, same as before this fix.
    */
   public function testInvoiceChangeDetectionAlwaysTrueForUnknownEntityType(): void {
     $this->assertTrue(
-      _accountsync_invoice_entity_has_relevant_change('edit', 'LineItem', 999999)
+      _accountsync_entity_has_relevant_change('invoice', 'edit', 'LineItem', 999999)
     );
   }
 
