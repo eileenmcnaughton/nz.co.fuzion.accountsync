@@ -14,11 +14,11 @@
     <author>Eileen</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2026-08-24</releaseDate>
-  <version>1.7</version>
+  <releaseDate>2026-09-23</releaseDate>
+  <version>1.8</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>6.11</ver>
+    <ver>6.16</ver>
   </compatibility>
   <php_compatibility>
     <ver>8.2</ver>
