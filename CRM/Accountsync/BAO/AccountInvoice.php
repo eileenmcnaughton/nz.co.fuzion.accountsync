@@ -281,7 +281,7 @@ class CRM_Accountsync_BAO_AccountInvoice extends CRM_Accountsync_DAO_AccountInvo
       ->addSelect('contribution_id', 'contribution_id.contribution_status_id:name')
       ->addJoin('Contribution AS contribution', 'LEFT')
       ->addWhere('contribution_id', 'IS NOT EMPTY')
-      ->addWhere('contribution_id.contribution_status_id:name', '=', 'Cancelled')
+      ->addWhere('contribution_id.contribution_status_id:name', '!=', 'Cancelled')
       ->addWhere('accounts_status_id:name', '=', 'cancelled')
       ->execute()
       ->indexBy('id')
