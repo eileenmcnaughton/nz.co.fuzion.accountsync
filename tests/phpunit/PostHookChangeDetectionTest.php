@@ -91,7 +91,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $email = $this->callAPISuccess('Email', 'create', [
       'contact_id' => $contactID,
       'email' => 'unchanged@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
     $accountContactID = $this->createSyncedAccountContact($contactID);
@@ -103,7 +103,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
       'id' => $email['id'],
       'contact_id' => $contactID,
       'email' => 'unchanged@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
 
@@ -119,7 +119,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $email = $this->callAPISuccess('Email', 'create', [
       'contact_id' => $contactID,
       'email' => 'old@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
     $accountContactID = $this->createSyncedAccountContact($contactID);
@@ -128,7 +128,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
       'id' => $email['id'],
       'contact_id' => $contactID,
       'email' => 'new@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
 
@@ -145,7 +145,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $contactID = $this->individualCreate();
     $address = $this->callAPISuccess('Address', 'create', [
       'contact_id' => $contactID,
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
       'street_address' => '123 Test Street',
       'city' => 'Perth',
@@ -156,7 +156,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $this->callAPISuccess('Address', 'create', [
       'id' => $address['id'],
       'contact_id' => $contactID,
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
       'street_address' => '123 Test Street',
       'city' => 'Perth',
@@ -174,7 +174,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $contactID = $this->individualCreate();
     $address = $this->callAPISuccess('Address', 'create', [
       'contact_id' => $contactID,
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
       'street_address' => '123 Test Street',
       'city' => 'Perth',
@@ -185,7 +185,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $this->callAPISuccess('Address', 'create', [
       'id' => $address['id'],
       'contact_id' => $contactID,
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
       'street_address' => '456 New Street',
       'city' => 'Perth',
@@ -254,7 +254,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $email = $this->callAPISuccess('Email', 'create', [
       'contact_id' => $contactID,
       'email' => 'unchanged@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
     $accountContactID = $this->createSyncedAccountContact($contactID);
@@ -348,7 +348,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $email = $this->callAPISuccess('Email', 'create', [
       'contact_id' => $contactID,
       'email' => 'first@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
     $emailID = (int) $email['id'];
@@ -393,7 +393,7 @@ class PostHookChangeDetectionTest extends TestCase implements HeadlessInterface,
     $email = $this->callAPISuccess('Email', 'create', [
       'contact_id' => $contactID,
       'email' => 'first@example.org',
-      'location_type_id' => 1,
+      'location_type_id' => 'Home',
       'is_primary' => 1,
     ]);
 

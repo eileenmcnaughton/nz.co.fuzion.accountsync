@@ -960,3 +960,18 @@ function accountsync_civicrm_check(array &$messages): void {
   $checks = new CRM_Accountsync_Check($messages);
   $messages = $checks->checkRequirements();
 }
+
+/**
+ * Implements hook_civicrm_alterLogTables().
+ *
+ * MariaDB gives last_sync_date (ON UPDATE CURRENT_TIMESTAMP) a new value in
+ * the logging trigger even when an UPDATE changes nothing, so comparing it
+ * would log a row for every no-op save.
+ */
+function accountsync_civicrm_alterLogTables(array &$logTableSpec): void {
+  foreach (['civicrm_account_contact', 'civicrm_account_invoice'] as $table) {
+    if (isset($logTableSpec[$table])) {
+      $logTableSpec[$table]['exceptions'][] = 'last_sync_date';
+    }
+  }
+}
