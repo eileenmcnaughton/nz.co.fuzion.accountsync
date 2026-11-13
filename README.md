@@ -269,7 +269,7 @@ Differences between the two connectors:
 | Can create CiviCRM contributions from remote invoices | Optional (`create_contributions_in_civicrm` on Invoice Pull) | No |
 | Bulk queue of historical contributions | No | Yes ("Queue all contributions since Day zero?") |
 | Re-checks queue rules at push time | Yes | No |
-| Uses `is_error_resolved` | Yes | No (uses its own failure count and `do_not_sync`) |
+| Uses `is_error_resolved` | Yes | No. A contact or invoice with an error stays out of the push until **Retry sync** clears the error. |
 
 Each connector has its own documentation covering authorisation, mapping and job setup:
 
